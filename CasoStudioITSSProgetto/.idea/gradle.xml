@@ -10,6 +10,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/CasoStudioITSS" />
+            <option value="$PROJECT_DIR$/CasoStudioITSS/src" />
+            <option value="$PROJECT_DIR$/CasoStudioITSS/src/main" />
+            <option value="$PROJECT_DIR$/CasoStudioITSS/src/main/Test" />
           </set>
         </option>
       </GradleProjectSettings>

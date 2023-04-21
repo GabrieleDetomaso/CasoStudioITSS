@@ -1,0 +1,21 @@
+GRUPPO 1
+1. Aggiunta lancio Eccezione nel metodo CourseManager.addNewCourseAttender()
+
+GRUPPO 2
+1. Per il test: subscriptionNotFoundInRangeInAndNotInclusive
+    - Fail per errori interni al metodo getSubscriptionByDate. Veniva richiamato su toDate
+        il metodo get, al posto del metodo getLong, che trasforma la data in un long e permette
+        di effettuare confronti. Chiamando il metodo get effettuare confronti con le date generava eccezioni.
+    - Risoluzione: a riga 169 è stato sostituito il metodo get con il metodo getLong
+
+2. Per il test: fromDateGreatherThanToDate
+    - A seguito del fallimento del test è stato aggiunto un controllo per prevenire che fromDate sia
+        maggiore di toDate
+
+3. Per il test: fromDatetoDateEqualsNotInclusive
+    - A seguito del fallimento del test è stato aggiunto un controllo per prevenire che fromDate e toDate
+        siano uguali se inclusive è false
+
+4. Per il test: noStudentsInCourse
+    - A seguito del fallimento del test è stato aggiunto un controllo per evitare che il metodo
+        venga eseguito se il corso è vuoto

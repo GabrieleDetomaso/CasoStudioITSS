@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class Main {
     public static void main(String[] args) {
         CourseManager courseManager = new CourseManager("ITSS", LocalDate.now());
-
+/*
         courseManager.addNewCourseAttender(
                 new Student("Giacomo", "Detomaso", "XYC"),
                 LocalDate.parse("2023-04-02")
@@ -35,6 +35,9 @@ public class Main {
                 new Student("Angelo", "Valentino", "XYL"),
                 LocalDate.parse("2023-04-02")
         );
+
+
+ */
 
         courseManager.assignMarkToStudent(30, "XYC");
         courseManager.assignMarkToStudent(30, "XYZ");

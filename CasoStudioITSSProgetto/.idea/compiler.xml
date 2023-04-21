@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="CasoStudioITSS.src.main.Test.main" target="11" />
+      <module name="CasoStudioITSS.src.main.Test.test" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

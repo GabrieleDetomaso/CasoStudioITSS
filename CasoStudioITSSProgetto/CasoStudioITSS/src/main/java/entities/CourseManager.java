@@ -1,5 +1,10 @@
 package entities;
 
+import exceptions.CourseEmptyException;
+import exceptions.NullStudentException;
+import exceptions.RangeDateException;
+import org.w3c.dom.ranges.Range;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
@@ -29,9 +34,12 @@ public class CourseManager {
      *
      * @return true if the attender is added to the course, false otherwise
      * */
-    public boolean addNewCourseAttender(Student student, LocalDate subDate) {
+    public boolean addNewCourseAttender(Student student, LocalDate subDate) throws NullStudentException {
         if (subDate.isAfter(endSubDate))
             throw new DateTimeException("The subscriptions are ended");
+
+        if (student == null)
+            throw new NullStudentException("Lo studente è nullo");
 
         return subscriptions.add(new CourseSubscription(student, subDate));
     }
@@ -158,10 +166,27 @@ public class CourseManager {
      *
      * @return a set of CourseSubscription inside a specified date range
      * */
-    public Set<CourseSubscription> getSubscriptionsByDate(LocalDate fromDate, LocalDate toDate, boolean inclusive) {
+    public Set<CourseSubscription> getSubscriptionsByDate(LocalDate fromDate, LocalDate toDate, boolean inclusive)
+            throws RangeDateException, CourseEmptyException {
         Set<CourseSubscription> subsInRange = new LinkedHashSet<>();
         long fromDateLong = fromDate.getLong(ChronoField.EPOCH_DAY);
-        long toDateLong = toDate.get(ChronoField.EPOCH_DAY);
+        long toDateLong = toDate.getLong(ChronoField.EPOCH_DAY);
+
+        // Check the dates
+
+        if (fromDate.isAfter(toDate)) {
+            throw new RangeDateException("fromDate is greater then to date");
+        }
+
+        if (!inclusive && (fromDate.equals(toDate))) {
+            throw new RangeDateException("fromDate is equal to toDate but inclusive is false. They cannot be equals");
+        }
+
+        // Check the course number
+
+        if (subscriptions.isEmpty()) {
+            throw new CourseEmptyException("The course is empty");
+        }
 
         for (CourseSubscription courseSubscription : subscriptions) {
             LocalDate subDate = courseSubscription.getSubDate();
@@ -183,5 +208,9 @@ public class CourseManager {
         }
 
         return subsInRange;
+    }
+
+    public void deleteCourseStudents() {
+        subscriptions.clear();
     }
 }
