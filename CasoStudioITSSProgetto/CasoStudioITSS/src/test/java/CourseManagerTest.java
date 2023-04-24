@@ -6,10 +6,7 @@ import exceptions.NullStudentException;
 import exceptions.RangeDateException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -27,7 +24,7 @@ public class CourseManagerTest {
     private static Student s1 = new Student("Gianni", "Verdi", "111111");
     private static Student s2 = new Student("Marco", "Bari", "111112");
     private static Student s3 = new Student("Angelo", "Valentino", "111113");
-    private static Student s4 = new Student("A", "A", "111114");
+    private static Student s4 = new Student("Oscar", "Bravo", "111114");
 
 
     //GRUPPO 1
@@ -93,21 +90,21 @@ public class CourseManagerTest {
     // NON VIENE LANCIATA NESSUNA ECCEZIONE
     @Test // T1
     @DisplayName("Studente nullo")
-    void studenteNullo(){
+    void studentNull(){
         Assertions.assertThrows(Exception.class, () ->
             courseManager1.addNewCourseAttender(null, LocalDate.now())
         );
     }
 
     @ParameterizedTest // Uniti tet: T2 e T3
-    @MethodSource("providerStudentsT2T3")
+    @MethodSource("studentsProviderOfRegistrationStudent")
     @DisplayName("Studente già iscritto e studente non iscritto")
-    void iscrizioneStudente(Boolean expectedResult, Student s) throws NullStudentException {
+    void registrationStudent(Boolean expectedResult, Student s) throws NullStudentException {
 
         Assertions.assertEquals(expectedResult, courseManager1.addNewCourseAttender(s, LocalDate.now()));
     }
 
-    private static Stream<Arguments> providerStudentsT2T3(){
+    private static Stream<Arguments> studentsProviderOfRegistrationStudent(){
 
         return Stream.of(
                 Arguments.of(false, s1),
@@ -119,13 +116,13 @@ public class CourseManagerTest {
     //FALLISCE: T6 NON LANCIA ECCEZIONI
     @ParameterizedTest //Uniti test: T4 e T6
     @NullSource
-    @MethodSource("providerDatesT4T6")
+    @MethodSource("datesProviderOfDateWrong")
     @DisplayName("Data nulla e data non scaduta ma non odierna")
-    void dataNullaDataNonScadutaNonOdierna(LocalDate testDate){
+    void dateWrong(LocalDate testDate){
         Assertions.assertThrows(Exception.class, () -> courseManager1.addNewCourseAttender(s4, testDate));
     }
 
-    private static Stream<LocalDate> providerDatesT4T6(){
+    private static Stream<LocalDate> datesProviderOfDateWrong(){
 
         return Stream.of( LocalDate.now().plusDays(2) );
     }
@@ -133,7 +130,7 @@ public class CourseManagerTest {
 
     @Test //T5
     @DisplayName("Data corretta")
-    void dataCorretta() throws NullStudentException {
+    void dateRight() throws NullStudentException {
 
         Assertions.assertTrue(courseManager1.addNewCourseAttender(new Student("a", "a", "111112")
                 , LocalDate.now()));
@@ -142,7 +139,7 @@ public class CourseManagerTest {
 
     @Test //T7
     @DisplayName("Data scaduta")
-    void dataScaduta() {
+    void dateExpired() {
 
         Assertions.assertThrows(Exception.class, () ->
                 courseManager3.addNewCourseAttender(s4, LocalDate.now())
@@ -157,6 +154,61 @@ public class CourseManagerTest {
 
         Assertions.assertThrows(Exception.class, () ->
                 courseManager3.addNewCourseAttender(s4, LocalDate.now().minusDays(1))
+        );
+    }
+
+    // GRUPPO 1
+    // metodo testato: assignMarkToStudent;
+
+    @ParameterizedTest //Uniti test: T2, T4 e T5
+    @MethodSource("marksProviderOfmarkWrong")
+    @DisplayName("Inserimento di vari voti non accettabili")
+    void markWrong(int mark)
+    {
+
+        Assertions.assertThrows(Exception.class, () ->
+                courseManager1.assignMarkToStudent(mark, s1.getMat())
+        );
+    }
+
+    private static Stream<Integer> marksProviderOfmarkWrong(){
+        return Stream.of(17, 32, -1);
+    }
+
+
+    //FALLISCE: T3 LANCIA UN'ECCEZIONE
+    @ParameterizedTest //Uniti test: T1 e T3
+    @MethodSource("marksProviderOfmarkRight")
+    @DisplayName("Inserimento di vari voti accettabili ad uno studente iscritto")
+    void markRight(int mark)
+    {
+
+        Assertions.assertDoesNotThrow(() ->
+                courseManager1.assignMarkToStudent(mark, s1.getMat())
+        );
+    }
+
+    private static Stream<Integer> marksProviderOfmarkRight(){
+        return Stream.of(18, 31);
+    }
+
+    @ParameterizedTest //Uniti test: T6, T7, T8, T10, T11, T12 e T13
+    @NullAndEmptySource
+    @MethodSource("matsProviderOfRegisterWrong")
+    @DisplayName("Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti")
+    void RegisterWrong(String mat)
+    {
+
+        Assertions.assertThrows(Exception.class, () ->
+                courseManager1.assignMarkToStudent(28, mat) );
+    }
+
+    private static Stream<String> matsProviderOfRegisterWrong() {
+        return Stream.of("11111",
+                "A2G27T",
+                "1234567",
+                s4.getMat(),
+                "999999"
         );
     }
 
