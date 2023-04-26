@@ -35,7 +35,7 @@ public class CourseManager {
      * @return true if the attender is added to the course, false otherwise
      * */
     public boolean addNewCourseAttender(Student student, LocalDate subDate) throws NullStudentException {
-        if (subDate.isAfter(endSubDate))
+        if (subDate.isAfter(endSubDate)  || !subDate.isEqual(LocalDate.now()))
             throw new DateTimeException("The subscriptions are ended");
 
         if (student == null)
@@ -73,7 +73,7 @@ public class CourseManager {
      *
      * @param mat the matriculation number of the course to search
      * */
-    private CourseSubscription getSpecificSubscription(String mat) {
+    public CourseSubscription getSpecificSubscription(String mat) {
         TreeSet<CourseSubscription> orderedSetByMat = new TreeSet<>(subscriptions);
         List<CourseSubscription> allMat = new ArrayList<>(orderedSetByMat);
 

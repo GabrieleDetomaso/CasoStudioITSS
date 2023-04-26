@@ -20,10 +20,10 @@ public class CourseSubscription implements Comparable<CourseSubscription> {
      * @param mark the mark value that is in the range [18, 30]
      * */
     public void setMark(int mark) {
-        if (mark >= 18 && mark <= 30)
+        if (mark >= 18 && mark <= 31)
             this.mark = mark;
         else
-            throw new IllegalArgumentException("Mark value must be in range [18, 30]");
+            throw new IllegalArgumentException("Mark value must be in range [18, 31]");
     }
 
     /**

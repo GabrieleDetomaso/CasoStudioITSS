@@ -1,5 +1,28 @@
 GRUPPO 1
-1. Aggiunta lancio Eccezione nel metodo CourseManager.addNewCourseAttender()
+
+assignMarkToStudent
+
+1. Per il test: markRight
+    - Il test fallisce perchè il voto 31 non viene accettato, in quanto non compreso nel range dei voti accettabili
+        nel metodo setMark.
+    - Risoluzione: il range viene modificato in modo da comprendere i voti da 18 a 31
+
+
+addNewCourseAttender
+
+1. Per il test: studentNull
+	- Fallimento del test per mancanza di controllo sull'inserimento di uno studente con valore nullo
+	- Rilosuzione: aggiunta di un controllo e creazione della classe NullStudentException per gestire l'eccezione
+
+2. Per il test: dateWrong
+    - Fallimento di T6 per mancato lancio di un'eccezione sul controllo della data inserita
+    - Risoluzione: aggiunta di un controllo che permette di verificare se la data inserita è effettivamente quella odierna
+
+3. Per il test: realDateExpireRegistrationDateFalsed
+    - Fallimento di T8 per mancato lancio di un'eccezione sul controllo della data inserita
+    - Risoluzione: risoluzione del test T6
+
+
 
 GRUPPO 2
 

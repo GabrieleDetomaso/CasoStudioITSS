@@ -44,12 +44,11 @@ public class CourseManagerGroup1Test {
     }
 
     @BeforeEach
-    void init()  {
+    void init() {
         // Aggiunta studenti per courseManager1
         try {
             courseManager1.addNewCourseAttender(s1, LocalDate.now());
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Eccezione lanciata 1");
         }
 
@@ -60,14 +59,13 @@ public class CourseManagerGroup1Test {
             courseManager2.addNewCourseAttender(s2, LocalDate.parse("2022-11-10"));
             courseManager2.addNewCourseAttender(s3, LocalDate.parse("2022-11-11"));
             courseManager2.addNewCourseAttender(s4, LocalDate.parse("2022-11-11"));
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Eccezione lanciata 2");
         }
     }
 
     @AfterEach
-    void tearDown(){
+    void tearDown() {
         courseManager1.deleteCourseStudents();
         courseManager2.deleteCourseStudents();
         courseManager3.deleteCourseStudents();
@@ -82,16 +80,64 @@ public class CourseManagerGroup1Test {
     }
 
 
-
     // GRUPPO 1
+    // metodo testato: assignMarkToStudent;
+
+    @ParameterizedTest //Uniti test: T2, T4 e T5
+    @MethodSource("marksProviderOfmarkWrong")
+    @DisplayName("Inserimento di vari voti non accettabili")
+    void markWrong(int mark) {
+
+        Assertions.assertThrows(Exception.class, () ->
+                courseManager1.assignMarkToStudent(mark, s1.getMat())
+        );
+    }
+
+    private static Stream<Integer> marksProviderOfmarkWrong() {
+        return Stream.of(17, 32, -1);
+    }
+
+
+    @ParameterizedTest //Uniti test: T1 e T3
+    @MethodSource("marksProviderOfmarkRight")
+    @DisplayName("Inserimento di vari voti accettabili ad uno studente iscritto")
+    void markRight(int mark) {
+        Assertions.assertDoesNotThrow(() ->
+                courseManager1.assignMarkToStudent(mark, s1.getMat())
+        );
+    }
+
+    private static Stream<Integer> marksProviderOfmarkRight() {
+        return Stream.of(18, 31);
+    }
+
+    @ParameterizedTest //Uniti test: T6, T7, T8, T9, T10, T11 e T12
+    @NullAndEmptySource
+    @MethodSource("matsProvider")
+    @DisplayName("Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti")
+    void registerWrong(String mat) {
+
+        Assertions.assertThrows(Exception.class, () ->
+                courseManager1.assignMarkToStudent(28, mat));
+    }
+
+    private static Stream<String> matsProvider() {
+        return Stream.of("11111",
+                "A2G27T",
+                "1234567",
+                s4.getMat(),
+                "999999"
+        );
+    }
+
+
     // metodo testato: addNewCourseAttender;
 
-    // NON VIENE LANCIATA NESSUNA ECCEZIONE
     @Test // T1
     @DisplayName("Studente nullo")
-    void studentNull(){
+    void studentNull() {
         Assertions.assertThrows(Exception.class, () ->
-            courseManager1.addNewCourseAttender(null, LocalDate.now())
+                courseManager1.addNewCourseAttender(null, LocalDate.now())
         );
     }
 
@@ -103,7 +149,7 @@ public class CourseManagerGroup1Test {
         Assertions.assertEquals(expectedResult, courseManager1.addNewCourseAttender(s, LocalDate.now()));
     }
 
-    private static Stream<Arguments> studentsProviderOfRegistrationStudent(){
+    private static Stream<Arguments> studentsProviderOfRegistrationStudent() {
 
         return Stream.of(
                 Arguments.of(false, s1),
@@ -112,17 +158,16 @@ public class CourseManagerGroup1Test {
     }
 
 
-    //FALLISCE: T6 NON LANCIA ECCEZIONI
     @ParameterizedTest //Uniti test: T4 e T6
     @NullSource
     @MethodSource("datesProviderOfDateWrong")
     @DisplayName("Data nulla e data non scaduta ma non odierna")
-    void dateWrong(LocalDate testDate){
+    void dateWrong(LocalDate testDate) {
         Assertions.assertThrows(Exception.class, () -> courseManager1.addNewCourseAttender(s4, testDate));
     }
 
-    private static Stream<LocalDate> datesProviderOfDateWrong(){
-        return Stream.of( LocalDate.now().plusDays(2) );
+    private static Stream<LocalDate> datesProviderOfDateWrong() {
+        return Stream.of(LocalDate.now().plusDays(2));
     }
 
 
@@ -145,287 +190,41 @@ public class CourseManagerGroup1Test {
     }
 
 
-    //FALLISCE: NON VIENE LANCIATA NESSUNA ECCEZIONE
     @Test //T8
     @DisplayName("Data reale scaduta data iscrizione falsata ")
-    void dataRealeScadutaDataIscrizioneFalsata(){
+    void realDateExpiredRegistrationDateFalsed() {
         Assertions.assertThrows(Exception.class, () ->
                 courseManager3.addNewCourseAttender(s4, LocalDate.now().minusDays(1))
         );
     }
 
-    // GRUPPO 1
-    // metodo testato: assignMarkToStudent;
 
-    @ParameterizedTest //Uniti test: T2, T4 e T5
-    @MethodSource("marksProviderOfmarkWrong")
-    @DisplayName("Inserimento di vari voti non accettabili")
-    void markWrong(int mark)
-    {
+    // metodo testato: getSpecificSubscription;
 
+    @Test // T1
+    @DisplayName("matricola nulla")
+    void RegisterNull() {
         Assertions.assertThrows(Exception.class, () ->
-                courseManager1.assignMarkToStudent(mark, s1.getMat())
-        );
-    }
-
-    private static Stream<Integer> marksProviderOfmarkWrong(){
-        return Stream.of(17, 32, -1);
-    }
-
-
-    //FALLISCE: T3 LANCIA UN'ECCEZIONE
-    @ParameterizedTest //Uniti test: T1 e T3
-    @MethodSource("marksProviderOfmarkRight")
-    @DisplayName("Inserimento di vari voti accettabili ad uno studente iscritto")
-    void markRight(int mark)
-    {
-        Assertions.assertDoesNotThrow(() ->
-                courseManager1.assignMarkToStudent(mark, s1.getMat())
-        );
-    }
-
-    private static Stream<Integer> marksProviderOfmarkRight(){
-        return Stream.of(18, 31);
-    }
-
-    @ParameterizedTest //Uniti test: T6, T7, T8, T10, T11, T12 e T13
-    @NullAndEmptySource
-    @MethodSource("matsProviderOfRegisterWrong")
-    @DisplayName("Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti")
-    void RegisterWrong(String mat)
-    {
-
-        Assertions.assertThrows(Exception.class, () ->
-                courseManager1.assignMarkToStudent(28, mat) );
-    }
-
-    private static Stream<String> matsProviderOfRegisterWrong() {
-        return Stream.of("11111",
-                "A2G27T",
-                "1234567",
-                s4.getMat(),
-                "999999"
+                courseManager1.getSpecificSubscription(null)
         );
     }
 
 
+    @ParameterizedTest //Uniti test:  T2, T3, T4, T6, T7 e T8
+    @EmptySource
+    @MethodSource("matsProvider")
+    @DisplayName("Inserimento di matricole di formato sbagliato o non iscritti/esistenti")
+    void subscriberSearchWrong( String mat) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // GRUPPO 2: Giacomo Detomaso e Roberto Scorrano
-    // Test relativi al metodo: getSubrsciptionByDate
-
-    @Test // Uniti test: T1 e T2
-    @DisplayName("fromDate and toDate null")
-    void fromDateToDateNull() {
-        Assertions.assertAll(
-                () -> Assertions.assertThrows(Exception.class, () ->
-                        courseManager1.getSubscriptionsByDate(null, LocalDate.now(), false)),
-                () ->  Assertions.assertThrows(Exception.class, () ->
-                        courseManager1.getSubscriptionsByDate(LocalDate.now(), null, false))
-        );
+        Assertions.assertNull( courseManager1.getSpecificSubscription(mat) );
     }
 
-    @Test // Uniti test: T3 e T4
-    @DisplayName("Wrong date format")
-    void wrongDateFormat() {
-        Assertions.assertAll(
-                () -> Assertions.assertThrows(DateTimeException.class, () ->
-                        courseManager1.getSubscriptionsByDate(LocalDate.parse("04-08-2023"), LocalDate.now(), false)),
+    @Test // T5
+    @DisplayName("Inserimento matricola di uno studente iscritto")
+    void registerCorrect(){
 
-                () -> Assertions.assertThrows(DateTimeException.class, () ->
-                courseManager1.getSubscriptionsByDate(LocalDate.now(), LocalDate.parse("04-08-2023"), false))
-        );
+        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );
     }
 
-    @ParameterizedTest // Uniti test: T5 e  T7
-    @DisplayName("Subscriptions found")
-    @ValueSource (booleans = {false, true})
-    void subscriptionsFound(boolean inclusive) throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-03");
-        LocalDate toDate = LocalDate.parse("2022-11-10");
 
-        int equal; // parametro da usare nell'assert equals
-
-        // In base al valore di inclusive cambia il numero di studenti resituiti
-        if (inclusive) {
-            equal = 2; // Se inclusive è vero vi sono
-        } else {
-            equal = 1;
-        }
-
-        Assertions.assertEquals(equal, courseManager2.getSubscriptionsByDate(fromDate, toDate, inclusive).size());
-    }
-
-    @ParameterizedTest // Uniti test: T6 e  T8
-    @DisplayName("Subscriptions not found")
-    @ValueSource (booleans = {false, true})
-    void subscriptionsNotFound(boolean inclusive) throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-12-03");
-        LocalDate toDate = LocalDate.parse("2022-12-10");
-
-        Assertions.assertEquals(0, courseManager2.getSubscriptionsByDate(fromDate, toDate, inclusive).size());
-    }
-
-    @Test // T9
-    @DisplayName("fromDate greater then toDate")
-    void fromDateGreaterThanToDate() {
-        LocalDate fromDate = LocalDate.parse("2022-11-10");
-        LocalDate toDate = LocalDate.parse("2022-11-03");
-        Assertions.assertThrows(RangeDateException.class, () -> courseManager2.getSubscriptionsByDate(fromDate, toDate, true));
-    }
-
-    @Test // T10
-    @DisplayName("fromDate and toDate are the same with inclusive false")
-    void fromDateEqualsToDateNotInclusive() {
-        LocalDate date = LocalDate.parse("2022-11-10");
-        Assertions.assertThrows(RangeDateException.class, () -> courseManager2.getSubscriptionsByDate(date, date, false));
-    }
-
-    @Test //T11
-    @DisplayName("fromDate toDate are the same with inclusive true")
-    void fromDateEqualsToDateInclusive() throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-10");
-        LocalDate toDate = LocalDate.parse("2022-11-10");
-
-        Assertions.assertEquals(1, courseManager2.getSubscriptionsByDate(fromDate, toDate, true).size());
-    }
-
-    @ParameterizedTest // Uniti test: T12 e  T14
-    @DisplayName("Students on fromDate: inclusive true and false")
-    @ValueSource (booleans = {false, true})
-    void studentsOnFromDate(boolean inclusive) throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-04");
-        LocalDate toDate = LocalDate.parse("2022-11-05");
-
-        Set<CourseSubscription> subs = courseManager2.getSubscriptionsByDate(fromDate, toDate, inclusive);
-        Set<Student> students = new HashSet<>();
-
-        // Recupera tutti gli studenti presenti nelle iscrizioni
-        for (CourseSubscription sub: subs) {
-            students.add(sub.getStudent());
-        }
-
-        // Controlla che lo studente s1 che risiede sul limite inferiore di questo range
-        // se inclusive è true sia presente, altrimenti non presente
-        if (inclusive) {
-            Assertions.assertTrue(students.contains(s1));
-        } else {
-            Assertions.assertFalse(students.contains(s1));
-        }
-    }
-
-    @ParameterizedTest // Uniti test: T13 e  T15
-    @DisplayName("Students on toDate: inclusive true and false")
-    @ValueSource (booleans = {false, true})
-    void studentsOnToDate(boolean inclusive) throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-01");
-        LocalDate toDate = LocalDate.parse("2022-11-04");
-
-        Set<CourseSubscription> subs = courseManager2.getSubscriptionsByDate(fromDate, toDate, inclusive);
-        Set<Student> students = new HashSet<>();
-
-        // Recupera tutti gli studenti presenti nelle iscrizioni
-        for (CourseSubscription sub: subs) {
-            students.add(sub.getStudent());
-        }
-
-        // Controlla che lo studente s1 che risiede sul limite inferiore di questo range
-        // se inclusive è true sia presente, altrimenti non presente
-        if (inclusive) {
-            Assertions.assertTrue(students.contains(s1));
-        } else {
-            Assertions.assertFalse(students.contains(s1));
-        }
-    }
-    
-    @Test // T16
-    @DisplayName("No students in course")
-    void noStudentsInCourse (){
-        LocalDate fromDate = LocalDate.parse("2022-11-01");
-        LocalDate toDate = LocalDate.parse("2022-11-10");
-
-        courseManager2.deleteCourseStudents(); // azzera il corso
-        
-        Assertions.assertThrows(CourseEmptyException.class,
-                () -> courseManager2.getSubscriptionsByDate(fromDate, toDate, true));
-    }
-
-    @Test // T17
-    @DisplayName("Students on toDate inclusive multiple")
-    void studentsOnToDateInclusiveMultiple() throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-01");
-        LocalDate toDate = LocalDate.parse("2022-11-11");
-
-        Set<CourseSubscription> subs = courseManager2.getSubscriptionsByDate(fromDate, toDate, true);
-        Set<Student> students = new HashSet<>();
-
-        // Recupera tutti gli studenti presenti nelle iscrizioni
-        for (CourseSubscription sub: subs) {
-            students.add(sub.getStudent());
-        }
-
-        // Controlla che lo studente s3 ed s4 (che risiedono sul range superiore) siano present
-        Assertions.assertAll(
-                () -> Assertions.assertTrue(students.contains(s3)),
-                () -> Assertions.assertTrue(students.contains(s4)),
-                // Controllo comunque la dimensione dell'output (controllo ridondante -> controllato in test
-                // precedenti. Lo si lascia per chiarezza e sicurezza). Il controllo è stato aggiunto perchè
-                // nel range testato vi sono tutti e 4 gli studenti del corso
-                () -> Assertions.assertEquals(4, students.size()));
-    }
-
-    @Test // T18
-    @DisplayName("Students on fromDate inclusive multiple")
-    void studentsOnFromDateInclusiveMultiple() throws RangeDateException, CourseEmptyException {
-        LocalDate fromDate = LocalDate.parse("2022-11-11");
-        LocalDate toDate = LocalDate.parse("2022-11-20");
-
-        Set<CourseSubscription> subs = courseManager2.getSubscriptionsByDate(fromDate, toDate, true);
-        Set<Student> students = new HashSet<>();
-
-        // Recupera tutti gli studenti presenti nelle iscrizioni
-        for (CourseSubscription sub: subs) {
-            students.add(sub.getStudent());
-        }
-
-        // Controlla che lo studente s3 ed s4 (che risiedono sul range superiore) siano present
-        Assertions.assertAll(
-                () -> Assertions.assertTrue(students.contains(s3)),
-                () -> Assertions.assertTrue(students.contains(s4)));
-    }
 }
