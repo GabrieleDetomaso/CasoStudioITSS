@@ -2,6 +2,9 @@ GRUPPO 1
 1. Aggiunta lancio Eccezione nel metodo CourseManager.addNewCourseAttender()
 
 GRUPPO 2
+
+getSubscriptionsByDate
+
 1. Per il test: subscriptionNotFoundInRangeInAndNotInclusive
     - Fail per errori interni al metodo getSubscriptionByDate. Veniva richiamato su toDate
         il metodo get, al posto del metodo getLong, che trasforma la data in un long e permette
@@ -19,3 +22,12 @@ GRUPPO 2
 4. Per il test: noStudentsInCourse
     - A seguito del fallimento del test è stato aggiunto un controllo per evitare che il metodo
         venga eseguito se il corso è vuoto
+
+getStudentsWithHigherMark
+1. Per T4 e T5: controllo per aggiungere il return di un insieme vuoto quando non vi sono voti assegnati
+2. Per T6: aggiunta eccezione CourseEmptyException
+
+countMarksInInclusiveRange
+1. Per T7 e T8: aggiunta l'inclusività nel range all'interno del metodo
+2. Per T10: aggiunta controllo per from > to
+3. Per T11: aggiunta eccezione CourseEmptyException

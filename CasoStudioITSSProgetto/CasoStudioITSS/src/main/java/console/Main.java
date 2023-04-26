@@ -45,7 +45,6 @@ public class Main {
         courseManager.assignMarkToStudent(22, "XYK");
         courseManager.assignMarkToStudent(18, "XYP");
 
-        courseManager.getStudentsWithHigherMark();
-        System.out.print(courseManager.countMarksInInclusiveRange(18, 21));
+        //courseManager.getStudentsWithHigherMark();
     }
 }

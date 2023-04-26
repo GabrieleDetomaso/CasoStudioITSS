@@ -5,12 +5,15 @@ import exceptions.CourseEmptyException;
 import exceptions.RangeDateException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Classe di test per CourseManger del gruppo 2
@@ -50,9 +53,6 @@ public class CourseManagerGroup2Test {
 
         try {
             courseManager2.addNewCourseAttender(s1, LocalDate.parse("2022-11-04"));
-            courseManager2.addNewCourseAttender(s2, LocalDate.parse("2022-11-10"));
-            courseManager2.addNewCourseAttender(s3, LocalDate.parse("2022-11-11"));
-            courseManager2.addNewCourseAttender(s4, LocalDate.parse("2022-11-11"));
         }
         catch(Exception e) {
             System.out.println("Eccezione lanciata 2");
@@ -67,6 +67,13 @@ public class CourseManagerGroup2Test {
     @AfterAll
     static void clear() {
         courseManager1 = null;
+    }
+
+    public static Stream<Arguments> getInputMarkPairs() {
+        return Stream.of(
+                Arguments.of(17, 31), // T1 e T4 di countMarksInInclusiveRange
+                Arguments.of(31, 17) // T2 e T3 di countMarksInInclusiveRange
+        );
     }
 
     // CASI DI TEST PER IL METODO: getSubscriptionsByDate
@@ -138,7 +145,7 @@ public class CourseManagerGroup2Test {
         Assertions.assertThrows(RangeDateException.class, () -> courseManager1.getSubscriptionsByDate(date, date, false));
     }
 
-    @Test //T11
+    @Test // T11
     @DisplayName("fromDate toDate are the same with inclusive true")
     void fromDateEqualsToDateInclusive() throws RangeDateException, CourseEmptyException {
         LocalDate fromDate = LocalDate.parse("2022-11-10");
@@ -254,7 +261,7 @@ public class CourseManagerGroup2Test {
     // CASI DI TEST PER IL METODO: getStudentWithHigherMark
     @Test // T1
     @DisplayName("One student with an assigned mark")
-    void oneStudentWithAssignedMark() {
+    void oneStudentWithAssignedMark() throws CourseEmptyException {
         courseManager1.assignMarkToStudent(30, "111111");
 
         Set<Student> studentSet = courseManager1.getStudentsWithHigherMark();
@@ -266,8 +273,8 @@ public class CourseManagerGroup2Test {
     }
 
     @Test // T2
-    @DisplayName("")
-    void metodo2() {
+    @DisplayName("More students with an assigned mark, but with one highest one")
+    void moreStudentWithAssignedMarkWithOneHighestMark() throws CourseEmptyException {
         courseManager1.assignMarkToStudent(30, "111111");
         courseManager1.assignMarkToStudent(29, "111112");
 
@@ -277,4 +284,105 @@ public class CourseManagerGroup2Test {
                 () -> Assertions.assertTrue(studentSet.contains(s1))
         );
     }
+
+    @Test // T3
+    @DisplayName("More students with an assigned mark, but with more highest ones")
+    void moreStudentWithAssignedMarkWithMoreHighestMarks() throws CourseEmptyException {
+        courseManager1.assignMarkToStudent(30, "111111");
+        courseManager1.assignMarkToStudent(29, "111112");
+        courseManager1.assignMarkToStudent(30, "111113");
+
+        Set<Student> studentSet = courseManager1.getStudentsWithHigherMark();
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(2, studentSet.size()),
+                () -> Assertions.assertTrue(studentSet.contains(s1)),
+                () -> Assertions.assertTrue(studentSet.contains(s3))
+        );
+    }
+
+    @Test //T4 e T5
+    @DisplayName("No Students with marks")
+    void noStudentsWithMarks() throws CourseEmptyException {
+        Set<Student> studentSet1 = courseManager1.getStudentsWithHigherMark();
+        Set<Student> studentSet2 = courseManager2.getStudentsWithHigherMark();
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(0, studentSet1.size()),
+                () -> Assertions.assertEquals(0, studentSet2.size())
+        );
+    }
+
+    @Test //T6
+    @DisplayName("No students in course 2")
+    void noStudentInCourse2() {
+        courseManager1.deleteCourseStudents();
+
+        Assertions.assertThrows(CourseEmptyException.class,
+                () -> courseManager1.getStudentsWithHigherMark());
+    }
+
+    // CASI DI TEST PER IL METODO: countMarksInInclusiveRange
+
+    @ParameterizedTest //Uniti test: T1, T2, T3 e T4
+    @DisplayName("From and to is less than 18 and greater than 30")
+    @MethodSource("getInputMarkPairs")
+    void wrongMarkInput(int from, int to) {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> courseManager1.countMarksInInclusiveRange(from, to));
+    }
+
+    @Test // Uniti T5 e T6
+    @DisplayName("Students in range and not")
+    void studentsInRangeAndNot () {
+        courseManager1.assignMarkToStudent(29, "111111");
+        courseManager1.assignMarkToStudent(28, "111112");
+        courseManager1.assignMarkToStudent(29, "111113");
+
+        // Testiamo che nel primo caso il range contenga gli studenti, nel secondo caso no
+        Assertions.assertAll(
+                () -> Assertions.assertTrue(courseManager1.countMarksInInclusiveRange(27, 30) > 0),
+                () -> Assertions.assertEquals(0, courseManager1.countMarksInInclusiveRange(25, 27))
+        );
+    }
+
+    @Test // T7
+    @DisplayName("One student on from")
+    void oneStudentOnFrom() throws CourseEmptyException {
+        courseManager1.assignMarkToStudent(27, "111111");
+        Assertions.assertEquals(1, courseManager1.countMarksInInclusiveRange(27, 30));
+    }
+
+    @Test // T8
+    @DisplayName("One student on to")
+    void oneStudentOnTo() throws CourseEmptyException {
+        courseManager1.assignMarkToStudent(30, "111111");
+        Assertions.assertEquals(1, courseManager1.countMarksInInclusiveRange(27, 30));
+    }
+
+    @Test // T9
+    @DisplayName("From equal to")
+    void fromEqualTo() throws CourseEmptyException {
+        courseManager1.assignMarkToStudent(27, "111111");
+        Assertions.assertTrue(courseManager1.countMarksInInclusiveRange(27, 27) >= 1);
+    }
+
+    @Test // T10
+    @DisplayName("From greater than to")
+    void fromGreaterThanTo() {
+        courseManager1.assignMarkToStudent(27, "111111");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> courseManager1.countMarksInInclusiveRange(27, 22));
+    }
+
+    @Test // T11
+    @DisplayName("No student in course")
+    void noStudentInCourse3() {
+        courseManager1.deleteCourseStudents();
+        Assertions.assertThrows(CourseEmptyException.class, () -> courseManager1.countMarksInInclusiveRange(19, 29));
+    }
+
+    @Test // T12
+    @DisplayName("No marks in course")
+    void noMarksInCourse() throws CourseEmptyException {
+        Assertions.assertEquals(0, courseManager1.countMarksInInclusiveRange(20, 25));
+    }
 }
+
+

@@ -103,8 +103,12 @@ public class CourseManager {
      *
      * @return the student with the higher mark
      * */
-    public Set<Student> getStudentsWithHigherMark() {
+    public Set<Student> getStudentsWithHigherMark() throws CourseEmptyException {
         LinkedHashSet<Student> higherMarkStudents = new LinkedHashSet<>();
+
+        if (subscriptions.size() == 0) {
+            throw new CourseEmptyException("The course is empty");
+        }
 
         TreeSet<CourseSubscription> orderedSet = new TreeSet<>(Comparator
                 .comparingInt(CourseSubscription::getMark)
@@ -114,6 +118,10 @@ public class CourseManager {
         orderedSet = (TreeSet<CourseSubscription>) orderedSet.descendingSet();
 
         int higherMark = orderedSet.first().getMark();
+
+        if (higherMark == -1) {
+            return higherMarkStudents;
+        }
 
         for (CourseSubscription courseSubscription : orderedSet) {
             if (courseSubscription.getMark() == higherMark) {
@@ -136,17 +144,23 @@ public class CourseManager {
      *
      * @return the number of marks inside the input range
      */
-    public int countMarksInInclusiveRange(int from, int to) {
+    public int countMarksInInclusiveRange(int from, int to) throws CourseEmptyException {
         if (from < 18 || from > 30)
             throw new IllegalArgumentException("From parameter should be in range [18, 30]");
 
         if (to < 18 || to > 30)
             throw new IllegalArgumentException("To parameter should be in range [18, 30]");
 
+        if (from > to)
+            throw new IllegalArgumentException("from is greater than to");
+
+        if (subscriptions.size() == 0)
+            throw new CourseEmptyException();
+
         int count = 0;
 
         for (CourseSubscription courseSubscription : subscriptions) {
-            if (courseSubscription.getMark() > from && courseSubscription.getMark() < to) {
+            if (courseSubscription.getMark() >= from && courseSubscription.getMark() <= to) {
                 ++count;
             }
         }

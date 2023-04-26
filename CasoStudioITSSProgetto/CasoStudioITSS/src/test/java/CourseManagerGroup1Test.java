@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  *
  * @author Gabriele Detomaso, Giacomo Detomaso, Alessandra Pipoli, Roberto Scorrano
  * */
-public class CourseManagerTest {
+public class CourseManagerGroup1Test {
 
     // Definizione di studenti di test
     private static Student s1 = new Student("Gianni", "Verdi", "111111");
