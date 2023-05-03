@@ -56,6 +56,38 @@ public class CourseManager {
     }
 
     /**
+     * This method is used to calculate the number of student whose mark is above the average of the course.
+     *
+     * @param inclusive determines if the students with the mark equals to the average are counted
+     * @return the number of students  whose mark is above the average of the course
+     */
+    public int studentsAboveAverage(boolean inclusive) {
+        double avg = 0;
+        double sum = 0;
+        int hasMark = 0;
+        int nStudent = 0;
+
+        for (CourseSubscription courseSubscription : subscriptions) {
+            if (courseSubscription.getMark() != -1) {
+                hasMark++;
+                sum += courseSubscription.getMark();
+            }
+        }
+
+        avg = sum / hasMark;
+
+        for (CourseSubscription courseSubscription : subscriptions) {
+            int mark = courseSubscription.getMark();
+
+            if ((mark >= avg && inclusive) || (mark > avg && !inclusive)) {
+                nStudent++;
+            }
+        }
+
+        return nStudent;
+    }
+
+    /**
      * This method is used to retrieve a specific student from the course,
      * given his matriculation number.
      *
