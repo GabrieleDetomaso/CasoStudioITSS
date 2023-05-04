@@ -1,0 +1,302 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AssertEquals</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: AssertEquals (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AssertEquals</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6,5%
+  </span>
+  <span class="absValue">
+    (2/31)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    3,6%
+  </span>
+  <span class="absValue">
+    (2/55)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static org.junit.jupiter.api.AssertionFailureBuilder.assertionFailure;
+&nbsp;import static org.junit.jupiter.api.AssertionUtils.doublesAreEqual;
+&nbsp;import static org.junit.jupiter.api.AssertionUtils.floatsAreEqual;
+&nbsp;import static org.junit.jupiter.api.AssertionUtils.objectsAreEqual;
+&nbsp;
+&nbsp;import java.util.function.Supplier;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code AssertEquals} is a collection of utility methods that support asserting
+&nbsp; * equality on objects and primitives in tests.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;class AssertEquals {
+&nbsp;
+&nbsp;	private AssertEquals() {
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(byte expected, byte actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(byte expected, byte actual, String message) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(byte expected, byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(char expected, char actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(char expected, char actual, String message) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(char expected, char actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual, String message) {
+<b class="nc">&nbsp;		if (!doublesAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (!doublesAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual, double delta) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, delta, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual, double delta, String message) {
+<b class="nc">&nbsp;		if (!doublesAreEqual(expected, actual, delta)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(double expected, double actual, double delta, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (!doublesAreEqual(expected, actual, delta)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual, String message) {
+<b class="nc">&nbsp;		if (!floatsAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (!floatsAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual, float delta) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, delta, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual, float delta, String message) {
+<b class="nc">&nbsp;		if (!floatsAreEqual(expected, actual, delta)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(float expected, float actual, float delta, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (!floatsAreEqual(expected, actual, delta)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(short expected, short actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(short expected, short actual, String message) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(short expected, short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(int expected, int actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(int expected, int actual, String message) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(int expected, int actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(long expected, long actual) {
+<b class="nc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(long expected, long actual, String message) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(long expected, long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (expected != actual) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(Object expected, Object actual) {
+<b class="fc">&nbsp;		assertEquals(expected, actual, (String) null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(Object expected, Object actual, String message) {
+<b class="fc">&nbsp;		if (!objectsAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, message);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	static void assertEquals(Object expected, Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		if (!objectsAreEqual(expected, actual)) {</b>
+<b class="nc">&nbsp;			failNotEqual(expected, actual, messageSupplier);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private static void failNotEqual(Object expected, Object actual, Object messageOrSupplier) {
+<b class="nc">&nbsp;		assertionFailure() //</b>
+<b class="nc">&nbsp;				.message(messageOrSupplier) //</b>
+<b class="nc">&nbsp;				.expected(expected) //</b>
+<b class="nc">&nbsp;				.actual(actual) //</b>
+<b class="nc">&nbsp;				.buildAndThrow();</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

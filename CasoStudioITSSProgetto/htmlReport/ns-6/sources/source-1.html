@@ -1,0 +1,236 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > API</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.apiguardian.api</a>
+</div>
+
+<h1>Coverage Summary for Class: API (org.apiguardian.api)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">API$Status</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2002-2017 the original author or authors.
+&nbsp; *
+&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+&nbsp; * you may not use this file except in compliance with the License.
+&nbsp; * You may obtain a copy of the License at
+&nbsp; *
+&nbsp; *      http://www.apache.org/licenses/LICENSE-2.0
+&nbsp; *
+&nbsp; * Unless required by applicable law or agreed to in writing, software
+&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+&nbsp; * See the License for the specific language governing permissions and
+&nbsp; * limitations under the License.
+&nbsp; */
+&nbsp;
+&nbsp;package org.apiguardian.api;
+&nbsp;
+&nbsp;import static java.lang.annotation.ElementType.CONSTRUCTOR;
+&nbsp;import static java.lang.annotation.ElementType.FIELD;
+&nbsp;import static java.lang.annotation.ElementType.METHOD;
+&nbsp;import static java.lang.annotation.ElementType.PACKAGE;
+&nbsp;import static java.lang.annotation.ElementType.TYPE;
+&nbsp;import static java.lang.annotation.RetentionPolicy.RUNTIME;
+&nbsp;
+&nbsp;import java.lang.annotation.Documented;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @API} is used to annotate public types, methods, constructors, and
+&nbsp; * fields within a framework or application in order to publish their
+&nbsp; * {@link #status} and level of stability and to indicate how they are intended
+&nbsp; * to be used by {@link #consumers} of the API.
+&nbsp; *
+&nbsp; * &lt;p&gt;If {@code @API} is present on a type, it is considered to hold for all
+&nbsp; * public members of the type as well. However, a member of such an annotated
+&nbsp; * type is allowed to declare a {@link Status} of lower stability. For example,
+&nbsp; * a class annotated with {@code @API(status = STABLE)} may declare a constructor
+&nbsp; * for internal usage that is annotated with {@code @API(status = INTERNAL)}.
+&nbsp; *
+&nbsp; * &lt;p&gt;If {@code @API} is present on a package, it is considered to hold for all
+&nbsp; * public types in its package. The same rules for lowered stability apply as
+&nbsp; * if they were specified on a type.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;@Target({ TYPE, METHOD, CONSTRUCTOR, FIELD, PACKAGE })
+&nbsp;@Retention(RUNTIME)
+&nbsp;@Documented
+&nbsp;public @interface API {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The current {@linkplain Status status} of the API.
+&nbsp;	 */
+&nbsp;	Status status();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The version of the API when the {@link #status} was last changed.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Defaults to an empty string, signifying that the &lt;em&gt;since&lt;/em&gt;
+&nbsp;	 * version is unknown.
+&nbsp;	 */
+&nbsp;	String since() default &quot;&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * List of packages belonging to intended consumers.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The supplied packages can be fully qualified package names or
+&nbsp;	 * patterns containing asterisks that will be used as wildcards.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Defaults to {@code &quot;*&quot;}, signifying that the API is intended to be
+&nbsp;	 * consumed by any package.
+&nbsp;	 */
+&nbsp;	String[] consumers() default &quot;*&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Indicates the status of an API element and therefore its level of
+&nbsp;	 * stability as well.
+&nbsp;	 */
+<b class="fc">&nbsp;	enum Status {</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Must not be used by any external code. Might be removed without prior
+&nbsp;		 * notice.
+&nbsp;		 */
+<b class="fc">&nbsp;		INTERNAL,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Should no longer be used. Might disappear in the next minor release.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;This status is usually used in combination with the standard annotation
+&nbsp;		 * {@link Deprecated @Deprecated} because that annotation is recognized by
+&nbsp;		 * IDEs and the compiler. However, there are also cases where this status
+&nbsp;		 * can be used on its own, for example when transitioning a {@link #MAINTAINED}
+&nbsp;		 * feature to an {@link #INTERNAL} one.
+&nbsp;		 */
+<b class="fc">&nbsp;		DEPRECATED,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Intended for new, experimental features where the publisher of the
+&nbsp;		 * API is looking for feedback.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;Use with caution. Might be promoted to {@link #MAINTAINED} or
+&nbsp;		 * {@link #STABLE} in the future, but might also be removed without
+&nbsp;		 * prior notice.
+&nbsp;		 */
+<b class="fc">&nbsp;		EXPERIMENTAL,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Intended for features that will not be changed in a backwards-incompatible
+&nbsp;		 * way for at least the next minor release of the current major version.
+&nbsp;		 * If scheduled for removal, such a feature will be demoted to
+&nbsp;		 * {@link #DEPRECATED} first.
+&nbsp;		 */
+<b class="fc">&nbsp;		MAINTAINED,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Intended for features that will not be changed in a backwards-incompatible
+&nbsp;		 * way in the current major version.
+&nbsp;		 */
+<b class="fc">&nbsp;		STABLE;</b>
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

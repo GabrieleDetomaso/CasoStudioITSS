@@ -1,0 +1,321 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AbstractOrderingVisitor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.discovery</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractOrderingVisitor (org.junit.jupiter.engine.discovery)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractOrderingVisitor</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41,9%
+  </span>
+  <span class="absValue">
+    (18/43)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AbstractOrderingVisitor$DescriptorWrapperOrderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (3/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AbstractOrderingVisitor$MessageGenerator</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (8/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46,2%
+  </span>
+  <span class="absValue">
+    (24/52)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.discovery;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.toCollection;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;import org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;
+&nbsp;/**
+&nbsp; * Abstract base class for {@linkplain TestDescriptor.Visitor visitors} that
+&nbsp; * order children nodes.
+&nbsp; *
+&nbsp; * @param &lt;PARENT&gt; the parent container type to search in for matching children
+&nbsp; * @param &lt;CHILD&gt; the type of children (containers or tests) to order
+&nbsp; * @param &lt;WRAPPER&gt; the wrapper type for the children to order
+&nbsp; * @since 5.8
+&nbsp; */
+<b class="fc">&nbsp;abstract class AbstractOrderingVisitor&lt;PARENT extends TestDescriptor, CHILD extends TestDescriptor, WRAPPER extends AbstractAnnotatedDescriptorWrapper&lt;?&gt;&gt;</b>
+&nbsp;		implements TestDescriptor.Visitor {
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(AbstractOrderingVisitor.class);</b>
+&nbsp;
+&nbsp;	@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;	protected void doWithMatchingDescriptor(Class&lt;PARENT&gt; parentTestDescriptorType, TestDescriptor testDescriptor,
+&nbsp;			Consumer&lt;PARENT&gt; action, Function&lt;PARENT, String&gt; errorMessageBuilder) {
+&nbsp;
+<b class="fc">&nbsp;		if (parentTestDescriptorType.isInstance(testDescriptor)) {</b>
+<b class="fc">&nbsp;			PARENT parentTestDescriptor = (PARENT) testDescriptor;</b>
+&nbsp;			try {
+<b class="fc">&nbsp;				action.accept(parentTestDescriptor);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Throwable t) {</b>
+<b class="nc">&nbsp;				UnrecoverableExceptions.rethrowIfUnrecoverable(t);</b>
+<b class="nc">&nbsp;				logger.error(t, () -&gt; errorMessageBuilder.apply(parentTestDescriptor));</b>
+<b class="fc">&nbsp;			}</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	protected void orderChildrenTestDescriptors(TestDescriptor parentTestDescriptor, Class&lt;CHILD&gt; matchingChildrenType,
+&nbsp;			Function&lt;CHILD, WRAPPER&gt; descriptorWrapperFactory, DescriptorWrapperOrderer descriptorWrapperOrderer) {
+&nbsp;
+<b class="fc">&nbsp;		Set&lt;? extends TestDescriptor&gt; children = parentTestDescriptor.getChildren();</b>
+&nbsp;
+<b class="fc">&nbsp;		List&lt;WRAPPER&gt; matchingDescriptorWrappers = children.stream()//</b>
+<b class="fc">&nbsp;				.filter(matchingChildrenType::isInstance)//</b>
+<b class="fc">&nbsp;				.map(matchingChildrenType::cast)//</b>
+<b class="fc">&nbsp;				.map(descriptorWrapperFactory)//</b>
+<b class="fc">&nbsp;				.collect(toCollection(ArrayList::new));</b>
+&nbsp;
+&nbsp;		// If there are no children to order, abort early.
+<b class="fc">&nbsp;		if (matchingDescriptorWrappers.isEmpty()) {</b>
+&nbsp;			return;
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		if (descriptorWrapperOrderer.canOrderWrappers()) {</b>
+<b class="nc">&nbsp;			List&lt;TestDescriptor&gt; nonMatchingTestDescriptors = children.stream()//</b>
+<b class="nc">&nbsp;					.filter(childTestDescriptor -&gt; !matchingChildrenType.isInstance(childTestDescriptor))//</b>
+<b class="nc">&nbsp;					.collect(Collectors.toList());</b>
+&nbsp;
+&nbsp;			// Make a local copy for later validation
+<b class="nc">&nbsp;			Set&lt;WRAPPER&gt; originalWrappers = new LinkedHashSet&lt;&gt;(matchingDescriptorWrappers);</b>
+&nbsp;
+<b class="nc">&nbsp;			descriptorWrapperOrderer.orderWrappers(matchingDescriptorWrappers);</b>
+&nbsp;
+<b class="nc">&nbsp;			int difference = matchingDescriptorWrappers.size() - originalWrappers.size();</b>
+<b class="nc">&nbsp;			if (difference &gt; 0) {</b>
+<b class="nc">&nbsp;				descriptorWrapperOrderer.logDescriptorsAddedWarning(difference);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			else if (difference &lt; 0) {</b>
+<b class="nc">&nbsp;				descriptorWrapperOrderer.logDescriptorsRemovedWarning(difference);</b>
+&nbsp;			}
+&nbsp;
+<b class="nc">&nbsp;			Set&lt;TestDescriptor&gt; orderedTestDescriptors = matchingDescriptorWrappers.stream()//</b>
+<b class="nc">&nbsp;					.filter(originalWrappers::contains)//</b>
+<b class="nc">&nbsp;					.map(AbstractAnnotatedDescriptorWrapper::getTestDescriptor)//</b>
+<b class="nc">&nbsp;					.collect(toCollection(LinkedHashSet::new));</b>
+&nbsp;
+&nbsp;			// There is currently no way to removeAll or addAll children at once, so we
+&nbsp;			// first remove them all and then add them all back.
+<b class="nc">&nbsp;			Stream.concat(orderedTestDescriptors.stream(), nonMatchingTestDescriptors.stream())//</b>
+<b class="nc">&nbsp;					.forEach(parentTestDescriptor::removeChild);</b>
+&nbsp;
+&nbsp;			// If we are ordering children of type ClassBasedTestDescriptor, that means we
+&nbsp;			// are ordering top-level classes or @Nested test classes. Thus, the
+&nbsp;			// nonMatchingTestDescriptors list is either empty (for top-level classes) or
+&nbsp;			// contains only local test methods (for @Nested classes) which must be executed
+&nbsp;			// before tests in @Nested test classes. So we add the test methods before adding
+&nbsp;			// the @Nested test classes.
+<b class="nc">&nbsp;			if (matchingChildrenType == ClassBasedTestDescriptor.class) {</b>
+<b class="nc">&nbsp;				Stream.concat(nonMatchingTestDescriptors.stream(), orderedTestDescriptors.stream())//</b>
+<b class="nc">&nbsp;						.forEach(parentTestDescriptor::addChild);</b>
+&nbsp;			}
+&nbsp;			// Otherwise, we add the ordered descriptors before the non-matching descriptors,
+&nbsp;			// which is the case when we are ordering test methods. In other words, local
+&nbsp;			// test methods always get added before @Nested test classes.
+&nbsp;			else {
+<b class="nc">&nbsp;				Stream.concat(orderedTestDescriptors.stream(), nonMatchingTestDescriptors.stream())//</b>
+<b class="nc">&nbsp;						.forEach(parentTestDescriptor::addChild);</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;
+&nbsp;		// Recurse through the children in order to support ordering for @Nested test classes.
+<b class="fc">&nbsp;		matchingDescriptorWrappers.forEach(descriptorWrapper -&gt; {</b>
+<b class="fc">&nbsp;			TestDescriptor newParentTestDescriptor = descriptorWrapper.getTestDescriptor();</b>
+<b class="fc">&nbsp;			DescriptorWrapperOrderer newDescriptorWrapperOrderer = getDescriptorWrapperOrderer(descriptorWrapperOrderer,</b>
+&nbsp;				descriptorWrapper);
+&nbsp;
+<b class="fc">&nbsp;			orderChildrenTestDescriptors(newParentTestDescriptor, matchingChildrenType, descriptorWrapperFactory,</b>
+&nbsp;				newDescriptorWrapperOrderer);
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link DescriptorWrapperOrderer} for the supplied {@link AbstractAnnotatedDescriptorWrapper}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation returns the supplied {@code DescriptorWrapperOrderer}.
+&nbsp;	 *
+&nbsp;	 * @return a new {@code DescriptorWrapperOrderer} or the one supplied as an argument
+&nbsp;	 */
+&nbsp;	protected DescriptorWrapperOrderer getDescriptorWrapperOrderer(
+&nbsp;			DescriptorWrapperOrderer inheritedDescriptorWrapperOrderer,
+&nbsp;			AbstractAnnotatedDescriptorWrapper&lt;?&gt; descriptorWrapper) {
+&nbsp;
+<b class="nc">&nbsp;		return inheritedDescriptorWrapperOrderer;</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	protected class DescriptorWrapperOrderer {</b>
+&nbsp;
+&nbsp;		private final Consumer&lt;List&lt;WRAPPER&gt;&gt; orderingAction;
+&nbsp;
+&nbsp;		private final MessageGenerator descriptorsAddedMessageGenerator;
+&nbsp;
+&nbsp;		private final MessageGenerator descriptorsRemovedMessageGenerator;
+&nbsp;
+&nbsp;		DescriptorWrapperOrderer(Consumer&lt;List&lt;WRAPPER&gt;&gt; orderingAction,
+&nbsp;				MessageGenerator descriptorsAddedMessageGenerator,
+<b class="fc">&nbsp;				MessageGenerator descriptorsRemovedMessageGenerator) {</b>
+&nbsp;
+<b class="fc">&nbsp;			this.orderingAction = orderingAction;</b>
+<b class="fc">&nbsp;			this.descriptorsAddedMessageGenerator = descriptorsAddedMessageGenerator;</b>
+<b class="fc">&nbsp;			this.descriptorsRemovedMessageGenerator = descriptorsRemovedMessageGenerator;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private boolean canOrderWrappers() {
+<b class="fc">&nbsp;			return this.orderingAction != null;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private void orderWrappers(List&lt;WRAPPER&gt; wrappers) {
+<b class="nc">&nbsp;			this.orderingAction.accept(wrappers);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private void logDescriptorsAddedWarning(int number) {
+<b class="nc">&nbsp;			logger.warn(() -&gt; this.descriptorsAddedMessageGenerator.generateMessage(number));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private void logDescriptorsRemovedWarning(int number) {
+<b class="nc">&nbsp;			logger.warn(() -&gt; this.descriptorsRemovedMessageGenerator.generateMessage(Math.abs(number)));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	@FunctionalInterface
+&nbsp;	protected interface MessageGenerator {
+&nbsp;
+&nbsp;		String generateMessage(int number);
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

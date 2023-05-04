@@ -1,0 +1,156 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DefaultTestInstanceFactoryContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultTestInstanceFactoryContext (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultTestInstanceFactoryContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33,3%
+  </span>
+  <span class="absValue">
+    (3/9)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;
+&nbsp;/**
+&nbsp; * Default implementation of the {@link TestInstanceFactoryContext} API.
+&nbsp; *
+&nbsp; * @since 5.3
+&nbsp; */
+&nbsp;class DefaultTestInstanceFactoryContext implements TestInstanceFactoryContext {
+&nbsp;
+&nbsp;	private final Class&lt;?&gt; testClass;
+&nbsp;	private final Optional&lt;Object&gt; outerInstance;
+&nbsp;
+<b class="fc">&nbsp;	DefaultTestInstanceFactoryContext(Class&lt;?&gt; testClass, Optional&lt;Object&gt; outerInstance) {</b>
+<b class="fc">&nbsp;		this.testClass = testClass;</b>
+<b class="fc">&nbsp;		this.outerInstance = outerInstance;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Class&lt;?&gt; getTestClass() {
+<b class="nc">&nbsp;		return this.testClass;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Object&gt; getOuterInstance() {
+<b class="nc">&nbsp;		return this.outerInstance;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return new ToStringBuilder(this)</b>
+<b class="nc">&nbsp;				.append(&quot;testClass&quot;, this.testClass)</b>
+<b class="nc">&nbsp;				.append(&quot;outerInstance&quot;, this.outerInstance)</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

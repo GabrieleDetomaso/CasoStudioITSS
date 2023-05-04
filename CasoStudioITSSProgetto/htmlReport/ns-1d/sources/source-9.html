@@ -1,0 +1,323 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodSelector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.discovery</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodSelector (org.junit.platform.engine.discovery)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodSelector</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33,3%
+  </span>
+  <span class="absValue">
+    (6/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    26,9%
+  </span>
+  <span class="absValue">
+    (14/52)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.discovery;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Objects;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.util.ClassUtils;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.StringUtils;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;import org.junit.platform.engine.DiscoverySelector;
+&nbsp;
+&nbsp;/**
+&nbsp; * A {@link DiscoverySelector} that selects a {@link Method} or a combination of
+&nbsp; * class name, method name, and parameter types so that
+&nbsp; * {@link org.junit.platform.engine.TestEngine TestEngines} can discover tests
+&nbsp; * or containers based on methods.
+&nbsp; *
+&nbsp; * &lt;p&gt;If a Java {@link Method} is provided, the selector will return that
+&nbsp; * {@linkplain #getJavaMethod() method} and its method name, class name, and
+&nbsp; * parameter types accordingly. If a {@link Class} and method name, a class name
+&nbsp; * and method name, or a &lt;em&gt;fully qualified method name&lt;/em&gt; is provided,
+&nbsp; * this selector will only attempt to lazily load the {@link Class} and
+&nbsp; * {@link Method} if {@link #getJavaClass()} or {@link #getJavaMethod()} is
+&nbsp; * invoked.
+&nbsp; *
+&nbsp; * &lt;p&gt;In this context, a Java {@code Method} means anything that can be referenced
+&nbsp; * as a {@link Method} on the JVM &amp;mdash; for example, methods from Java classes
+&nbsp; * or methods from other JVM languages such Groovy, Scala, etc.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see DiscoverySelectors#selectMethod(String)
+&nbsp; * @see DiscoverySelectors#selectMethod(String, String)
+&nbsp; * @see DiscoverySelectors#selectMethod(String, String, String)
+&nbsp; * @see DiscoverySelectors#selectMethod(Class, String)
+&nbsp; * @see DiscoverySelectors#selectMethod(Class, String, String)
+&nbsp; * @see DiscoverySelectors#selectMethod(Class, Method)
+&nbsp; * @see org.junit.platform.engine.support.descriptor.MethodSource
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public class MethodSelector implements DiscoverySelector {
+&nbsp;
+&nbsp;	private final String className;
+&nbsp;	private final String methodName;
+&nbsp;	private final String methodParameterTypes;
+&nbsp;
+&nbsp;	private Class&lt;?&gt; javaClass;
+&nbsp;	private Method javaMethod;
+&nbsp;
+&nbsp;	MethodSelector(String className, String methodName) {
+<b class="nc">&nbsp;		this(className, methodName, &quot;&quot;);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	MethodSelector(String className, String methodName, String methodParameterTypes) {</b>
+<b class="nc">&nbsp;		this.className = className;</b>
+<b class="nc">&nbsp;		this.methodName = methodName;</b>
+<b class="nc">&nbsp;		this.methodParameterTypes = methodParameterTypes;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	MethodSelector(Class&lt;?&gt; javaClass, String methodName) {
+<b class="nc">&nbsp;		this(javaClass, methodName, &quot;&quot;);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	MethodSelector(Class&lt;?&gt; javaClass, String methodName, String methodParameterTypes) {</b>
+<b class="nc">&nbsp;		this.javaClass = javaClass;</b>
+<b class="nc">&nbsp;		this.className = javaClass.getName();</b>
+<b class="nc">&nbsp;		this.methodName = methodName;</b>
+<b class="nc">&nbsp;		this.methodParameterTypes = methodParameterTypes;</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	MethodSelector(Class&lt;?&gt; javaClass, Method method) {</b>
+<b class="fc">&nbsp;		this.javaClass = javaClass;</b>
+<b class="fc">&nbsp;		this.className = javaClass.getName();</b>
+<b class="fc">&nbsp;		this.javaMethod = method;</b>
+<b class="fc">&nbsp;		this.methodName = method.getName();</b>
+<b class="fc">&nbsp;		this.methodParameterTypes = ClassUtils.nullSafeToString(method.getParameterTypes());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the selected class name.
+&nbsp;	 */
+&nbsp;	public String getClassName() {
+<b class="nc">&nbsp;		return this.className;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the selected method name.
+&nbsp;	 */
+&nbsp;	public String getMethodName() {
+<b class="nc">&nbsp;		return this.methodName;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the parameter types for the selected method as a {@link String},
+&nbsp;	 * typically a comma-separated list of primitive types, fully qualified
+&nbsp;	 * class names, or array types.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the parameter types are provided as a single string instead of
+&nbsp;	 * a collection in order to allow this selector to be used in a generic
+&nbsp;	 * fashion by various test engines. It is therefore the responsibility of
+&nbsp;	 * the caller of this method to determine how to parse the returned string.
+&nbsp;	 *
+&nbsp;	 * @return the parameter types supplied to this {@code MethodSelector} via
+&nbsp;	 * a constructor or deduced from a {@code Method} supplied via a constructor;
+&nbsp;	 * never {@code null}
+&nbsp;	 */
+&nbsp;	public String getMethodParameterTypes() {
+<b class="nc">&nbsp;		return this.methodParameterTypes;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Class} in which the selected {@linkplain #getJavaMethod
+&nbsp;	 * method} is declared, or a subclass thereof.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Class} was not provided, but only the name, this method
+&nbsp;	 * attempts to lazily load the {@code Class} based on its name and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the class cannot be loaded.
+&nbsp;	 *
+&nbsp;	 * @see #getJavaMethod()
+&nbsp;	 */
+&nbsp;	public Class&lt;?&gt; getJavaClass() {
+<b class="fc">&nbsp;		lazyLoadJavaClass();</b>
+<b class="fc">&nbsp;		return this.javaClass;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the selected {@link Method}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Method} was not provided, but only the name, this method
+&nbsp;	 * attempts to lazily load the {@code Method} based on its name and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the method cannot be loaded.
+&nbsp;	 *
+&nbsp;	 * @see #getJavaClass()
+&nbsp;	 */
+&nbsp;	public Method getJavaMethod() {
+<b class="fc">&nbsp;		lazyLoadJavaMethod();</b>
+<b class="fc">&nbsp;		return this.javaMethod;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void lazyLoadJavaClass() {
+<b class="fc">&nbsp;		if (this.javaClass == null) {</b>
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			this.javaClass = ReflectionUtils.tryToLoadClass(this.className).getOrThrow(</b>
+<b class="nc">&nbsp;				cause -&gt; new PreconditionViolationException(&quot;Could not load class with name: &quot; + this.className, cause));</b>
+&nbsp;			// @formatter:on
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private void lazyLoadJavaMethod() {
+<b class="fc">&nbsp;		lazyLoadJavaClass();</b>
+&nbsp;
+<b class="fc">&nbsp;		if (this.javaMethod == null) {</b>
+<b class="nc">&nbsp;			if (StringUtils.isNotBlank(this.methodParameterTypes)) {</b>
+<b class="nc">&nbsp;				this.javaMethod = ReflectionUtils.findMethod(this.javaClass, this.methodName,</b>
+<b class="nc">&nbsp;					this.methodParameterTypes).orElseThrow(</b>
+<b class="nc">&nbsp;						() -&gt; new PreconditionViolationException(String.format(</b>
+&nbsp;							&quot;Could not find method with name [%s] and parameter types [%s] in class [%s].&quot;,
+<b class="nc">&nbsp;							this.methodName, this.methodParameterTypes, this.javaClass.getName())));</b>
+&nbsp;			}
+&nbsp;			else {
+<b class="nc">&nbsp;				this.javaMethod = ReflectionUtils.findMethod(this.javaClass, this.methodName).orElseThrow(</b>
+<b class="nc">&nbsp;					() -&gt; new PreconditionViolationException(</b>
+<b class="nc">&nbsp;						String.format(&quot;Could not find method with name [%s] in class [%s].&quot;, this.methodName,</b>
+<b class="nc">&nbsp;							this.javaClass.getName())));</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.3
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.3&quot;)
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		MethodSelector that = (MethodSelector) o;</b>
+<b class="nc">&nbsp;		return Objects.equals(this.className, that.className)//</b>
+<b class="nc">&nbsp;				&amp;&amp; Objects.equals(this.methodName, that.methodName)//</b>
+<b class="nc">&nbsp;				&amp;&amp; Objects.equals(this.methodParameterTypes, that.methodParameterTypes);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.3
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.3&quot;)
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="fc">&nbsp;		return Objects.hash(this.className, this.methodName, this.methodParameterTypes);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return new ToStringBuilder(this)</b>
+<b class="nc">&nbsp;				.append(&quot;className&quot;, this.className)</b>
+<b class="nc">&nbsp;				.append(&quot;methodName&quot;, this.methodName)</b>
+<b class="nc">&nbsp;				.append(&quot;methodParameterTypes&quot;, this.methodParameterTypes)</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

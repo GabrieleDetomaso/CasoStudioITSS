@@ -1,0 +1,206 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestWatcher</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TestWatcher (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TestWatcher</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code TestWatcher} defines the API for {@link Extension Extensions} that
+&nbsp; * wish to process test results.
+&nbsp; *
+&nbsp; * &lt;p&gt;The methods in this API are called after a test has been skipped or
+&nbsp; * executed. Any {@link ExtensionContext.Store.CloseableResource CloseableResource}
+&nbsp; * objects stored in the {@link ExtensionContext.Store Store} of the supplied
+&nbsp; * {@link ExtensionContext} will have already been &lt;strong&gt;closed&lt;/strong&gt; before
+&nbsp; * methods in this API are invoked.
+&nbsp; *
+&nbsp; * &lt;p&gt;Please note that this API is currently only used to report the results of
+&nbsp; * {@link org.junit.jupiter.api.Test @Test} methods and
+&nbsp; * {@link org.junit.jupiter.api.TestTemplate @TestTemplate} methods (e.g.,
+&nbsp; * {@code @RepeatedTest} and {@code @ParameterizedTest}). Moreover, if there is a
+&nbsp; * failure at the class level &amp;mdash; for example, an exception thrown by a
+&nbsp; * {@code @BeforeAll} method &amp;mdash; no test results will be reported.
+&nbsp; *
+&nbsp; * &lt;p&gt;Extensions implementing this API can be registered at any level.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Exception Handling&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;In contrast to other {@link Extension} APIs, a {@code TestWatcher} is not
+&nbsp; * permitted to adversely influence the execution of tests. Consequently, any
+&nbsp; * exception thrown by a method in the {@code TestWatcher} API will be logged at
+&nbsp; * {@code WARNING} level and will not be allowed to propagate or fail test
+&nbsp; * execution.
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface TestWatcher extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Invoked after a disabled test has been skipped.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation does nothing. Concrete implementations can
+&nbsp;	 * override this method as appropriate.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @param reason the reason the test is disabled; never {@code null} but
+&nbsp;	 * potentially &lt;em&gt;empty&lt;/em&gt;
+&nbsp;	 */
+&nbsp;	default void testDisabled(ExtensionContext context, Optional&lt;String&gt; reason) {
+&nbsp;		/* no-op */
+<b class="nc">&nbsp;	}</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Invoked after a test has completed successfully.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation does nothing. Concrete implementations can
+&nbsp;	 * override this method as appropriate.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 */
+&nbsp;	default void testSuccessful(ExtensionContext context) {
+&nbsp;		/* no-op */
+<b class="nc">&nbsp;	}</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Invoked after a test has been aborted.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation does nothing. Concrete implementations can
+&nbsp;	 * override this method as appropriate.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @param cause the throwable responsible for the test being aborted; may be {@code null}
+&nbsp;	 */
+&nbsp;	default void testAborted(ExtensionContext context, Throwable cause) {
+&nbsp;		/* no-op */
+<b class="nc">&nbsp;	}</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Invoked after a test has failed.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation does nothing. Concrete implementations can
+&nbsp;	 * override this method as appropriate.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @param cause the throwable that caused test failure; may be {@code null}
+&nbsp;	 */
+&nbsp;	default void testFailed(ExtensionContext context, Throwable cause) {
+&nbsp;		/* no-op */
+<b class="nc">&nbsp;	}</b>
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

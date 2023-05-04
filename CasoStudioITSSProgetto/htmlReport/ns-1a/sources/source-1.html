@@ -1,0 +1,591 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AnnotationSupport</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.support</a>
+</div>
+
+<h1>Coverage Summary for Class: AnnotationSupport (org.junit.platform.commons.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AnnotationSupport</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    11,8%
+  </span>
+  <span class="absValue">
+    (2/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    6,2%
+  </span>
+  <span class="absValue">
+    (2/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.support;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.MAINTAINED;
+&nbsp;
+&nbsp;import java.lang.annotation.Annotation;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.function.Predicate;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.util.AnnotationUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code AnnotationSupport} provides static utility methods for common tasks
+&nbsp; * regarding annotations &amp;mdash; for example, checking if a class, method, or
+&nbsp; * field is annotated with a particular annotation; finding annotations on a
+&nbsp; * given class, method, or field; finding fields or methods annotated with
+&nbsp; * a particular annotation, etc.
+&nbsp; *
+&nbsp; * &lt;p&gt;{@link org.junit.platform.engine.TestEngine TestEngine} and extension
+&nbsp; * authors are encouraged to use these supported methods in order to align with
+&nbsp; * the behavior of the JUnit Platform.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see ClassSupport
+&nbsp; * @see ModifierSupport
+&nbsp; * @see ReflectionSupport
+&nbsp; */
+&nbsp;@API(status = MAINTAINED, since = &quot;1.0&quot;)
+&nbsp;public final class AnnotationSupport {
+&nbsp;
+&nbsp;	private AnnotationSupport() {
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if an annotation of {@code annotationType} is either
+&nbsp;	 * &lt;em&gt;present&lt;/em&gt; or &lt;em&gt;meta-present&lt;/em&gt; on the supplied optional
+&nbsp;	 * {@code element}.
+&nbsp;	 *
+&nbsp;	 * @param element an {@link Optional} containing the element on which to
+&nbsp;	 * search for the annotation; may be {@code null} or &lt;em&gt;empty&lt;/em&gt;
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return {@code true} if the annotation is present or meta-present
+&nbsp;	 * @since 1.3
+&nbsp;	 * @see #isAnnotated(AnnotatedElement, Class)
+&nbsp;	 * @see #findAnnotation(Optional, Class)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.3&quot;)
+&nbsp;	public static boolean isAnnotated(Optional&lt;? extends AnnotatedElement&gt; element,
+&nbsp;			Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.isAnnotated(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if an annotation of {@code annotationType} is either
+&nbsp;	 * &lt;em&gt;present&lt;/em&gt; or &lt;em&gt;meta-present&lt;/em&gt; on the supplied
+&nbsp;	 * {@code element}.
+&nbsp;	 *
+&nbsp;	 * @param element the element on which to search for the annotation; may be
+&nbsp;	 * {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return {@code true} if the annotation is present or meta-present
+&nbsp;	 * @see #isAnnotated(Optional, Class)
+&nbsp;	 * @see #findAnnotation(AnnotatedElement, Class)
+&nbsp;	 */
+&nbsp;	public static boolean isAnnotated(AnnotatedElement element, Class&lt;? extends Annotation&gt; annotationType) {
+<b class="nc">&nbsp;		return AnnotationUtils.isAnnotated(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the first annotation of {@code annotationType} that is either
+&nbsp;	 * &lt;em&gt;present&lt;/em&gt; or &lt;em&gt;meta-present&lt;/em&gt; on the supplied optional
+&nbsp;	 * {@code element}.
+&nbsp;	 *
+&nbsp;	 * @param &lt;A&gt; the annotation type
+&nbsp;	 * @param element an {@link Optional} containing the element on which to
+&nbsp;	 * search for the annotation; may be {@code null} or &lt;em&gt;empty&lt;/em&gt;
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return an {@code Optional} containing the annotation; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @since 1.1
+&nbsp;	 * @see #findAnnotation(AnnotatedElement, Class)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.1&quot;)
+&nbsp;	public static &lt;A extends Annotation&gt; Optional&lt;A&gt; findAnnotation(Optional&lt;? extends AnnotatedElement&gt; element,
+&nbsp;			Class&lt;A&gt; annotationType) {
+&nbsp;
+<b class="fc">&nbsp;		return AnnotationUtils.findAnnotation(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the first annotation of {@code annotationType} that is either
+&nbsp;	 * &lt;em&gt;directly present&lt;/em&gt;, &lt;em&gt;meta-present&lt;/em&gt;, or &lt;em&gt;indirectly
+&nbsp;	 * present&lt;/em&gt; on the supplied {@code element}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the element is a class and the annotation is neither &lt;em&gt;directly
+&nbsp;	 * present&lt;/em&gt; nor &lt;em&gt;meta-present&lt;/em&gt; on the class, this method will
+&nbsp;	 * additionally search on interfaces implemented by the class before
+&nbsp;	 * finding an annotation that is &lt;em&gt;indirectly present&lt;/em&gt; on the class.
+&nbsp;	 *
+&nbsp;	 * @param &lt;A&gt; the annotation type
+&nbsp;	 * @param element the element on which to search for the annotation; may be
+&nbsp;	 * {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return an {@code Optional} containing the annotation; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 */
+&nbsp;	public static &lt;A extends Annotation&gt; Optional&lt;A&gt; findAnnotation(AnnotatedElement element, Class&lt;A&gt; annotationType) {
+<b class="fc">&nbsp;		return AnnotationUtils.findAnnotation(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the first annotation of the specified type that is either
+&nbsp;	 * &lt;em&gt;directly present&lt;/em&gt;, &lt;em&gt;meta-present&lt;/em&gt;, or &lt;em&gt;indirectly
+&nbsp;	 * present&lt;/em&gt; on the supplied class.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the annotation is neither &lt;em&gt;directly present&lt;/em&gt; nor &lt;em&gt;meta-present&lt;/em&gt;
+&nbsp;	 * on the class, this method will additionally search on interfaces implemented
+&nbsp;	 * by the class before searching for an annotation that is &lt;em&gt;indirectly present&lt;/em&gt;
+&nbsp;	 * on the class (i.e., within the class inheritance hierarchy).
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the annotation still has not been found, this method will optionally
+&nbsp;	 * search recursively through the enclosing class hierarchy if
+&nbsp;	 * {@link SearchOption#INCLUDE_ENCLOSING_CLASSES} is specified.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If {@link SearchOption#DEFAULT} is specified, this method has the same
+&nbsp;	 * semantics as {@link #findAnnotation(AnnotatedElement, Class)}.
+&nbsp;	 *
+&nbsp;	 * @param &lt;A&gt; the annotation type
+&nbsp;	 * @param clazz the class on which to search for the annotation; may be {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @param searchOption the {@code SearchOption} to use; never {@code null}
+&nbsp;	 * @return an {@code Optional} containing the annotation; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @since 1.8
+&nbsp;	 * @see SearchOption
+&nbsp;	 * @see #findAnnotation(AnnotatedElement, Class)
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;1.8&quot;)
+&nbsp;	public static &lt;A extends Annotation&gt; Optional&lt;A&gt; findAnnotation(Class&lt;?&gt; clazz, Class&lt;A&gt; annotationType,
+&nbsp;			SearchOption searchOption) {
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.notNull(searchOption, &quot;SearchOption must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findAnnotation(clazz, annotationType,</b>
+&nbsp;			searchOption == SearchOption.INCLUDE_ENCLOSING_CLASSES);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all &lt;em&gt;repeatable&lt;/em&gt; {@linkplain Annotation annotations} of the
+&nbsp;	 * supplied {@code annotationType} that are either &lt;em&gt;present&lt;/em&gt;,
+&nbsp;	 * &lt;em&gt;indirectly present&lt;/em&gt;, or &lt;em&gt;meta-present&lt;/em&gt; on the supplied
+&nbsp;	 * optional {@code element}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See {@link #findRepeatableAnnotations(AnnotatedElement, Class)} for
+&nbsp;	 * details of the algorithm used.
+&nbsp;	 *
+&nbsp;	 * @param &lt;A&gt; the annotation type
+&nbsp;	 * @param element an {@link Optional} containing the element on which to
+&nbsp;	 * search for the annotation; may be {@code null} or &lt;em&gt;empty&lt;/em&gt;
+&nbsp;	 * @param annotationType the repeatable annotation type to search for; never {@code null}
+&nbsp;	 * @return an immutable list of all such annotations found; never {@code null}
+&nbsp;	 * @since 1.5
+&nbsp;	 * @see java.lang.annotation.Repeatable
+&nbsp;	 * @see java.lang.annotation.Inherited
+&nbsp;	 * @see #findRepeatableAnnotations(AnnotatedElement, Class)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.5&quot;)
+&nbsp;	public static &lt;A extends Annotation&gt; List&lt;A&gt; findRepeatableAnnotations(Optional&lt;? extends AnnotatedElement&gt; element,
+&nbsp;			Class&lt;A&gt; annotationType) {
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findRepeatableAnnotations(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all &lt;em&gt;repeatable&lt;/em&gt; {@linkplain Annotation annotations} of the
+&nbsp;	 * supplied {@code annotationType} that are either &lt;em&gt;present&lt;/em&gt;,
+&nbsp;	 * &lt;em&gt;indirectly present&lt;/em&gt;, or &lt;em&gt;meta-present&lt;/em&gt; on the supplied
+&nbsp;	 * {@link AnnotatedElement}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method extends the functionality of
+&nbsp;	 * {@link java.lang.reflect.AnnotatedElement#getAnnotationsByType(Class)}
+&nbsp;	 * with additional support for meta-annotations.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In addition, if the element is a class and the repeatable annotation
+&nbsp;	 * is {@link java.lang.annotation.Inherited @Inherited}, this method will
+&nbsp;	 * search on superclasses first in order to support top-down semantics.
+&nbsp;	 * The result is that this algorithm finds repeatable annotations that
+&nbsp;	 * would be &lt;em&gt;shadowed&lt;/em&gt; and therefore not visible according to Java&#39;s
+&nbsp;	 * standard semantics for inherited, repeatable annotations, but most
+&nbsp;	 * developers will naturally assume that all repeatable annotations in JUnit
+&nbsp;	 * are discovered regardless of whether they are declared stand-alone, in a
+&nbsp;	 * container, or as a meta-annotation (e.g., multiple declarations of
+&nbsp;	 * {@code @ExtendWith} within a test class hierarchy).
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the element is a class and the repeatable annotation is not
+&nbsp;	 * discovered within the class hierarchy, this method will additionally
+&nbsp;	 * search on interfaces implemented by each class in the hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the supplied {@code element} is {@code null}, this method returns
+&nbsp;	 * an empty list.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;As of JUnit Platform 1.5, the search algorithm will also find
+&nbsp;	 * repeatable annotations used as meta-annotations on other repeatable
+&nbsp;	 * annotations.
+&nbsp;	 *
+&nbsp;	 * @param &lt;A&gt; the annotation type
+&nbsp;	 * @param element the element to search on; may be {@code null}
+&nbsp;	 * @param annotationType the repeatable annotation type to search for; never {@code null}
+&nbsp;	 * @return an immutable list of all such annotations found; never {@code null}
+&nbsp;	 * @see java.lang.annotation.Repeatable
+&nbsp;	 * @see java.lang.annotation.Inherited
+&nbsp;	 */
+&nbsp;	public static &lt;A extends Annotation&gt; List&lt;A&gt; findRepeatableAnnotations(AnnotatedElement element,
+&nbsp;			Class&lt;A&gt; annotationType) {
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findRepeatableAnnotations(element, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all {@code public} {@linkplain Field fields} of the supplied class
+&nbsp;	 * or interface that are declared to be of the specified {@code fieldType}
+&nbsp;	 * and are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the specified
+&nbsp;	 * {@code annotationType}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Consult the Javadoc for {@link Class#getFields()} for details on
+&nbsp;	 * inheritance and ordering.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the fields; never {@code null}
+&nbsp;	 * @param fieldType the declared type of fields to find; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return the list of all such fields found; neither {@code null} nor mutable
+&nbsp;	 * @see Class#getFields()
+&nbsp;	 * @see Field#getType()
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	public static List&lt;Field&gt; findPublicAnnotatedFields(Class&lt;?&gt; clazz, Class&lt;?&gt; fieldType,
+&nbsp;			Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findPublicAnnotatedFields(clazz, fieldType, annotationType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all {@linkplain Field fields} of the supplied class or interface
+&nbsp;	 * that are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the specified
+&nbsp;	 * {@code annotationType}, using top-down search semantics within the type
+&nbsp;	 * hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fields declared in the same class or interface will be ordered using
+&nbsp;	 * an algorithm that is deterministic but intentionally nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain fields that are &lt;em&gt;hidden&lt;/em&gt; or
+&nbsp;	 * {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return the list of all such fields found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see Class#getDeclaredFields()
+&nbsp;	 * @see #findPublicAnnotatedFields(Class, Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static List&lt;Field&gt; findAnnotatedFields(Class&lt;?&gt; clazz, Class&lt;? extends Annotation&gt; annotationType) {
+<b class="nc">&nbsp;		return AnnotationUtils.findAnnotatedFields(clazz, annotationType, field -&gt; true);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all {@linkplain Field fields} of the supplied class or interface
+&nbsp;	 * that are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the specified
+&nbsp;	 * {@code annotationType} and match the specified {@code predicate}, using
+&nbsp;	 * the supplied hierarchy traversal mode.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fields declared in the same class or interface will be ordered using
+&nbsp;	 * an algorithm that is deterministic but intentionally nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain fields that are &lt;em&gt;hidden&lt;/em&gt; or
+&nbsp;	 * {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @param predicate the field filter; never {@code null}
+&nbsp;	 * @param traversalMode the hierarchy traversal mode; never {@code null}
+&nbsp;	 * @return the list of all such fields found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see Class#getDeclaredFields()
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static List&lt;Field&gt; findAnnotatedFields(Class&lt;?&gt; clazz, Class&lt;? extends Annotation&gt; annotationType,
+&nbsp;			Predicate&lt;Field&gt; predicate, HierarchyTraversalMode traversalMode) {
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findAnnotatedFields(clazz, annotationType, predicate,</b>
+<b class="nc">&nbsp;			ReflectionUtils.HierarchyTraversalMode.valueOf(traversalMode.name()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the values of all non-static {@linkplain Field fields} of the supplied
+&nbsp;	 * {@code instance} that are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the
+&nbsp;	 * specified {@code annotationType}, using top-down search semantics within
+&nbsp;	 * the type hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Values from fields declared in the same class or interface will be
+&nbsp;	 * ordered using an algorithm that is deterministic but intentionally
+&nbsp;	 * nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain values from fields that are &lt;em&gt;hidden&lt;/em&gt;
+&nbsp;	 * or {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param instance the instance in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return the list of all such field values found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static List&lt;Object&gt; findAnnotatedFieldValues(Object instance, Class&lt;? extends Annotation&gt; annotationType) {
+<b class="nc">&nbsp;		Preconditions.notNull(instance, &quot;instance must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		List&lt;Field&gt; fields = findAnnotatedFields(instance.getClass(), annotationType, ModifierSupport::isNotStatic,</b>
+&nbsp;			HierarchyTraversalMode.TOP_DOWN);
+&nbsp;
+<b class="nc">&nbsp;		return ReflectionUtils.readFieldValues(fields, instance);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the values of all static {@linkplain Field fields} of the supplied
+&nbsp;	 * class or interface that are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the
+&nbsp;	 * specified {@code annotationType}, using top-down search semantics within
+&nbsp;	 * the type hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Values from fields declared in the same class or interface will be
+&nbsp;	 * ordered using an algorithm that is deterministic but intentionally
+&nbsp;	 * nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain values from fields that are &lt;em&gt;hidden&lt;/em&gt;
+&nbsp;	 * or {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @return the list of all such field values found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static List&lt;Object&gt; findAnnotatedFieldValues(Class&lt;?&gt; clazz, Class&lt;? extends Annotation&gt; annotationType) {
+&nbsp;
+<b class="nc">&nbsp;		List&lt;Field&gt; fields = findAnnotatedFields(clazz, annotationType, ModifierSupport::isStatic,</b>
+&nbsp;			HierarchyTraversalMode.TOP_DOWN);
+&nbsp;
+<b class="nc">&nbsp;		return ReflectionUtils.readFieldValues(fields, null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the values of all non-static {@linkplain Field fields} of the supplied
+&nbsp;	 * {@code instance} that are declared to be of the specified {@code fieldType}
+&nbsp;	 * and are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the specified
+&nbsp;	 * {@code annotationType}, using top-down search semantics within the type
+&nbsp;	 * hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Values from fields declared in the same class or interface will be
+&nbsp;	 * ordered using an algorithm that is deterministic but intentionally
+&nbsp;	 * nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain values from fields that are &lt;em&gt;hidden&lt;/em&gt;
+&nbsp;	 * or {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param instance the instance in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @param fieldType the declared type of fields to find; never {@code null}
+&nbsp;	 * @return the list of all such field values found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see Field#getType()
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static &lt;T&gt; List&lt;T&gt; findAnnotatedFieldValues(Object instance, Class&lt;? extends Annotation&gt; annotationType,
+&nbsp;			Class&lt;T&gt; fieldType) {
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.notNull(instance, &quot;instance must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(fieldType, &quot;fieldType must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		Predicate&lt;Field&gt; predicate = //</b>
+<b class="nc">&nbsp;			field -&gt; ModifierSupport.isNotStatic(field) &amp;&amp; fieldType.isAssignableFrom(field.getType());</b>
+&nbsp;
+<b class="nc">&nbsp;		List&lt;Field&gt; fields = findAnnotatedFields(instance.getClass(), annotationType, predicate,</b>
+&nbsp;			HierarchyTraversalMode.TOP_DOWN);
+&nbsp;
+<b class="nc">&nbsp;		return (List&lt;T&gt;) ReflectionUtils.readFieldValues(fields, instance);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the values of all static {@linkplain Field fields} of the supplied
+&nbsp;	 * class or interface that are declared to be of the specified
+&nbsp;	 * {@code fieldType} and are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the
+&nbsp;	 * specified {@code annotationType}, using top-down search semantics within
+&nbsp;	 * the type hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Values from fields declared in the same class or interface will be
+&nbsp;	 * ordered using an algorithm that is deterministic but intentionally
+&nbsp;	 * nonobvious.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain values from fields that are &lt;em&gt;hidden&lt;/em&gt;
+&nbsp;	 * or {@linkplain Field#isSynthetic() synthetic}.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the fields; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @param fieldType the declared type of fields to find; never {@code null}
+&nbsp;	 * @return the list of all such field values found; neither {@code null} nor mutable
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see Field#getType()
+&nbsp;	 * @see #findAnnotatedFields(Class, Class)
+&nbsp;	 * @see #findAnnotatedFields(Class, Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#findFields(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 * @see ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;	@API(status = MAINTAINED, since = &quot;1.4&quot;)
+&nbsp;	public static &lt;T&gt; List&lt;T&gt; findAnnotatedFieldValues(Class&lt;?&gt; clazz, Class&lt;? extends Annotation&gt; annotationType,
+&nbsp;			Class&lt;T&gt; fieldType) {
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.notNull(fieldType, &quot;fieldType must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		Predicate&lt;Field&gt; predicate = //</b>
+<b class="nc">&nbsp;			field -&gt; ModifierSupport.isStatic(field) &amp;&amp; fieldType.isAssignableFrom(field.getType());</b>
+&nbsp;
+<b class="nc">&nbsp;		List&lt;Field&gt; fields = findAnnotatedFields(clazz, annotationType, predicate, HierarchyTraversalMode.TOP_DOWN);</b>
+&nbsp;
+<b class="nc">&nbsp;		return (List&lt;T&gt;) ReflectionUtils.readFieldValues(fields, null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all {@linkplain Method methods} of the supplied class or interface
+&nbsp;	 * that are annotated or &lt;em&gt;meta-annotated&lt;/em&gt; with the specified
+&nbsp;	 * {@code annotationType}.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the methods; never {@code null}
+&nbsp;	 * @param annotationType the annotation type to search for; never {@code null}
+&nbsp;	 * @param traversalMode the hierarchy traversal mode; never {@code null}
+&nbsp;	 * @return the list of all such methods found; neither {@code null} nor mutable
+&nbsp;	 */
+&nbsp;	public static List&lt;Method&gt; findAnnotatedMethods(Class&lt;?&gt; clazz, Class&lt;? extends Annotation&gt; annotationType,
+&nbsp;			HierarchyTraversalMode traversalMode) {
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return AnnotationUtils.findAnnotatedMethods(clazz, annotationType,</b>
+<b class="nc">&nbsp;			ReflectionUtils.HierarchyTraversalMode.valueOf(traversalMode.name()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

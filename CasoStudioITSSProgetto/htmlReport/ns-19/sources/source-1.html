@@ -1,0 +1,316 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LoggerFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.logging</a>
+</div>
+
+<h1>Coverage Summary for Class: LoggerFactory (org.junit.platform.commons.logging)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoggerFactory</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57,1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LoggerFactory$DelegatingLogger</td>
+<td class="coverageStat">
+  <span class="percent">
+    41,2%
+  </span>
+  <span class="absValue">
+    (7/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    23,8%
+  </span>
+  <span class="absValue">
+    (10/42)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    45,5%
+  </span>
+  <span class="absValue">
+    (10/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28,6%
+  </span>
+  <span class="absValue">
+    (14/49)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.logging;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.logging.Level;
+&nbsp;import java.util.logging.LogRecord;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;
+&nbsp;/**
+&nbsp; * Factory for the {@link Logger} facade for JUL.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;1.0&quot;)
+<b class="fc">&nbsp;public final class LoggerFactory {</b>
+&nbsp;
+&nbsp;	private LoggerFactory() {
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private static final Set&lt;LogRecordListener&gt; listeners = ConcurrentHashMap.newKeySet();</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get a {@link Logger} for the specified class.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class for which to get the logger; never {@code null}
+&nbsp;	 * @return the logger
+&nbsp;	 */
+&nbsp;	public static Logger getLogger(Class&lt;?&gt; clazz) {
+&nbsp;		// NOTE: we cannot use org.junit.platform.commons.util.Preconditions here
+&nbsp;		// since that would introduce a package cycle.
+<b class="fc">&nbsp;		if (clazz == null) {</b>
+<b class="nc">&nbsp;			throw new JUnitException(&quot;Class must not be null&quot;);</b>
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		return new DelegatingLogger(clazz.getName());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Add the supplied {@link LogRecordListener} to the set of registered
+&nbsp;	 * listeners.
+&nbsp;	 */
+&nbsp;	public static void addListener(LogRecordListener listener) {
+<b class="nc">&nbsp;		listeners.add(listener);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Remove the supplied {@link LogRecordListener} from the set of registered
+&nbsp;	 * listeners.
+&nbsp;	 */
+&nbsp;	public static void removeListener(LogRecordListener listener) {
+<b class="nc">&nbsp;		listeners.remove(listener);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static final class DelegatingLogger implements Logger {
+&nbsp;
+<b class="fc">&nbsp;		private static final String FQCN = DelegatingLogger.class.getName();</b>
+&nbsp;
+&nbsp;		private final String name;
+&nbsp;
+&nbsp;		private final java.util.logging.Logger julLogger;
+&nbsp;
+<b class="fc">&nbsp;		DelegatingLogger(String name) {</b>
+<b class="fc">&nbsp;			this.name = name;</b>
+<b class="fc">&nbsp;			this.julLogger = java.util.logging.Logger.getLogger(this.name);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void error(Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.SEVERE, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void error(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.SEVERE, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void warn(Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.WARNING, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void warn(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.WARNING, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void info(Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.INFO, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void info(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.INFO, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void config(Supplier&lt;String&gt; messageSupplier) {
+<b class="fc">&nbsp;			log(Level.CONFIG, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void config(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.CONFIG, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void debug(Supplier&lt;String&gt; messageSupplier) {
+<b class="fc">&nbsp;			log(Level.FINE, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void debug(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="fc">&nbsp;			log(Level.FINE, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void trace(Supplier&lt;String&gt; messageSupplier) {
+<b class="fc">&nbsp;			log(Level.FINER, null, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void trace(Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			log(Level.FINER, throwable, messageSupplier);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private void log(Level level, Throwable throwable, Supplier&lt;String&gt; messageSupplier) {
+<b class="fc">&nbsp;			boolean loggable = this.julLogger.isLoggable(level);</b>
+<b class="fc">&nbsp;			if (loggable || !listeners.isEmpty()) {</b>
+<b class="nc">&nbsp;				LogRecord logRecord = createLogRecord(level, throwable, nullSafeGet(messageSupplier));</b>
+<b class="nc">&nbsp;				if (loggable) {</b>
+<b class="nc">&nbsp;					this.julLogger.log(logRecord);</b>
+&nbsp;				}
+<b class="nc">&nbsp;				listeners.forEach(listener -&gt; listener.logRecordSubmitted(logRecord));</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;
+&nbsp;		private LogRecord createLogRecord(Level level, Throwable throwable, String message) {
+<b class="nc">&nbsp;			String sourceClassName = null;</b>
+<b class="nc">&nbsp;			String sourceMethodName = null;</b>
+<b class="nc">&nbsp;			boolean found = false;</b>
+<b class="nc">&nbsp;			for (StackTraceElement element : new Throwable().getStackTrace()) {</b>
+<b class="nc">&nbsp;				String className = element.getClassName();</b>
+<b class="nc">&nbsp;				if (FQCN.equals(className)) {</b>
+<b class="nc">&nbsp;					found = true;</b>
+&nbsp;				}
+<b class="nc">&nbsp;				else if (found) {</b>
+<b class="nc">&nbsp;					sourceClassName = className;</b>
+<b class="nc">&nbsp;					sourceMethodName = element.getMethodName();</b>
+<b class="nc">&nbsp;					break;</b>
+&nbsp;				}
+&nbsp;			}
+&nbsp;
+<b class="nc">&nbsp;			LogRecord logRecord = new LogRecord(level, message);</b>
+<b class="nc">&nbsp;			logRecord.setLoggerName(this.name);</b>
+<b class="nc">&nbsp;			logRecord.setThrown(throwable);</b>
+<b class="nc">&nbsp;			logRecord.setSourceClassName(sourceClassName);</b>
+<b class="nc">&nbsp;			logRecord.setSourceMethodName(sourceMethodName);</b>
+<b class="nc">&nbsp;			logRecord.setResourceBundleName(this.julLogger.getResourceBundleName());</b>
+<b class="nc">&nbsp;			logRecord.setResourceBundle(this.julLogger.getResourceBundle());</b>
+&nbsp;
+<b class="nc">&nbsp;			return logRecord;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private static String nullSafeGet(Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;			return (messageSupplier != null ? messageSupplier.get() : null);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

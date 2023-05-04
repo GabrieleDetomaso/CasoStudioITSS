@@ -1,0 +1,120 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EmptySource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.params.provider</a>
+</div>
+
+<h1>Coverage Summary for Class: EmptySource (org.junit.jupiter.params.provider)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">EmptySource</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.params.provider;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.annotation.Documented;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @EmptySource} is an {@link ArgumentsSource} which provides a single
+&nbsp; * &lt;em&gt;empty&lt;/em&gt; argument to the annotated {@code @ParameterizedTest} method.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Supported Parameter Types&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;This argument source will only provide an empty argument for the following
+&nbsp; * method parameter types. Subtypes of the supported types are not supported.
+&nbsp; *
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;{@link java.lang.String}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link java.util.List}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link java.util.Set}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link java.util.Map}&lt;/li&gt;
+&nbsp; * &lt;li&gt;primitive arrays &amp;mdash; for example {@code int[]}, {@code char[][]}, etc.&lt;/li&gt;
+&nbsp; * &lt;li&gt;object arrays &amp;mdash; for example {@code String[]}, {@code Integer[][]}, etc.&lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; * @see org.junit.jupiter.params.provider.ArgumentsSource
+&nbsp; * @see org.junit.jupiter.params.ParameterizedTest
+&nbsp; * @see NullSource
+&nbsp; * @see NullAndEmptySource
+&nbsp; */
+&nbsp;@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Documented
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;@ArgumentsSource(EmptyArgumentsProvider.class)
+&nbsp;public @interface EmptySource {
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,197 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClassLoaderUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.util</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassLoaderUtils (org.junit.platform.commons.util)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassLoaderUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12%
+  </span>
+  <span class="absValue">
+    (3/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.util;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;
+&nbsp;import java.net.URL;
+&nbsp;import java.security.CodeSource;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * Collection of utilities for working with {@linkplain ClassLoader} and associated tasks.
+&nbsp; *
+&nbsp; * &lt;h2&gt;DISCLAIMER&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;These utilities are intended solely for usage within the JUnit framework
+&nbsp; * itself. &lt;strong&gt;Any usage by external parties is not supported.&lt;/strong&gt;
+&nbsp; * Use at your own risk!
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;1.0&quot;)
+&nbsp;public final class ClassLoaderUtils {
+&nbsp;
+&nbsp;	private ClassLoaderUtils() {
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	public static ClassLoader getDefaultClassLoader() {
+&nbsp;		try {
+<b class="fc">&nbsp;			ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();</b>
+<b class="fc">&nbsp;			if (contextClassLoader != null) {</b>
+<b class="fc">&nbsp;				return contextClassLoader;</b>
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			UnrecoverableExceptions.rethrowIfUnrecoverable(t);</b>
+&nbsp;			/* otherwise ignore */
+<b class="nc">&nbsp;		}</b>
+<b class="nc">&nbsp;		return ClassLoader.getSystemClassLoader();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the location from which the supplied object&#39;s class was loaded.
+&nbsp;	 *
+&nbsp;	 * @param object the object for whose class the location should be retrieved
+&nbsp;	 * @return an {@code Optional} containing the URL of the class&#39; location; never
+&nbsp;	 * {@code null} but potentially empty
+&nbsp;	 */
+&nbsp;	public static Optional&lt;URL&gt; getLocation(Object object) {
+<b class="nc">&nbsp;		Preconditions.notNull(object, &quot;object must not be null&quot;);</b>
+&nbsp;		// determine class loader
+<b class="nc">&nbsp;		ClassLoader loader = object.getClass().getClassLoader();</b>
+<b class="nc">&nbsp;		if (loader == null) {</b>
+<b class="nc">&nbsp;			loader = ClassLoader.getSystemClassLoader();</b>
+<b class="nc">&nbsp;			while (loader != null &amp;&amp; loader.getParent() != null) {</b>
+<b class="nc">&nbsp;				loader = loader.getParent();</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;		// try finding resource by name
+<b class="nc">&nbsp;		if (loader != null) {</b>
+<b class="nc">&nbsp;			String name = object.getClass().getName();</b>
+<b class="nc">&nbsp;			name = name.replace(&quot;.&quot;, &quot;/&quot;) + &quot;.class&quot;;</b>
+&nbsp;			try {
+<b class="nc">&nbsp;				return Optional.ofNullable(loader.getResource(name));</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Throwable t) {</b>
+<b class="nc">&nbsp;				UnrecoverableExceptions.rethrowIfUnrecoverable(t);</b>
+&nbsp;				/* otherwise ignore */
+&nbsp;			}
+&nbsp;		}
+&nbsp;		// try protection domain
+&nbsp;		try {
+<b class="nc">&nbsp;			CodeSource codeSource = object.getClass().getProtectionDomain().getCodeSource();</b>
+<b class="nc">&nbsp;			if (codeSource != null) {</b>
+<b class="nc">&nbsp;				return Optional.ofNullable(codeSource.getLocation());</b>
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		catch (SecurityException ignore) {</b>
+&nbsp;			/* ignore */
+<b class="nc">&nbsp;		}</b>
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

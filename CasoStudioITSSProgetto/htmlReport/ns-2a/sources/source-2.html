@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ArgumentsAccessor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.params.aggregator</a>
+</div>
+
+<h1>Coverage Summary for Class: ArgumentsAccessor (org.junit.jupiter.params.aggregator)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ArgumentsAccessor</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.params.aggregator;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code ArgumentsAccessor} defines the public API for accessing arguments provided
+&nbsp; * by an {@link org.junit.jupiter.params.provider.ArgumentsProvider ArgumentsProvider}
+&nbsp; * for a single invocation of a
+&nbsp; * {@link org.junit.jupiter.params.ParameterizedTest @ParameterizedTest} method.
+&nbsp; *
+&nbsp; * &lt;p&gt;Specifically, an {@code ArgumentsAccessor} &lt;em&gt;aggregates&lt;/em&gt; a set of
+&nbsp; * arguments for a given invocation of a parameterized test and provides convenience
+&nbsp; * methods for accessing those arguments in a type-safe manner with support for
+&nbsp; * automatic type conversion.
+&nbsp; *
+&nbsp; * &lt;p&gt;An instance of {@code ArgumentsAccessor} will be automatically supplied
+&nbsp; * for any parameter of type {@code ArgumentsAccessor} in a parameterized test.
+&nbsp; * In addition, {@link ArgumentsAggregator} implementations are given access to
+&nbsp; * an {@code ArgumentsAccessor}.
+&nbsp; *
+&nbsp; * &lt;p&gt;This interface is not intended to be implemented by clients.
+&nbsp; *
+&nbsp; * &lt;p&gt;Additional &lt;a href=&quot;https://kotlinlang.org/&quot;&gt;Kotlin&lt;/a&gt; arguments accessors can be
+&nbsp; * found as &lt;em&gt;extension functions&lt;/em&gt; in the {@link org.junit.jupiter.params.aggregator}
+&nbsp; * package.
+&nbsp; *
+&nbsp; * @since 5.2
+&nbsp; * @see ArgumentsAggregator
+&nbsp; * @see org.junit.jupiter.params.ParameterizedTest
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface ArgumentsAccessor {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as an {@link Object}.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 */
+&nbsp;	Object get(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as an instance of the
+&nbsp;	 * required type.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @param requiredType the required type of the value; never {@code null}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 */
+&nbsp;	&lt;T&gt; T get(int index, Class&lt;T&gt; requiredType) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Character},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Character getCharacter(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Boolean},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Boolean getBoolean(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Byte},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Byte getByte(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Short},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Short getShort(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Integer},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Integer getInteger(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Long},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Long getLong(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Float},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Float getFloat(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link Double},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	Double getDouble(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the value of the argument at the given index as a {@link String},
+&nbsp;	 * performing automatic type conversion as necessary.
+&nbsp;	 *
+&nbsp;	 * @param index the index of the argument to get; must be greater than or
+&nbsp;	 * equal to zero and less than {@link #size}
+&nbsp;	 * @return the value at the given index, potentially {@code null}
+&nbsp;	 * @throws ArgumentAccessException if the value cannot be accessed
+&nbsp;	 * or converted to the desired type
+&nbsp;	 */
+&nbsp;	String getString(int index) throws ArgumentAccessException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the number of arguments in this accessor.
+&nbsp;	 */
+&nbsp;	int size();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get all arguments in this accessor as an array.
+&nbsp;	 */
+&nbsp;	Object[] toArray();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get all arguments in this accessor as an immutable list.
+&nbsp;	 */
+&nbsp;	List&lt;Object&gt; toList();
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

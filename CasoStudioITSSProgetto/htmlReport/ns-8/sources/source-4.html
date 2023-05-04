@@ -1,0 +1,864 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ExtensionContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: ExtensionContext (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExtensionContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ExtensionContext$Namespace</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63,2%
+  </span>
+  <span class="absValue">
+    (12/19)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExtensionContext$Store</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExtensionContext$Store$CloseableResource</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    64,3%
+  </span>
+  <span class="absValue">
+    (9/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57,1%
+  </span>
+  <span class="absValue">
+    (16/28)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Function;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.TestInstance.Lifecycle;
+&nbsp;import org.junit.jupiter.api.parallel.ExecutionMode;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.support.ReflectionSupport;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code ExtensionContext} encapsulates the &lt;em&gt;context&lt;/em&gt; in which the
+&nbsp; * current test or container is being executed.
+&nbsp; *
+&nbsp; * &lt;p&gt;{@link Extension Extensions} are provided an instance of
+&nbsp; * {@code ExtensionContext} to perform their work.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see Store
+&nbsp; * @see Namespace
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;public interface ExtensionContext {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the parent extension context, if available.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the parent; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @see #getRoot()
+&nbsp;	 */
+&nbsp;	Optional&lt;ExtensionContext&gt; getParent();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;root&lt;/em&gt; {@code ExtensionContext}.
+&nbsp;	 *
+&nbsp;	 * @return the root extension context; never {@code null} but potentially
+&nbsp;	 * &lt;em&gt;this&lt;/em&gt; {@code ExtensionContext}
+&nbsp;	 * @see #getParent()
+&nbsp;	 */
+&nbsp;	ExtensionContext getRoot();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the unique ID of the current test or container.
+&nbsp;	 *
+&nbsp;	 * @return the unique ID of the test or container; never {@code null} or blank
+&nbsp;	 */
+&nbsp;	String getUniqueId();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the display name for the current test or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The display name is either a default name or a custom name configured
+&nbsp;	 * via {@link org.junit.jupiter.api.DisplayName @DisplayName}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;For details on default display names consult the Javadoc for
+&nbsp;	 * {@link org.junit.jupiter.api.TestInfo#getDisplayName()}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note that display names are typically used for test reporting in IDEs
+&nbsp;	 * and build tools and may contain spaces, special characters, and even emoji.
+&nbsp;	 *
+&nbsp;	 * @return the display name of the test or container; never {@code null} or blank
+&nbsp;	 */
+&nbsp;	String getDisplayName();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the set of all tags for the current test or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Tags may be declared directly on the test element or &lt;em&gt;inherited&lt;/em&gt;
+&nbsp;	 * from an outer context.
+&nbsp;	 *
+&nbsp;	 * @return the set of tags for the test or container; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 */
+&nbsp;	Set&lt;String&gt; getTags();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link AnnotatedElement} corresponding to the current extension
+&nbsp;	 * context, if available.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;For example, if the current extension context encapsulates a test
+&nbsp;	 * class, test method, test factory method, or test template method, the
+&nbsp;	 * annotated element will be the corresponding {@link Class} or {@link Method}
+&nbsp;	 * reference.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Favor this method over more specific methods whenever the
+&nbsp;	 * {@code AnnotatedElement} API suits the task at hand &amp;mdash; for example,
+&nbsp;	 * when looking up annotations regardless of concrete element type.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the {@code AnnotatedElement};
+&nbsp;	 * never {@code null} but potentially empty
+&nbsp;	 * @see #getTestClass()
+&nbsp;	 * @see #getTestMethod()
+&nbsp;	 */
+&nbsp;	Optional&lt;AnnotatedElement&gt; getElement();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Class} associated with the current test or container,
+&nbsp;	 * if available.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the class; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @see #getRequiredTestClass()
+&nbsp;	 */
+&nbsp;	Optional&lt;Class&lt;?&gt;&gt; getTestClass();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;required&lt;/em&gt; {@link Class} associated with the current test
+&nbsp;	 * or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use this method as an alternative to {@link #getTestClass()} for use
+&nbsp;	 * cases in which the test class is required to be present.
+&nbsp;	 *
+&nbsp;	 * @return the test class; never {@code null}
+&nbsp;	 * @throws PreconditionViolationException if the test class is not present
+&nbsp;	 * in this {@code ExtensionContext}
+&nbsp;	 */
+&nbsp;	default Class&lt;?&gt; getRequiredTestClass() {
+<b class="fc">&nbsp;		return Preconditions.notNull(getTestClass().orElse(null),</b>
+&nbsp;			&quot;Illegal state: required test class is not present in the current ExtensionContext&quot;);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Lifecycle} of the {@linkplain #getTestInstance() test
+&nbsp;	 * instance} associated with the current test or container, if available.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the test instance {@code Lifecycle};
+&nbsp;	 * never {@code null} but potentially empty
+&nbsp;	 * @since 5.1
+&nbsp;	 * @see org.junit.jupiter.api.TestInstance {@code @TestInstance}
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.1&quot;)
+&nbsp;	Optional&lt;Lifecycle&gt; getTestInstanceLifecycle();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the test instance associated with the current test or container,
+&nbsp;	 * if available.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the test instance; never
+&nbsp;	 * {@code null} but potentially empty
+&nbsp;	 * @see #getRequiredTestInstance()
+&nbsp;	 * @see #getTestInstances()
+&nbsp;	 */
+&nbsp;	Optional&lt;Object&gt; getTestInstance();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;required&lt;/em&gt; test instance associated with the current test
+&nbsp;	 * or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use this method as an alternative to {@link #getTestInstance()} for use
+&nbsp;	 * cases in which the test instance is required to be present.
+&nbsp;	 *
+&nbsp;	 * @return the test instance; never {@code null}
+&nbsp;	 * @throws PreconditionViolationException if the test instance is not present
+&nbsp;	 * in this {@code ExtensionContext}
+&nbsp;	 *
+&nbsp;	 * @see #getRequiredTestInstances()
+&nbsp;	 */
+&nbsp;	default Object getRequiredTestInstance() {
+<b class="fc">&nbsp;		return Preconditions.notNull(getTestInstance().orElse(null),</b>
+&nbsp;			&quot;Illegal state: required test instance is not present in the current ExtensionContext&quot;);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the test instances associated with the current test or container,
+&nbsp;	 * if available.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;While top-level tests only have a single test instance, nested tests
+&nbsp;	 * have one additional instance for each enclosing test class.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the test instances; never
+&nbsp;	 * {@code null} but potentially empty
+&nbsp;	 * @since 5.4
+&nbsp;	 * @see #getRequiredTestInstances()
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;	Optional&lt;TestInstances&gt; getTestInstances();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;required&lt;/em&gt; test instances associated with the current test
+&nbsp;	 * or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use this method as an alternative to {@link #getTestInstances()} for use
+&nbsp;	 * cases in which the test instances are required to be present.
+&nbsp;	 *
+&nbsp;	 * @return the test instances; never {@code null}
+&nbsp;	 * @throws PreconditionViolationException if the test instances are not present
+&nbsp;	 * in this {@code ExtensionContext}
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;	default TestInstances getRequiredTestInstances() {
+<b class="fc">&nbsp;		return Preconditions.notNull(getTestInstances().orElse(null),</b>
+&nbsp;			&quot;Illegal state: required test instances are not present in the current ExtensionContext&quot;);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Method} associated with the current test, if available.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the method; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @see #getRequiredTestMethod()
+&nbsp;	 */
+&nbsp;	Optional&lt;Method&gt; getTestMethod();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;required&lt;/em&gt; {@link Method} associated with the current test
+&nbsp;	 * or container.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use this method as an alternative to {@link #getTestMethod()} for use
+&nbsp;	 * cases in which the test method is required to be present.
+&nbsp;	 *
+&nbsp;	 * @return the test method; never {@code null}
+&nbsp;	 * @throws PreconditionViolationException if the test method is not present
+&nbsp;	 * in this {@code ExtensionContext}
+&nbsp;	 */
+&nbsp;	default Method getRequiredTestMethod() {
+<b class="fc">&nbsp;		return Preconditions.notNull(getTestMethod().orElse(null),</b>
+&nbsp;			&quot;Illegal state: required test method is not present in the current ExtensionContext&quot;);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the exception that was thrown during execution of the test or container
+&nbsp;	 * associated with this {@code ExtensionContext}, if available.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method is typically used for logging and tracing purposes. If you
+&nbsp;	 * wish to actually &lt;em&gt;handle&lt;/em&gt; an exception thrown during test execution,
+&nbsp;	 * implement the {@link TestExecutionExceptionHandler} API.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Unlike the exception passed to a {@code TestExecutionExceptionHandler},
+&nbsp;	 * an &lt;em&gt;execution exception&lt;/em&gt; returned by this method can be any
+&nbsp;	 * exception thrown during the invocation of a {@code @Test} method, its
+&nbsp;	 * surrounding {@code @BeforeEach} and {@code @AfterEach} methods, or a
+&nbsp;	 * test-level {@link Extension}. Similarly, if this {@code ExtensionContext}
+&nbsp;	 * represents a test class, the &lt;em&gt;execution exception&lt;/em&gt; returned by
+&nbsp;	 * this method can be any exception thrown in a {@code @BeforeAll} or
+&nbsp;	 * {@code AfterAll} method or a class-level {@link Extension}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note, however, that this method will never return an exception
+&nbsp;	 * swallowed by a {@code TestExecutionExceptionHandler}. Furthermore, if
+&nbsp;	 * multiple exceptions have been thrown during test execution, the exception
+&nbsp;	 * returned by this method will be the first such exception with all
+&nbsp;	 * additional exceptions {@linkplain Throwable#addSuppressed(Throwable)
+&nbsp;	 * suppressed} in the first one.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the exception thrown; never
+&nbsp;	 * {@code null} but potentially empty if test execution has not (yet)
+&nbsp;	 * resulted in an exception
+&nbsp;	 */
+&nbsp;	Optional&lt;Throwable&gt; getExecutionException();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the configuration parameter stored under the specified {@code key}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no such key is present in the {@code ConfigurationParameters} for
+&nbsp;	 * the JUnit Platform, an attempt will be made to look up the value as a
+&nbsp;	 * JVM system property. If no such system property exists, an attempt will
+&nbsp;	 * be made to look up the value in the JUnit Platform properties file.
+&nbsp;	 *
+&nbsp;	 * @param key the key to look up; never {@code null} or blank
+&nbsp;	 * @return an {@code Optional} containing the value; never {@code null}
+&nbsp;	 * but potentially empty
+&nbsp;	 *
+&nbsp;	 * @since 5.1
+&nbsp;	 * @see System#getProperty(String)
+&nbsp;	 * @see org.junit.platform.engine.ConfigurationParameters
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.1&quot;)
+&nbsp;	Optional&lt;String&gt; getConfigurationParameter(String key);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get and transform the configuration parameter stored under the specified
+&nbsp;	 * {@code key} using the specified {@code transformer}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no such key is present in the {@code ConfigurationParameters} for
+&nbsp;	 * the JUnit Platform, an attempt will be made to look up the value as a
+&nbsp;	 * JVM system property. If no such system property exists, an attempt will
+&nbsp;	 * be made to look up the value in the JUnit Platform properties file.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In case the transformer throws an exception, it will be wrapped in a
+&nbsp;	 * {@link org.junit.platform.commons.JUnitException} with a helpful message.
+&nbsp;	 *
+&nbsp;	 * @param key the key to look up; never {@code null} or blank
+&nbsp;	 * @param transformer the transformer to apply in case a value is found;
+&nbsp;	 * never {@code null}
+&nbsp;	 * @return an {@code Optional} containing the value; never {@code null}
+&nbsp;	 * but potentially empty
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 * @see System#getProperty(String)
+&nbsp;	 * @see org.junit.platform.engine.ConfigurationParameters
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.7&quot;)
+&nbsp;	&lt;T&gt; Optional&lt;T&gt; getConfigurationParameter(String key, Function&lt;String, T&gt; transformer);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Publish a map of key-value pairs to be consumed by an
+&nbsp;	 * {@code org.junit.platform.engine.EngineExecutionListener} in order to
+&nbsp;	 * supply additional information to the reporting infrastructure.
+&nbsp;	 *
+&nbsp;	 * @param map the key-value pairs to be published; never {@code null};
+&nbsp;	 * keys and values within entries in the map also must not be
+&nbsp;	 * {@code null} or blank
+&nbsp;	 * @see #publishReportEntry(String, String)
+&nbsp;	 * @see #publishReportEntry(String)
+&nbsp;	 * @see org.junit.platform.engine.EngineExecutionListener#reportingEntryPublished
+&nbsp;	 */
+&nbsp;	void publishReportEntry(Map&lt;String, String&gt; map);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Publish the specified key-value pair to be consumed by an
+&nbsp;	 * {@code org.junit.platform.engine.EngineExecutionListener} in order to
+&nbsp;	 * supply additional information to the reporting infrastructure.
+&nbsp;	 *
+&nbsp;	 * @param key the key of the published pair; never {@code null} or blank
+&nbsp;	 * @param value the value of the published pair; never {@code null} or blank
+&nbsp;	 * @see #publishReportEntry(Map)
+&nbsp;	 * @see #publishReportEntry(String)
+&nbsp;	 * @see org.junit.platform.engine.EngineExecutionListener#reportingEntryPublished
+&nbsp;	 */
+&nbsp;	default void publishReportEntry(String key, String value) {
+<b class="nc">&nbsp;		this.publishReportEntry(Collections.singletonMap(key, value));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Publish the specified value to be consumed by an
+&nbsp;	 * {@code org.junit.platform.engine.EngineExecutionListener} in order to
+&nbsp;	 * supply additional information to the reporting infrastructure.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method delegates to {@link #publishReportEntry(String, String)},
+&nbsp;	 * supplying {@code &quot;value&quot;} as the key and the supplied {@code value}
+&nbsp;	 * argument as the value.
+&nbsp;	 *
+&nbsp;	 * @param value the value to be published; never {@code null} or blank
+&nbsp;	 * @since 5.3
+&nbsp;	 * @see #publishReportEntry(Map)
+&nbsp;	 * @see #publishReportEntry(String, String)
+&nbsp;	 * @see org.junit.platform.engine.EngineExecutionListener#reportingEntryPublished
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.3&quot;)
+&nbsp;	default void publishReportEntry(String value) {
+<b class="nc">&nbsp;		this.publishReportEntry(&quot;value&quot;, value);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Store} for the supplied {@link Namespace}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use {@code getStore(Namespace.GLOBAL)} to get the default, global {@link Namespace}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;A store is bound to its extension context lifecycle. When an extension
+&nbsp;	 * context lifecycle ends it closes its associated store. All stored values
+&nbsp;	 * that are instances of {@link ExtensionContext.Store.CloseableResource} are
+&nbsp;	 * notified by invoking their {@code close()} methods.
+&nbsp;	 *
+&nbsp;	 * @param namespace the {@code Namespace} to get the store for; never {@code null}
+&nbsp;	 * @return the store in which to put and get objects for other invocations
+&nbsp;	 * working in the same namespace; never {@code null}
+&nbsp;	 * @see Namespace#GLOBAL
+&nbsp;	 */
+&nbsp;	Store getStore(Namespace namespace);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link ExecutionMode} associated with the current test or container.
+&nbsp;	 *
+&nbsp;	 * @return the {@code ExecutionMode} of the test; never {@code null}
+&nbsp;	 *
+&nbsp;	 * @since 5.8.1
+&nbsp;	 * @see org.junit.jupiter.api.parallel.ExecutionMode {@code @ExecutionMode}
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.8.1&quot;)
+&nbsp;	ExecutionMode getExecutionMode();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get an {@link ExecutableInvoker} to invoke methods and constructors
+&nbsp;	 * with support for dynamic resolution of parameters.
+&nbsp;	 *
+&nbsp;	 * @since 5.9
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.9&quot;)
+&nbsp;	ExecutableInvoker getExecutableInvoker();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code Store} provides methods for extensions to save and retrieve data.
+&nbsp;	 */
+&nbsp;	interface Store {
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Classes implementing this interface indicate that they want to {@link #close}
+&nbsp;		 * some underlying resource or resources when the enclosing {@link Store Store}
+&nbsp;		 * is closed.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;Note that the {@code CloseableResource} API is only honored for
+&nbsp;		 * objects stored within an extension context {@link Store Store}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;The resources stored in a {@link Store Store} are closed in the
+&nbsp;		 * inverse order they were added in.
+&nbsp;		 *
+&nbsp;		 * @since 5.1
+&nbsp;		 */
+&nbsp;		@API(status = STABLE, since = &quot;5.1&quot;)
+&nbsp;		interface CloseableResource {
+&nbsp;
+&nbsp;			/**
+&nbsp;			 * Close underlying resources.
+&nbsp;			 *
+&nbsp;			 * @throws Throwable any throwable will be caught and rethrown
+&nbsp;			 */
+&nbsp;			void close() throws Throwable;
+&nbsp;
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the value that is stored under the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If no value is stored in the current {@link ExtensionContext}
+&nbsp;		 * for the supplied {@code key}, ancestors of the context will be queried
+&nbsp;		 * for a value with the same {@code key} in the {@code Namespace} used
+&nbsp;		 * to create this store.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;For greater type safety, consider using {@link #get(Object, Class)}
+&nbsp;		 * instead.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @return the value; potentially {@code null}
+&nbsp;		 * @see #get(Object, Class)
+&nbsp;		 * @see #getOrDefault(Object, Class, Object)
+&nbsp;		 */
+&nbsp;		Object get(Object key);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the value of the specified required type that is stored under
+&nbsp;		 * the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If no value is stored in the current {@link ExtensionContext}
+&nbsp;		 * for the supplied {@code key}, ancestors of the context will be queried
+&nbsp;		 * for a value with the same {@code key} in the {@code Namespace} used
+&nbsp;		 * to create this store.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @param requiredType the required type of the value; never {@code null}
+&nbsp;		 * @param &lt;V&gt; the value type
+&nbsp;		 * @return the value; potentially {@code null}
+&nbsp;		 * @see #get(Object)
+&nbsp;		 * @see #getOrDefault(Object, Class, Object)
+&nbsp;		 */
+&nbsp;		&lt;V&gt; V get(Object key, Class&lt;V&gt; requiredType);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the value of the specified required type that is stored under
+&nbsp;		 * the supplied {@code key}, or the supplied {@code defaultValue} if no
+&nbsp;		 * value is found for the supplied {@code key} in this store or in an
+&nbsp;		 * ancestor.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If no value is stored in the current {@link ExtensionContext}
+&nbsp;		 * for the supplied {@code key}, ancestors of the context will be queried
+&nbsp;		 * for a value with the same {@code key} in the {@code Namespace} used
+&nbsp;		 * to create this store.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @param requiredType the required type of the value; never {@code null}
+&nbsp;		 * @param defaultValue the default value
+&nbsp;		 * @param &lt;V&gt; the value type
+&nbsp;		 * @return the value; potentially {@code null}
+&nbsp;		 * @since 5.5
+&nbsp;		 * @see #get(Object, Class)
+&nbsp;		 */
+&nbsp;		@API(status = STABLE, since = &quot;5.5&quot;)
+&nbsp;		default &lt;V&gt; V getOrDefault(Object key, Class&lt;V&gt; requiredType, V defaultValue) {
+<b class="nc">&nbsp;			V value = get(key, requiredType);</b>
+<b class="nc">&nbsp;			return (value != null ? value : defaultValue);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the object of type {@code type} that is present in this
+&nbsp;		 * {@code Store} (&lt;em&gt;keyed&lt;/em&gt; by {@code type}); and otherwise invoke
+&nbsp;		 * the default constructor for {@code type} to generate the object,
+&nbsp;		 * store it, and return it.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;This method is a shortcut for the following, where {@code X} is
+&nbsp;		 * the type of object we wish to retrieve from the store.
+&nbsp;		 *
+&nbsp;		 * &lt;pre style=&quot;code&quot;&gt;
+&nbsp;		 * X x = store.getOrComputeIfAbsent(X.class, key -&amp;gt; new X(), X.class);
+&nbsp;		 * // Equivalent to:
+&nbsp;		 * // X x = store.getOrComputeIfAbsent(X.class);
+&nbsp;		 * &lt;/pre&gt;
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;See {@link #getOrComputeIfAbsent(Object, Function, Class)} for
+&nbsp;		 * further details.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If {@code type} implements {@link ExtensionContext.Store.CloseableResource}
+&nbsp;		 * the {@code close()} method will be invoked on the stored object when
+&nbsp;		 * the store is closed.
+&nbsp;		 *
+&nbsp;		 * @param type the type of object to retrieve; never {@code null}
+&nbsp;		 * @param &lt;V&gt; the key and value type
+&nbsp;		 * @return the object; never {@code null}
+&nbsp;		 * @since 5.1
+&nbsp;		 * @see #getOrComputeIfAbsent(Object, Function)
+&nbsp;		 * @see #getOrComputeIfAbsent(Object, Function, Class)
+&nbsp;		 * @see CloseableResource
+&nbsp;		 */
+&nbsp;		@API(status = STABLE, since = &quot;5.1&quot;)
+&nbsp;		default &lt;V&gt; V getOrComputeIfAbsent(Class&lt;V&gt; type) {
+<b class="nc">&nbsp;			return getOrComputeIfAbsent(type, ReflectionSupport::newInstance, type);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the value that is stored under the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If no value is stored in the current {@link ExtensionContext}
+&nbsp;		 * for the supplied {@code key}, ancestors of the context will be queried
+&nbsp;		 * for a value with the same {@code key} in the {@code Namespace} used
+&nbsp;		 * to create this store. If no value is found for the supplied {@code key},
+&nbsp;		 * a new value will be computed by the {@code defaultCreator} (given
+&nbsp;		 * the {@code key} as input), stored, and returned.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;For greater type safety, consider using
+&nbsp;		 * {@link #getOrComputeIfAbsent(Object, Function, Class)} instead.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If the created value is an instance of {@link ExtensionContext.Store.CloseableResource}
+&nbsp;		 * the {@code close()} method will be invoked on the stored object when
+&nbsp;		 * the store is closed.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @param defaultCreator the function called with the supplied {@code key}
+&nbsp;		 * to create a new value; never {@code null}
+&nbsp;		 * @param &lt;K&gt; the key type
+&nbsp;		 * @param &lt;V&gt; the value type
+&nbsp;		 * @return the value; potentially {@code null}
+&nbsp;		 * @see #getOrComputeIfAbsent(Class)
+&nbsp;		 * @see #getOrComputeIfAbsent(Object, Function, Class)
+&nbsp;		 * @see CloseableResource
+&nbsp;		 */
+&nbsp;		&lt;K, V&gt; Object getOrComputeIfAbsent(K key, Function&lt;K, V&gt; defaultCreator);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the value of the specified required type that is stored under the
+&nbsp;		 * supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If no value is stored in the current {@link ExtensionContext}
+&nbsp;		 * for the supplied {@code key}, ancestors of the context will be queried
+&nbsp;		 * for a value with the same {@code key} in the {@code Namespace} used
+&nbsp;		 * to create this store. If no value is found for the supplied {@code key},
+&nbsp;		 * a new value will be computed by the {@code defaultCreator} (given
+&nbsp;		 * the {@code key} as input), stored, and returned.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If {@code requiredType} implements {@link ExtensionContext.Store.CloseableResource}
+&nbsp;		 * the {@code close()} method will be invoked on the stored object when
+&nbsp;		 * the store is closed.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @param defaultCreator the function called with the supplied {@code key}
+&nbsp;		 * to create a new value; never {@code null}
+&nbsp;		 * @param requiredType the required type of the value; never {@code null}
+&nbsp;		 * @param &lt;K&gt; the key type
+&nbsp;		 * @param &lt;V&gt; the value type
+&nbsp;		 * @return the value; potentially {@code null}
+&nbsp;		 * @see #getOrComputeIfAbsent(Class)
+&nbsp;		 * @see #getOrComputeIfAbsent(Object, Function)
+&nbsp;		 * @see CloseableResource
+&nbsp;		 */
+&nbsp;		&lt;K, V&gt; V getOrComputeIfAbsent(K key, Function&lt;K, V&gt; defaultCreator, Class&lt;V&gt; requiredType);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Store a {@code value} for later retrieval under the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;A stored {@code value} is visible in child {@link ExtensionContext
+&nbsp;		 * ExtensionContexts} for the store&#39;s {@code Namespace} unless they
+&nbsp;		 * overwrite it.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If the {@code value} is an instance of {@link ExtensionContext.Store.CloseableResource}
+&nbsp;		 * the {@code close()} method will be invoked on the stored object when
+&nbsp;		 * the store is closed.
+&nbsp;		 *
+&nbsp;		 * @param key the key under which the value should be stored; never
+&nbsp;		 * {@code null}
+&nbsp;		 * @param value the value to store; may be {@code null}
+&nbsp;		 * @see CloseableResource
+&nbsp;		 */
+&nbsp;		void put(Object key, Object value);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Remove the value that was previously stored under the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;The value will only be removed in the current {@link ExtensionContext},
+&nbsp;		 * not in ancestors. In addition, the {@link CloseableResource} API will not
+&nbsp;		 * be honored for values that are manually removed via this method.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;For greater type safety, consider using {@link #remove(Object, Class)}
+&nbsp;		 * instead.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @return the previous value or {@code null} if no value was present
+&nbsp;		 * for the specified key
+&nbsp;		 * @see #remove(Object, Class)
+&nbsp;		 */
+&nbsp;		Object remove(Object key);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Remove the value of the specified required type that was previously stored
+&nbsp;		 * under the supplied {@code key}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;The value will only be removed in the current {@link ExtensionContext},
+&nbsp;		 * not in ancestors. In addition, the {@link CloseableResource} API will not
+&nbsp;		 * be honored for values that are manually removed via this method.
+&nbsp;		 *
+&nbsp;		 * @param key the key; never {@code null}
+&nbsp;		 * @param requiredType the required type of the value; never {@code null}
+&nbsp;		 * @param &lt;V&gt; the value type
+&nbsp;		 * @return the previous value or {@code null} if no value was present
+&nbsp;		 * for the specified key
+&nbsp;		 * @see #remove(Object)
+&nbsp;		 */
+&nbsp;		&lt;V&gt; V remove(Object key, Class&lt;V&gt; requiredType);
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * A {@code Namespace} is used to provide a &lt;em&gt;scope&lt;/em&gt; for data saved by
+&nbsp;	 * extensions within a {@link Store}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Storing data in custom namespaces allows extensions to avoid accidentally
+&nbsp;	 * mixing data between extensions or across different invocations within the
+&nbsp;	 * lifecycle of a single extension.
+&nbsp;	 */
+&nbsp;	class Namespace {
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * The default, global namespace which allows access to stored data from
+&nbsp;		 * all extensions.
+&nbsp;		 */
+<b class="fc">&nbsp;		public static final Namespace GLOBAL = Namespace.create(new Object());</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Create a namespace which restricts access to data to all extensions
+&nbsp;		 * which use the same sequence of {@code parts} for creating a namespace.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;The order of the {@code parts} is significant.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;Internally the {@code parts} are compared using {@link Object#equals(Object)}.
+&nbsp;		 */
+&nbsp;		public static Namespace create(Object... parts) {
+<b class="fc">&nbsp;			Preconditions.notEmpty(parts, &quot;parts array must not be null or empty&quot;);</b>
+<b class="fc">&nbsp;			Preconditions.containsNoNullElements(parts, &quot;individual parts must not be null&quot;);</b>
+<b class="fc">&nbsp;			return new Namespace(new ArrayList&lt;&gt;(Arrays.asList(parts)));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private final List&lt;Object&gt; parts;
+&nbsp;
+<b class="fc">&nbsp;		private Namespace(List&lt;Object&gt; parts) {</b>
+<b class="fc">&nbsp;			this.parts = parts;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public boolean equals(Object o) {
+<b class="fc">&nbsp;			if (this == o) {</b>
+<b class="fc">&nbsp;				return true;</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;				return false;</b>
+&nbsp;			}
+<b class="fc">&nbsp;			Namespace that = (Namespace) o;</b>
+<b class="fc">&nbsp;			return this.parts.equals(that.parts);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public int hashCode() {
+<b class="fc">&nbsp;			return this.parts.hashCode();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Create a new namespace by appending the supplied {@code parts} to the
+&nbsp;		 * existing sequence of parts in this namespace.
+&nbsp;		 *
+&nbsp;		 * @return new namespace; never {@code null}
+&nbsp;		 * @since 5.8
+&nbsp;		 */
+&nbsp;		@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;		public Namespace append(Object... parts) {
+<b class="nc">&nbsp;			Preconditions.notEmpty(parts, &quot;parts array must not be null or empty&quot;);</b>
+<b class="nc">&nbsp;			Preconditions.containsNoNullElements(parts, &quot;individual parts must not be null&quot;);</b>
+<b class="nc">&nbsp;			ArrayList&lt;Object&gt; newParts = new ArrayList&lt;&gt;(this.parts.size() + parts.length);</b>
+<b class="nc">&nbsp;			newParts.addAll(this.parts);</b>
+<b class="nc">&nbsp;			Collections.addAll(newParts, parts);</b>
+<b class="nc">&nbsp;			return new Namespace(newParts);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

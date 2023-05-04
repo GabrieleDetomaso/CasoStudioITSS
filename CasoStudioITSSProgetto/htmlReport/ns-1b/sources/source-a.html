@@ -1,0 +1,1886 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ReflectionUtils</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.util</a>
+</div>
+
+<h1>Coverage Summary for Class: ReflectionUtils (org.junit.platform.commons.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ReflectionUtils</td>
+<td class="coverageStat">
+  <span class="percent">
+    43,4%
+  </span>
+  <span class="absValue">
+    (46/106)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48%
+  </span>
+  <span class="absValue">
+    (217/452)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ReflectionUtils$HierarchyTraversalMode</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    44,4%
+  </span>
+  <span class="absValue">
+    (48/108)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48,4%
+  </span>
+  <span class="absValue">
+    (220/455)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.util;
+&nbsp;
+&nbsp;import static java.lang.String.format;
+&nbsp;import static java.util.stream.Collectors.toCollection;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static java.util.stream.Collectors.toSet;
+&nbsp;import static org.apiguardian.api.API.Status.DEPRECATED;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;import static org.junit.platform.commons.util.CollectionUtils.toUnmodifiableList;
+&nbsp;import static org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode.BOTTOM_UP;
+&nbsp;import static org.junit.platform.commons.util.ReflectionUtils.HierarchyTraversalMode.TOP_DOWN;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.lang.reflect.AccessibleObject;
+&nbsp;import java.lang.reflect.Array;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Field;
+&nbsp;import java.lang.reflect.GenericArrayType;
+&nbsp;import java.lang.reflect.InvocationTargetException;
+&nbsp;import java.lang.reflect.Member;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.lang.reflect.Modifier;
+&nbsp;import java.lang.reflect.Type;
+&nbsp;import java.lang.reflect.TypeVariable;
+&nbsp;import java.net.URI;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.nio.file.Paths;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.IdentityHashMap;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.function.Try;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;
+&nbsp;/**
+&nbsp; * Collection of utilities for working with the Java reflection APIs.
+&nbsp; *
+&nbsp; * &lt;h2&gt;DISCLAIMER&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;These utilities are intended solely for usage within the JUnit framework
+&nbsp; * itself. &lt;strong&gt;Any usage by external parties is not supported.&lt;/strong&gt;
+&nbsp; * Use at your own risk!
+&nbsp; *
+&nbsp; * &lt;p&gt;Some utilities are published via the maintained {@code ReflectionSupport}
+&nbsp; * class.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.commons.support.ReflectionSupport
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;1.0&quot;)
+&nbsp;public final class ReflectionUtils {
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(ReflectionUtils.class);</b>
+&nbsp;
+&nbsp;	private ReflectionUtils() {
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Modes in which a hierarchy can be traversed &amp;mdash; for example, when
+&nbsp;	 * searching for methods or fields within a class hierarchy.
+&nbsp;	 */
+<b class="fc">&nbsp;	public enum HierarchyTraversalMode {</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Traverse the hierarchy using top-down semantics.
+&nbsp;		 */
+<b class="fc">&nbsp;		TOP_DOWN,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Traverse the hierarchy using bottom-up semantics.
+&nbsp;		 */
+<b class="fc">&nbsp;		BOTTOM_UP;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// Pattern: &quot;[Ljava.lang.String;&quot;, &quot;[[[[Ljava.lang.String;&quot;, etc.
+<b class="fc">&nbsp;	private static final Pattern VM_INTERNAL_OBJECT_ARRAY_PATTERN = Pattern.compile(&quot;^(\\[+)L(.+);$&quot;);</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Pattern: &quot;[x&quot;, &quot;[[[[x&quot;, etc., where x is Z, B, C, D, F, I, J, S, etc.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The pattern intentionally captures the last bracket with the
+&nbsp;	 * capital letter so that the combination can be looked up via
+&nbsp;	 * {@link #classNameToTypeMap}. For example, the last matched group
+&nbsp;	 * will contain {@code &quot;[I&quot;} instead of {@code &quot;I&quot;}.
+&nbsp;	 *
+&nbsp;	 * @see Class#getName()
+&nbsp;	 */
+<b class="fc">&nbsp;	private static final Pattern VM_INTERNAL_PRIMITIVE_ARRAY_PATTERN = Pattern.compile(&quot;^(\\[+)(\\[[ZBCDFIJS])$&quot;);</b>
+&nbsp;
+&nbsp;	// Pattern: &quot;java.lang.String[]&quot;, &quot;int[]&quot;, &quot;int[][][][]&quot;, etc.
+&nbsp;	// ?&gt; =&gt; non-capturing atomic group
+&nbsp;	// ++ =&gt; possessive quantifier
+<b class="fc">&nbsp;	private static final Pattern SOURCE_CODE_SYNTAX_ARRAY_PATTERN = Pattern.compile(&quot;^([^\\[\\]]+)((?&gt;\\[\\])++)$&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Class&lt;?&gt;[] EMPTY_CLASS_ARRAY = new Class&lt;?&gt;[0];</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final ClasspathScanner classpathScanner = new ClasspathScanner(</b>
+&nbsp;		ClassLoaderUtils::getDefaultClassLoader, ReflectionUtils::tryToLoadClass);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Set of fully qualified class names for which no cycles have been detected
+&nbsp;	 * in inner class hierarchies.
+&nbsp;	 * &lt;p&gt;This serves as a cache to avoid repeated cycle detection for classes
+&nbsp;	 * that have already been checked.
+&nbsp;	 * @since 1.6
+&nbsp;	 * @see #detectInnerClassCycle(Class)
+&nbsp;	 */
+<b class="fc">&nbsp;	private static final Set&lt;String&gt; noCyclesDetectedCache = ConcurrentHashMap.newKeySet();</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Internal cache of common class names mapped to their types.
+&nbsp;	 */
+&nbsp;	private static final Map&lt;String, Class&lt;?&gt;&gt; classNameToTypeMap;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Internal cache of primitive types mapped to their wrapper types.
+&nbsp;	 */
+&nbsp;	private static final Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; primitiveToWrapperMap;
+&nbsp;
+&nbsp;	static {
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		List&lt;Class&lt;?&gt;&gt; commonTypes = Arrays.asList(</b>
+&nbsp;			boolean.class,
+&nbsp;			byte.class,
+&nbsp;			char.class,
+&nbsp;			short.class,
+&nbsp;			int.class,
+&nbsp;			long.class,
+&nbsp;			float.class,
+&nbsp;			double.class,
+&nbsp;
+&nbsp;			boolean[].class,
+&nbsp;			byte[].class,
+&nbsp;			char[].class,
+&nbsp;			short[].class,
+&nbsp;			int[].class,
+&nbsp;			long[].class,
+&nbsp;			float[].class,
+&nbsp;			double[].class,
+&nbsp;
+&nbsp;			boolean[][].class,
+&nbsp;			byte[][].class,
+&nbsp;			char[][].class,
+&nbsp;			short[][].class,
+&nbsp;			int[][].class,
+&nbsp;			long[][].class,
+&nbsp;			float[][].class,
+&nbsp;			double[][].class,
+&nbsp;
+&nbsp;			Boolean.class,
+&nbsp;			Byte.class,
+&nbsp;			Character.class,
+&nbsp;			Short.class,
+&nbsp;			Integer.class,
+&nbsp;			Long.class,
+&nbsp;			Float.class,
+&nbsp;			Double.class,
+&nbsp;			String.class,
+&nbsp;
+&nbsp;			Boolean[].class,
+&nbsp;			Byte[].class,
+&nbsp;			Character[].class,
+&nbsp;			Short[].class,
+&nbsp;			Integer[].class,
+&nbsp;			Long[].class,
+&nbsp;			Float[].class,
+&nbsp;			Double[].class,
+&nbsp;			String[].class,
+&nbsp;
+&nbsp;			Boolean[][].class,
+&nbsp;			Byte[][].class,
+&nbsp;			Character[][].class,
+&nbsp;			Short[][].class,
+&nbsp;			Integer[][].class,
+&nbsp;			Long[][].class,
+&nbsp;			Float[][].class,
+&nbsp;			Double[][].class,
+&nbsp;			String[][].class
+&nbsp;		);
+&nbsp;		// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;		Map&lt;String, Class&lt;?&gt;&gt; classNamesToTypes = new HashMap&lt;&gt;(64);</b>
+&nbsp;
+<b class="fc">&nbsp;		commonTypes.forEach(type -&gt; {</b>
+<b class="fc">&nbsp;			classNamesToTypes.put(type.getName(), type);</b>
+<b class="fc">&nbsp;			classNamesToTypes.put(type.getCanonicalName(), type);</b>
+&nbsp;		});
+&nbsp;
+<b class="fc">&nbsp;		classNameToTypeMap = Collections.unmodifiableMap(classNamesToTypes);</b>
+&nbsp;
+<b class="fc">&nbsp;		Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; primitivesToWrappers = new IdentityHashMap&lt;&gt;(8);</b>
+&nbsp;
+<b class="fc">&nbsp;		primitivesToWrappers.put(boolean.class, Boolean.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(byte.class, Byte.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(char.class, Character.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(short.class, Short.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(int.class, Integer.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(long.class, Long.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(float.class, Float.class);</b>
+<b class="fc">&nbsp;		primitivesToWrappers.put(double.class, Double.class);</b>
+&nbsp;
+<b class="fc">&nbsp;		primitiveToWrapperMap = Collections.unmodifiableMap(primitivesToWrappers);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isPublic(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		return Modifier.isPublic(clazz.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isPublic(Member member) {
+<b class="nc">&nbsp;		Preconditions.notNull(member, &quot;Member must not be null&quot;);</b>
+<b class="nc">&nbsp;		return Modifier.isPublic(member.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isPrivate(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isPrivate(clazz.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isPrivate(Member member) {
+<b class="fc">&nbsp;		Preconditions.notNull(member, &quot;Member must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isPrivate(member.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static boolean isNotPrivate(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		return !isPrivate(clazz);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@API(status = INTERNAL, since = &quot;1.1&quot;)
+&nbsp;	public static boolean isNotPrivate(Member member) {
+<b class="nc">&nbsp;		return !isPrivate(member);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isAbstract(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isAbstract(clazz.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isAbstract(Member member) {
+<b class="fc">&nbsp;		Preconditions.notNull(member, &quot;Member must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isAbstract(member.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isStatic(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isStatic(clazz.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static boolean isNotStatic(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		return !isStatic(clazz);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean isStatic(Member member) {
+<b class="fc">&nbsp;		Preconditions.notNull(member, &quot;Member must not be null&quot;);</b>
+<b class="fc">&nbsp;		return Modifier.isStatic(member.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@API(status = INTERNAL, since = &quot;1.1&quot;)
+&nbsp;	public static boolean isNotStatic(Member member) {
+<b class="fc">&nbsp;		return !isStatic(member);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.5
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.5&quot;)
+&nbsp;	public static boolean isFinal(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		return Modifier.isFinal(clazz.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.5
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.5&quot;)
+&nbsp;	public static boolean isNotFinal(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		return !isFinal(clazz);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.5
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.5&quot;)
+&nbsp;	public static boolean isFinal(Member member) {
+<b class="nc">&nbsp;		Preconditions.notNull(member, &quot;Member must not be null&quot;);</b>
+<b class="nc">&nbsp;		return Modifier.isFinal(member.getModifiers());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.5
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.5&quot;)
+&nbsp;	public static boolean isNotFinal(Member member) {
+<b class="nc">&nbsp;		return !isFinal(member);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied class is an &lt;em&gt;inner class&lt;/em&gt; (i.e., a
+&nbsp;	 * non-static member class).
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Technically speaking (i.e., according to the Java Language
+&nbsp;	 * Specification), &quot;an inner class may be a non-static member class, a
+&nbsp;	 * local class, or an anonymous class.&quot; However, this method does not
+&nbsp;	 * return {@code true} for a local or anonymous class.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class to check; never {@code null}
+&nbsp;	 * @return {@code true} if the class is an &lt;em&gt;inner class&lt;/em&gt;
+&nbsp;	 */
+&nbsp;	public static boolean isInnerClass(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		return !isStatic(clazz) &amp;&amp; clazz.isMemberClass();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static boolean returnsVoid(Method method) {
+<b class="fc">&nbsp;		return method.getReturnType().equals(Void.TYPE);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied object is an array.
+&nbsp;	 *
+&nbsp;	 * @param obj the object to test; potentially {@code null}
+&nbsp;	 * @return {@code true} if the object is an array
+&nbsp;	 */
+&nbsp;	public static boolean isArray(Object obj) {
+<b class="nc">&nbsp;		return (obj != null &amp;&amp; obj.getClass().isArray());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied object is a multidimensional array.
+&nbsp;	 *
+&nbsp;	 * @param obj the object to test; potentially {@code null}
+&nbsp;	 * @return {@code true} if the object is a multidimensional array
+&nbsp;	 * @since 1.3.2
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.3.2&quot;)
+&nbsp;	public static boolean isMultidimensionalArray(Object obj) {
+<b class="fc">&nbsp;		return (obj != null &amp;&amp; obj.getClass().isArray() &amp;&amp; obj.getClass().getComponentType().isArray());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if an object of the supplied source type can be assigned to the
+&nbsp;	 * supplied target type for the purpose of reflective method invocations.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In contrast to {@link Class#isAssignableFrom(Class)}, this method
+&nbsp;	 * returns {@code true} if the target type represents a primitive type whose
+&nbsp;	 * wrapper matches the supplied source type. In addition, this method
+&nbsp;	 * also supports
+&nbsp;	 * &lt;a href=&quot;https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2&quot;&gt;
+&nbsp;	 * widening conversions&lt;/a&gt; for primitive target types.
+&nbsp;	 *
+&nbsp;	 * @param sourceType the non-primitive target type; never {@code null}
+&nbsp;	 * @param targetType the target type; never {@code null}
+&nbsp;	 * @return {@code true} if an object of the source type is assignment compatible
+&nbsp;	 * with the target type
+&nbsp;	 * @since 1.8
+&nbsp;	 * @see Class#isInstance(Object)
+&nbsp;	 * @see Class#isAssignableFrom(Class)
+&nbsp;	 * @see #isAssignableTo(Object, Class)
+&nbsp;	 */
+&nbsp;	public static boolean isAssignableTo(Class&lt;?&gt; sourceType, Class&lt;?&gt; targetType) {
+<b class="nc">&nbsp;		Preconditions.notNull(sourceType, &quot;source type must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.condition(!sourceType.isPrimitive(), &quot;source type must not be a primitive type&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(targetType, &quot;target type must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		if (targetType.isAssignableFrom(sourceType)) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (targetType.isPrimitive()) {</b>
+<b class="nc">&nbsp;			return sourceType == primitiveToWrapperMap.get(targetType) || isWideningConversion(sourceType, targetType);</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		return false;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied object can be assigned to the supplied target
+&nbsp;	 * type for the purpose of reflective method invocations.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In contrast to {@link Class#isInstance(Object)}, this method returns
+&nbsp;	 * {@code true} if the target type represents a primitive type whose
+&nbsp;	 * wrapper matches the supplied object&#39;s type. In addition, this method
+&nbsp;	 * also supports
+&nbsp;	 * &lt;a href=&quot;https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2&quot;&gt;
+&nbsp;	 * widening conversions&lt;/a&gt; for primitive types and their corresponding
+&nbsp;	 * wrapper types.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the supplied object is {@code null} and the supplied type does not
+&nbsp;	 * represent a primitive type, this method returns {@code true}.
+&nbsp;	 *
+&nbsp;	 * @param obj the object to test for assignment compatibility; potentially {@code null}
+&nbsp;	 * @param targetType the type to check against; never {@code null}
+&nbsp;	 * @return {@code true} if the object is assignment compatible
+&nbsp;	 * @see Class#isInstance(Object)
+&nbsp;	 * @see Class#isAssignableFrom(Class)
+&nbsp;	 * @see #isAssignableTo(Class, Class)
+&nbsp;	 */
+&nbsp;	public static boolean isAssignableTo(Object obj, Class&lt;?&gt; targetType) {
+<b class="fc">&nbsp;		Preconditions.notNull(targetType, &quot;target type must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		if (obj == null) {</b>
+<b class="fc">&nbsp;			return !targetType.isPrimitive();</b>
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		if (targetType.isInstance(obj)) {</b>
+<b class="fc">&nbsp;			return true;</b>
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		if (targetType.isPrimitive()) {</b>
+<b class="fc">&nbsp;			Class&lt;?&gt; sourceType = obj.getClass();</b>
+<b class="fc">&nbsp;			return sourceType == primitiveToWrapperMap.get(targetType) || isWideningConversion(sourceType, targetType);</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		return false;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if Java supports a &lt;em&gt;widening primitive conversion&lt;/em&gt; from the
+&nbsp;	 * supplied source type to the supplied &lt;strong&gt;primitive&lt;/strong&gt; target type.
+&nbsp;	 */
+&nbsp;	static boolean isWideningConversion(Class&lt;?&gt; sourceType, Class&lt;?&gt; targetType) {
+<b class="nc">&nbsp;		Preconditions.condition(targetType.isPrimitive(), &quot;targetType must be primitive&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		boolean isPrimitive = sourceType.isPrimitive();</b>
+<b class="nc">&nbsp;		boolean isWrapper = primitiveToWrapperMap.containsValue(sourceType);</b>
+&nbsp;
+&nbsp;		// Neither a primitive nor a wrapper?
+<b class="nc">&nbsp;		if (!isPrimitive &amp;&amp; !isWrapper) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (isPrimitive) {</b>
+<b class="nc">&nbsp;			sourceType = primitiveToWrapperMap.get(sourceType);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		if (sourceType == Byte.class) {</b>
+<b class="nc">&nbsp;			return</b>
+&nbsp;					targetType == short.class ||
+&nbsp;					targetType == int.class ||
+&nbsp;					targetType == long.class ||
+&nbsp;					targetType == float.class ||
+&nbsp;					targetType == double.class;
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (sourceType == Short.class || sourceType == Character.class) {</b>
+<b class="nc">&nbsp;			return</b>
+&nbsp;					targetType == int.class ||
+&nbsp;					targetType == long.class ||
+&nbsp;					targetType == float.class ||
+&nbsp;					targetType == double.class;
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (sourceType == Integer.class) {</b>
+<b class="nc">&nbsp;			return</b>
+&nbsp;					targetType == long.class ||
+&nbsp;					targetType == float.class ||
+&nbsp;					targetType == double.class;
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (sourceType == Long.class) {</b>
+<b class="nc">&nbsp;			return</b>
+&nbsp;					targetType == float.class ||
+&nbsp;					targetType == double.class;
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		if (sourceType == Float.class) {</b>
+<b class="nc">&nbsp;			return</b>
+&nbsp;					targetType == double.class;
+&nbsp;		}
+&nbsp;		// @formatter:on
+&nbsp;
+<b class="nc">&nbsp;		return false;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the wrapper type for the supplied primitive type.
+&nbsp;	 *
+&nbsp;	 * @param type the primitive type for which to retrieve the wrapper type
+&nbsp;	 * @return the corresponding wrapper type or {@code null} if the
+&nbsp;	 * supplied type is {@code null} or not a primitive type
+&nbsp;	 */
+&nbsp;	public static Class&lt;?&gt; getWrapperType(Class&lt;?&gt; type) {
+<b class="nc">&nbsp;		return primitiveToWrapperMap.get(type);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#newInstance(Class, Object...)
+&nbsp;	 * @see #newInstance(Constructor, Object...)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T newInstance(Class&lt;T&gt; clazz, Object... args) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(args, &quot;Argument array must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.containsNoNullElements(args, &quot;Individual arguments must not be null&quot;);</b>
+&nbsp;
+&nbsp;		try {
+<b class="fc">&nbsp;			Class&lt;?&gt;[] parameterTypes = Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);</b>
+<b class="fc">&nbsp;			return newInstance(clazz.getDeclaredConstructor(parameterTypes), args);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			throw ExceptionUtils.throwAsUncheckedException(getUnderlyingCause(t));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new instance of type {@code T} by invoking the supplied constructor
+&nbsp;	 * with the supplied arguments.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The constructor will be made accessible if necessary, and any checked
+&nbsp;	 * exception will be {@linkplain ExceptionUtils#throwAsUncheckedException masked}
+&nbsp;	 * as an unchecked exception.
+&nbsp;	 *
+&nbsp;	 * @param constructor the constructor to invoke; never {@code null}
+&nbsp;	 * @param args the arguments to pass to the constructor
+&nbsp;	 * @return the new instance; never {@code null}
+&nbsp;	 * @see #newInstance(Class, Object...)
+&nbsp;	 * @see ExceptionUtils#throwAsUncheckedException(Throwable)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T newInstance(Constructor&lt;T&gt; constructor, Object... args) {
+<b class="fc">&nbsp;		Preconditions.notNull(constructor, &quot;Constructor must not be null&quot;);</b>
+&nbsp;
+&nbsp;		try {
+<b class="fc">&nbsp;			return makeAccessible(constructor).newInstance(args);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			throw ExceptionUtils.throwAsUncheckedException(getUnderlyingCause(t));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Read the value of a potentially inaccessible or nonexistent field.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the field does not exist or the value of the field is {@code null},
+&nbsp;	 * an empty {@link Optional} will be returned.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class where the field is declared; never {@code null}
+&nbsp;	 * @param fieldName the name of the field; never {@code null} or empty
+&nbsp;	 * @param instance the instance from where the value is to be read; may
+&nbsp;	 * be {@code null} for a static field
+&nbsp;	 * @see #readFieldValue(Field)
+&nbsp;	 * @see #readFieldValue(Field, Object)
+&nbsp;	 * @deprecated Please use {@link #tryToReadFieldValue(Class, String, Object)}
+&nbsp;	 * instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static &lt;T&gt; Optional&lt;Object&gt; readFieldValue(Class&lt;T&gt; clazz, String fieldName, T instance) {
+<b class="nc">&nbsp;		return tryToReadFieldValue(clazz, fieldName, instance).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Try to read the value of a potentially inaccessible or nonexistent field.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the field does not exist or an exception occurs while reading it, a
+&nbsp;	 * failed {@link Try} is returned that contains the corresponding exception.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class where the field is declared; never {@code null}
+&nbsp;	 * @param fieldName the name of the field; never {@code null} or empty
+&nbsp;	 * @param instance the instance from where the value is to be read; may
+&nbsp;	 * be {@code null} for a static field
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #tryToReadFieldValue(Field)
+&nbsp;	 * @see #tryToReadFieldValue(Field, Object)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static &lt;T&gt; Try&lt;Object&gt; tryToReadFieldValue(Class&lt;T&gt; clazz, String fieldName, T instance) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(fieldName, &quot;Field name must not be null or blank&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return Try.call(() -&gt; clazz.getDeclaredField(fieldName))</b>
+<b class="nc">&nbsp;				.andThen(field -&gt; tryToReadFieldValue(field, instance));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Read the value of the supplied static field, making it accessible if
+&nbsp;	 * necessary and {@linkplain ExceptionUtils#throwAsUncheckedException masking}
+&nbsp;	 * any checked exception as an unchecked exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the value of the field is {@code null}, an empty {@link Optional}
+&nbsp;	 * will be returned.
+&nbsp;	 *
+&nbsp;	 * @param field the field to read; never {@code null}
+&nbsp;	 * @see #readFieldValue(Field, Object)
+&nbsp;	 * @see #readFieldValue(Class, String, Object)
+&nbsp;	 * @deprecated Please use {@link #tryToReadFieldValue(Field)} instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static Optional&lt;Object&gt; readFieldValue(Field field) {
+<b class="nc">&nbsp;		return tryToReadFieldValue(field).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Try to read the value of a potentially inaccessible static field.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If an exception occurs while reading the field, a failed {@link Try}
+&nbsp;	 * is returned that contains the corresponding exception.
+&nbsp;	 *
+&nbsp;	 * @param field the field to read; never {@code null}
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #tryToReadFieldValue(Field, Object)
+&nbsp;	 * @see #tryToReadFieldValue(Class, String, Object)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static Try&lt;Object&gt; tryToReadFieldValue(Field field) {
+<b class="nc">&nbsp;		return tryToReadFieldValue(field, null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Read the value of the supplied field, making it accessible if necessary
+&nbsp;	 * and {@linkplain ExceptionUtils#throwAsUncheckedException masking} any
+&nbsp;	 * checked exception as an unchecked exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the value of the field is {@code null}, an empty {@link Optional}
+&nbsp;	 * will be returned.
+&nbsp;	 *
+&nbsp;	 * @param field the field to read; never {@code null}
+&nbsp;	 * @param instance the instance from which the value is to be read; may
+&nbsp;	 * be {@code null} for a static field
+&nbsp;	 * @see #readFieldValue(Field)
+&nbsp;	 * @see #readFieldValue(Class, String, Object)
+&nbsp;	 * @deprecated Please use {@link #tryToReadFieldValue(Field, Object)}
+&nbsp;	 * instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static Optional&lt;Object&gt; readFieldValue(Field field, Object instance) {
+<b class="nc">&nbsp;		return tryToReadFieldValue(field, instance).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#tryToReadFieldValue(Field, Object)
+&nbsp;	 * @see #tryToReadFieldValue(Class, String, Object)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static Try&lt;Object&gt; tryToReadFieldValue(Field field, Object instance) {
+<b class="nc">&nbsp;		Preconditions.notNull(field, &quot;Field must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.condition((instance != null || isStatic(field)),</b>
+<b class="nc">&nbsp;			() -&gt; String.format(&quot;Cannot read non-static field [%s] on a null instance.&quot;, field));</b>
+&nbsp;
+<b class="nc">&nbsp;		return Try.call(() -&gt; makeAccessible(field).get(instance));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Read the values of the supplied fields, making each field accessible if
+&nbsp;	 * necessary and {@linkplain ExceptionUtils#throwAsUncheckedException masking}
+&nbsp;	 * any checked exception as an unchecked exception.
+&nbsp;	 *
+&nbsp;	 * @param fields the list of fields to read; never {@code null}
+&nbsp;	 * @param instance the instance from which the values are to be read; may
+&nbsp;	 * be {@code null} for static fields
+&nbsp;	 * @return an immutable list of the values of the specified fields; never
+&nbsp;	 * {@code null} but may be empty or contain {@code null} entries
+&nbsp;	 */
+&nbsp;	public static List&lt;Object&gt; readFieldValues(List&lt;Field&gt; fields, Object instance) {
+<b class="nc">&nbsp;		return readFieldValues(fields, instance, field -&gt; true);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Read the values of the supplied fields, making each field accessible if
+&nbsp;	 * necessary, {@linkplain ExceptionUtils#throwAsUncheckedException masking}
+&nbsp;	 * any checked exception as an unchecked exception, and filtering out fields
+&nbsp;	 * that do not pass the supplied {@code predicate}.
+&nbsp;	 *
+&nbsp;	 * @param fields the list of fields to read; never {@code null}
+&nbsp;	 * @param instance the instance from which the values are to be read; may
+&nbsp;	 * be {@code null} for static fields
+&nbsp;	 * @param predicate the field filter; never {@code null}
+&nbsp;	 * @return an immutable list of the values of the specified fields; never
+&nbsp;	 * {@code null} but may be empty or contain {@code null} entries
+&nbsp;	 */
+&nbsp;	public static List&lt;Object&gt; readFieldValues(List&lt;Field&gt; fields, Object instance, Predicate&lt;Field&gt; predicate) {
+<b class="nc">&nbsp;		Preconditions.notNull(fields, &quot;fields list must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return fields.stream()</b>
+<b class="nc">&nbsp;				.filter(predicate)</b>
+<b class="nc">&nbsp;				.map(field -&gt;</b>
+<b class="nc">&nbsp;					tryToReadFieldValue(field, instance)</b>
+<b class="nc">&nbsp;						.getOrThrow(ExceptionUtils::throwAsUncheckedException))</b>
+<b class="nc">&nbsp;				.collect(toUnmodifiableList());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#invokeMethod(Method, Object, Object...)
+&nbsp;	 */
+&nbsp;	public static Object invokeMethod(Method method, Object target, Object... args) {
+<b class="fc">&nbsp;		Preconditions.notNull(method, &quot;Method must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.condition((target != null || isStatic(method)),</b>
+<b class="nc">&nbsp;			() -&gt; String.format(&quot;Cannot invoke non-static method [%s] on a null target.&quot;, method.toGenericString()));</b>
+&nbsp;
+&nbsp;		try {
+<b class="fc">&nbsp;			return makeAccessible(method).invoke(target, args);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			throw ExceptionUtils.throwAsUncheckedException(getUnderlyingCause(t));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#loadClass(String)
+&nbsp;	 * @deprecated Please use {@link #tryToLoadClass(String)} instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static Optional&lt;Class&lt;?&gt;&gt; loadClass(String name) {
+<b class="nc">&nbsp;		return tryToLoadClass(name).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#tryToLoadClass(String)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static Try&lt;Class&lt;?&gt;&gt; tryToLoadClass(String name) {
+<b class="fc">&nbsp;		return tryToLoadClass(name, ClassLoaderUtils.getDefaultClassLoader());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Load a class by its &lt;em&gt;primitive name&lt;/em&gt; or &lt;em&gt;fully qualified name&lt;/em&gt;,
+&nbsp;	 * using the supplied {@link ClassLoader}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See {@link org.junit.platform.commons.support.ReflectionSupport#loadClass(String)}
+&nbsp;	 * for details on support for class names for arrays.
+&nbsp;	 *
+&nbsp;	 * @param name the name of the class to load; never {@code null} or blank
+&nbsp;	 * @param classLoader the {@code ClassLoader} to use; never {@code null}
+&nbsp;	 * @see #loadClass(String)
+&nbsp;	 * @deprecated Please use {@link #tryToLoadClass(String, ClassLoader)}
+&nbsp;	 * instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static Optional&lt;Class&lt;?&gt;&gt; loadClass(String name, ClassLoader classLoader) {
+<b class="nc">&nbsp;		return tryToLoadClass(name, classLoader).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Try to load a class by its &lt;em&gt;primitive name&lt;/em&gt; or &lt;em&gt;fully qualified
+&nbsp;	 * name&lt;/em&gt;, using the supplied {@link ClassLoader}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See {@link org.junit.platform.commons.support.ReflectionSupport#tryToLoadClass(String)}
+&nbsp;	 * for details on support for class names for arrays.
+&nbsp;	 *
+&nbsp;	 * @param name the name of the class to load; never {@code null} or blank
+&nbsp;	 * @param classLoader the {@code ClassLoader} to use; never {@code null}
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #tryToLoadClass(String)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static Try&lt;Class&lt;?&gt;&gt; tryToLoadClass(String name, ClassLoader classLoader) {
+<b class="fc">&nbsp;		Preconditions.notBlank(name, &quot;Class name must not be null or blank&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(classLoader, &quot;ClassLoader must not be null&quot;);</b>
+<b class="fc">&nbsp;		String trimmedName = name.trim();</b>
+&nbsp;
+<b class="fc">&nbsp;		if (classNameToTypeMap.containsKey(trimmedName)) {</b>
+<b class="nc">&nbsp;			return Try.success(classNameToTypeMap.get(trimmedName));</b>
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		return Try.call(() -&gt; {</b>
+&nbsp;			Matcher matcher;
+&nbsp;
+&nbsp;			// Primitive arrays such as &quot;[I&quot;, &quot;[[[[D&quot;, etc.
+<b class="fc">&nbsp;			matcher = VM_INTERNAL_PRIMITIVE_ARRAY_PATTERN.matcher(trimmedName);</b>
+<b class="fc">&nbsp;			if (matcher.matches()) {</b>
+<b class="nc">&nbsp;				String brackets = matcher.group(1);</b>
+<b class="nc">&nbsp;				String componentTypeName = matcher.group(2);</b>
+&nbsp;				// Calculate dimensions by counting brackets.
+<b class="nc">&nbsp;				int dimensions = brackets.length();</b>
+&nbsp;
+<b class="nc">&nbsp;				return loadArrayType(classLoader, componentTypeName, dimensions);</b>
+&nbsp;			}
+&nbsp;
+&nbsp;			// Object arrays such as &quot;[Ljava.lang.String;&quot;, &quot;[[[[Ljava.lang.String;&quot;, etc.
+<b class="fc">&nbsp;			matcher = VM_INTERNAL_OBJECT_ARRAY_PATTERN.matcher(trimmedName);</b>
+<b class="fc">&nbsp;			if (matcher.matches()) {</b>
+<b class="nc">&nbsp;				String brackets = matcher.group(1);</b>
+<b class="nc">&nbsp;				String componentTypeName = matcher.group(2);</b>
+&nbsp;				// Calculate dimensions by counting brackets.
+<b class="nc">&nbsp;				int dimensions = brackets.length();</b>
+&nbsp;
+<b class="nc">&nbsp;				return loadArrayType(classLoader, componentTypeName, dimensions);</b>
+&nbsp;			}
+&nbsp;
+&nbsp;			// Arrays such as &quot;java.lang.String[]&quot;, &quot;int[]&quot;, &quot;int[][][][]&quot;, etc.
+<b class="fc">&nbsp;			matcher = SOURCE_CODE_SYNTAX_ARRAY_PATTERN.matcher(trimmedName);</b>
+<b class="fc">&nbsp;			if (matcher.matches()) {</b>
+<b class="nc">&nbsp;				String componentTypeName = matcher.group(1);</b>
+<b class="nc">&nbsp;				String bracketPairs = matcher.group(2);</b>
+&nbsp;				// Calculate dimensions by counting bracket pairs.
+<b class="nc">&nbsp;				int dimensions = bracketPairs.length() / 2;</b>
+&nbsp;
+<b class="nc">&nbsp;				return loadArrayType(classLoader, componentTypeName, dimensions);</b>
+&nbsp;			}
+&nbsp;
+&nbsp;			// Fallback to standard VM class loading
+<b class="fc">&nbsp;			return classLoader.loadClass(trimmedName);</b>
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Class&lt;?&gt; loadArrayType(ClassLoader classLoader, String componentTypeName, int dimensions)
+&nbsp;			throws ClassNotFoundException {
+&nbsp;
+<b class="nc">&nbsp;		Class&lt;?&gt; componentType = classNameToTypeMap.containsKey(componentTypeName)</b>
+<b class="nc">&nbsp;				? classNameToTypeMap.get(componentTypeName)</b>
+<b class="nc">&nbsp;				: classLoader.loadClass(componentTypeName);</b>
+&nbsp;
+<b class="nc">&nbsp;		return Array.newInstance(componentType, new int[dimensions]).getClass();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Build the &lt;em&gt;fully qualified method name&lt;/em&gt; for the method described by the
+&nbsp;	 * supplied class and method.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note that the class is not necessarily the class in which the method is
+&nbsp;	 * declared.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class from which the method should be referenced; never {@code null}
+&nbsp;	 * @param method the method; never {@code null}
+&nbsp;	 * @return fully qualified method name; never {@code null}
+&nbsp;	 * @since 1.4
+&nbsp;	 * @see #getFullyQualifiedMethodName(Class, String, Class...)
+&nbsp;	 */
+&nbsp;	public static String getFullyQualifiedMethodName(Class&lt;?&gt; clazz, Method method) {
+<b class="nc">&nbsp;		Preconditions.notNull(method, &quot;Method must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return getFullyQualifiedMethodName(clazz, method.getName(), method.getParameterTypes());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Build the &lt;em&gt;fully qualified method name&lt;/em&gt; for the method described by the
+&nbsp;	 * supplied class, method name, and parameter types.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note that the class is not necessarily the class in which the method is
+&nbsp;	 * declared.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class from which the method should be referenced; never {@code null}
+&nbsp;	 * @param methodName the name of the method; never {@code null} or blank
+&nbsp;	 * @param parameterTypes the parameter types of the method; may be {@code null} or empty
+&nbsp;	 * @return fully qualified method name; never {@code null}
+&nbsp;	 * @see #getFullyQualifiedMethodName(Class, Method)
+&nbsp;	 */
+&nbsp;	public static String getFullyQualifiedMethodName(Class&lt;?&gt; clazz, String methodName, Class&lt;?&gt;... parameterTypes) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(methodName, &quot;Method name must not be null or blank&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return String.format(&quot;%s#%s(%s)&quot;, clazz.getName(), methodName, ClassUtils.nullSafeToString(parameterTypes));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Parse the supplied &lt;em&gt;fully qualified method name&lt;/em&gt; into a 3-element
+&nbsp;	 * {@code String[]} with the following content.
+&nbsp;	 *
+&nbsp;	 * &lt;ul&gt;
+&nbsp;	 *   &lt;li&gt;index {@code 0}: the fully qualified class name&lt;/li&gt;
+&nbsp;	 *   &lt;li&gt;index {@code 1}: the name of the method&lt;/li&gt;
+&nbsp;	 *   &lt;li&gt;index {@code 2}: a comma-separated list of parameter types, or a
+&nbsp;	 *       blank string if the method does not declare any formal parameters&lt;/li&gt;
+&nbsp;	 * &lt;/ul&gt;
+&nbsp;	 *
+&nbsp;	 * @param fullyQualifiedMethodName a &lt;em&gt;fully qualified method name&lt;/em&gt;,
+&nbsp;	 * never {@code null} or blank
+&nbsp;	 * @return a 3-element array of strings containing the parsed values
+&nbsp;	 */
+&nbsp;	public static String[] parseFullyQualifiedMethodName(String fullyQualifiedMethodName) {
+<b class="nc">&nbsp;		Preconditions.notBlank(fullyQualifiedMethodName, &quot;fullyQualifiedMethodName must not be null or blank&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		int indexOfFirstHashtag = fullyQualifiedMethodName.indexOf(&#39;#&#39;);</b>
+<b class="nc">&nbsp;		boolean validSyntax = (indexOfFirstHashtag &gt; 0)</b>
+<b class="nc">&nbsp;				&amp;&amp; (indexOfFirstHashtag &lt; fullyQualifiedMethodName.length() - 1);</b>
+&nbsp;
+<b class="nc">&nbsp;		Preconditions.condition(validSyntax,</b>
+<b class="nc">&nbsp;			() -&gt; &quot;[&quot; + fullyQualifiedMethodName + &quot;] is not a valid fully qualified method name: &quot;</b>
+&nbsp;					+ &quot;it must start with a fully qualified class name followed by a &#39;#&#39; &quot;
+&nbsp;					+ &quot;and then the method name, optionally followed by a parameter list enclosed in parentheses.&quot;);
+&nbsp;
+<b class="nc">&nbsp;		String className = fullyQualifiedMethodName.substring(0, indexOfFirstHashtag);</b>
+<b class="nc">&nbsp;		String methodPart = fullyQualifiedMethodName.substring(indexOfFirstHashtag + 1);</b>
+<b class="nc">&nbsp;		String methodName = methodPart;</b>
+<b class="nc">&nbsp;		String methodParameters = &quot;&quot;;</b>
+&nbsp;
+<b class="nc">&nbsp;		if (methodPart.endsWith(&quot;()&quot;)) {</b>
+<b class="nc">&nbsp;			methodName = methodPart.substring(0, methodPart.length() - 2);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		else if (methodPart.endsWith(&quot;)&quot;)) {</b>
+<b class="nc">&nbsp;			int indexOfLastOpeningParenthesis = methodPart.lastIndexOf(&#39;(&#39;);</b>
+<b class="nc">&nbsp;			if ((indexOfLastOpeningParenthesis &gt; 0) &amp;&amp; (indexOfLastOpeningParenthesis &lt; methodPart.length() - 1)) {</b>
+<b class="nc">&nbsp;				methodName = methodPart.substring(0, indexOfLastOpeningParenthesis);</b>
+<b class="nc">&nbsp;				methodParameters = methodPart.substring(indexOfLastOpeningParenthesis + 1, methodPart.length() - 1);</b>
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		return new String[] { className, methodName, methodParameters };</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the outermost instance of the required type, searching recursively
+&nbsp;	 * through enclosing instances.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the supplied inner object is of the required type, it will be
+&nbsp;	 * returned.
+&nbsp;	 *
+&nbsp;	 * @param inner the inner object from which to begin the search; never {@code null}
+&nbsp;	 * @param requiredType the required type of the outermost instance; never {@code null}
+&nbsp;	 * @return an {@code Optional} containing the outermost instance; never {@code null}
+&nbsp;	 * but potentially empty
+&nbsp;	 * @deprecated Please discontinue use of this method since it relies on internal
+&nbsp;	 * implementation details of the JDK that may not work in the future.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	public static Optional&lt;Object&gt; getOutermostInstance(Object inner, Class&lt;?&gt; requiredType) {
+<b class="nc">&nbsp;		Preconditions.notNull(inner, &quot;inner object must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(requiredType, &quot;requiredType must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		if (requiredType.isInstance(inner)) {</b>
+<b class="nc">&nbsp;			return Optional.of(inner);</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		Optional&lt;Object&gt; candidate = getOuterInstance(inner);</b>
+<b class="nc">&nbsp;		if (candidate.isPresent()) {</b>
+<b class="nc">&nbsp;			return getOutermostInstance(candidate.get(), requiredType);</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Optional&lt;Object&gt; getOuterInstance(Object inner) {
+&nbsp;		// This is risky since it depends on the name of the field which is nowhere guaranteed
+&nbsp;		// but has been stable so far in all JDKs
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return Arrays.stream(inner.getClass().getDeclaredFields())</b>
+<b class="nc">&nbsp;				.filter(field -&gt; field.getName().startsWith(&quot;this$&quot;))</b>
+<b class="nc">&nbsp;				.findFirst()</b>
+<b class="nc">&nbsp;				.map(field -&gt; {</b>
+&nbsp;					try {
+<b class="nc">&nbsp;						return makeAccessible(field).get(inner);</b>
+&nbsp;					}
+<b class="nc">&nbsp;					catch (Throwable t) {</b>
+<b class="nc">&nbsp;						throw ExceptionUtils.throwAsUncheckedException(t);</b>
+&nbsp;					}
+&nbsp;				});
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	public static Set&lt;Path&gt; getAllClasspathRootDirectories() {
+&nbsp;		// This is quite a hack, since sometimes the classpath is quite different
+<b class="nc">&nbsp;		String fullClassPath = System.getProperty(&quot;java.class.path&quot;);</b>
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return Arrays.stream(fullClassPath.split(File.pathSeparator))</b>
+<b class="nc">&nbsp;				.map(Paths::get)</b>
+<b class="nc">&nbsp;				.filter(Files::isDirectory)</b>
+<b class="nc">&nbsp;				.collect(toSet());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findAllClassesInClasspathRoot(URI, Predicate, Predicate)
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInClasspathRoot(URI root, Predicate&lt;Class&lt;?&gt;&gt; classFilter,
+&nbsp;			Predicate&lt;String&gt; classNameFilter) {
+&nbsp;		// unmodifiable since returned by public, non-internal method(s)
+<b class="nc">&nbsp;		return findAllClassesInClasspathRoot(root, ClassFilter.of(classNameFilter, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.1
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInClasspathRoot(URI root, ClassFilter classFilter) {
+<b class="nc">&nbsp;		return Collections.unmodifiableList(classpathScanner.scanForClassesInClasspathRoot(root, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findAllClassesInPackage(String, Predicate, Predicate)
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInPackage(String basePackageName, Predicate&lt;Class&lt;?&gt;&gt; classFilter,
+&nbsp;			Predicate&lt;String&gt; classNameFilter) {
+&nbsp;		// unmodifiable since returned by public, non-internal method(s)
+<b class="nc">&nbsp;		return findAllClassesInPackage(basePackageName, ClassFilter.of(classNameFilter, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.1
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInPackage(String basePackageName, ClassFilter classFilter) {
+<b class="nc">&nbsp;		return Collections.unmodifiableList(classpathScanner.scanForClassesInPackage(basePackageName, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.1.1
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findAllClassesInModule(String, Predicate, Predicate)
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInModule(String moduleName, Predicate&lt;Class&lt;?&gt;&gt; classFilter,
+&nbsp;			Predicate&lt;String&gt; classNameFilter) {
+&nbsp;		// unmodifiable since returned by public, non-internal method(s)
+<b class="nc">&nbsp;		return findAllClassesInModule(moduleName, ClassFilter.of(classNameFilter, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.1.1
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findAllClassesInModule(String moduleName, ClassFilter classFilter) {
+<b class="nc">&nbsp;		return Collections.unmodifiableList(ModuleUtils.findAllClassesInModule(moduleName, classFilter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findNestedClasses(Class, Predicate)
+&nbsp;	 */
+&nbsp;	public static List&lt;Class&lt;?&gt;&gt; findNestedClasses(Class&lt;?&gt; clazz, Predicate&lt;Class&lt;?&gt;&gt; predicate) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		Set&lt;Class&lt;?&gt;&gt; candidates = new LinkedHashSet&lt;&gt;();</b>
+<b class="fc">&nbsp;		findNestedClasses(clazz, predicate, candidates);</b>
+<b class="fc">&nbsp;		return Collections.unmodifiableList(new ArrayList&lt;&gt;(candidates));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static void findNestedClasses(Class&lt;?&gt; clazz, Predicate&lt;Class&lt;?&gt;&gt; predicate, Set&lt;Class&lt;?&gt;&gt; candidates) {
+<b class="fc">&nbsp;		if (!isSearchable(clazz)) {</b>
+&nbsp;			return;
+&nbsp;		}
+&nbsp;
+<b class="fc">&nbsp;		if (isInnerClass(clazz) &amp;&amp; predicate.test(clazz)) {</b>
+<b class="nc">&nbsp;			detectInnerClassCycle(clazz);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		try {
+&nbsp;			// Candidates in current class
+<b class="fc">&nbsp;			for (Class&lt;?&gt; nestedClass : clazz.getDeclaredClasses()) {</b>
+<b class="nc">&nbsp;				if (predicate.test(nestedClass)) {</b>
+<b class="nc">&nbsp;					detectInnerClassCycle(nestedClass);</b>
+<b class="nc">&nbsp;					candidates.add(nestedClass);</b>
+&nbsp;				}
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		catch (NoClassDefFoundError error) {</b>
+<b class="nc">&nbsp;			logger.debug(error, () -&gt; &quot;Failed to retrieve declared classes for &quot; + clazz.getName());</b>
+<b class="fc">&nbsp;		}</b>
+&nbsp;
+&nbsp;		// Search class hierarchy
+<b class="fc">&nbsp;		findNestedClasses(clazz.getSuperclass(), predicate, candidates);</b>
+&nbsp;
+&nbsp;		// Search interface hierarchy
+<b class="fc">&nbsp;		for (Class&lt;?&gt; ifc : clazz.getInterfaces()) {</b>
+<b class="nc">&nbsp;			findNestedClasses(ifc, predicate, candidates);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Detect a cycle in the inner class hierarchy in which the supplied class
+&nbsp;	 * resides &amp;mdash; from the supplied class up to the outermost enclosing class
+&nbsp;	 * &amp;mdash; and throw a {@link JUnitException} if a cycle is detected.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method does &lt;strong&gt;not&lt;/strong&gt; detect cycles within inner class
+&nbsp;	 * hierarchies &lt;em&gt;below&lt;/em&gt; the supplied class.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the supplied class is not an inner class and does not have a
+&nbsp;	 * searchable superclass, this method is effectively a no-op.
+&nbsp;	 *
+&nbsp;	 * @since 1.6
+&nbsp;	 * @see #isInnerClass(Class)
+&nbsp;	 * @see #isSearchable(Class)
+&nbsp;	 */
+&nbsp;	private static void detectInnerClassCycle(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		String className = clazz.getName();</b>
+&nbsp;
+<b class="nc">&nbsp;		if (noCyclesDetectedCache.contains(className)) {</b>
+&nbsp;			return;
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		Class&lt;?&gt; superclass = clazz.getSuperclass();</b>
+<b class="nc">&nbsp;		if (isInnerClass(clazz) &amp;&amp; isSearchable(superclass)) {</b>
+<b class="nc">&nbsp;			for (Class&lt;?&gt; enclosing = clazz.getEnclosingClass(); enclosing != null; enclosing = enclosing.getEnclosingClass()) {</b>
+<b class="nc">&nbsp;				if (superclass.equals(enclosing)) {</b>
+<b class="nc">&nbsp;					throw new JUnitException(String.format(&quot;Detected cycle in inner class hierarchy between %s and %s&quot;,</b>
+<b class="nc">&nbsp;						className, enclosing.getName()));</b>
+&nbsp;				}
+&nbsp;			}
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		noCyclesDetectedCache.add(className);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the sole declared, non-synthetic {@link Constructor} for the supplied class.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Throws a {@link org.junit.platform.commons.PreconditionViolationException}
+&nbsp;	 * if the supplied class declares more than one non-synthetic constructor.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class to get the constructor for
+&nbsp;	 * @return the sole declared constructor; never {@code null}
+&nbsp;	 * @see Class#getDeclaredConstructors()
+&nbsp;	 * @see Class#isSynthetic()
+&nbsp;	 */
+&nbsp;	@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;	public static &lt;T&gt; Constructor&lt;T&gt; getDeclaredConstructor(Class&lt;T&gt; clazz) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+&nbsp;		try {
+<b class="fc">&nbsp;			List&lt;Constructor&lt;?&gt;&gt; constructors = Arrays.stream(clazz.getDeclaredConstructors())//</b>
+<b class="fc">&nbsp;					.filter(ctor -&gt; !ctor.isSynthetic())//</b>
+<b class="fc">&nbsp;					.collect(toList());</b>
+&nbsp;
+<b class="fc">&nbsp;			Preconditions.condition(constructors.size() == 1,</b>
+<b class="nc">&nbsp;				() -&gt; String.format(&quot;Class [%s] must declare a single constructor&quot;, clazz.getName()));</b>
+&nbsp;
+<b class="fc">&nbsp;			return (Constructor&lt;T&gt;) constructors.get(0);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			throw ExceptionUtils.throwAsUncheckedException(getUnderlyingCause(t));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all constructors in the supplied class that match the supplied predicate.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note that this method may return {@linkplain Class#isSynthetic() synthetic}
+&nbsp;	 * constructors. If you wish to ignore synthetic constructors, you may filter
+&nbsp;	 * them out with the supplied {@code predicate} or filter them out of the list
+&nbsp;	 * returned by this method.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class in which to search for constructors; never {@code null}
+&nbsp;	 * @param predicate the predicate to use to test for a match; never {@code null}
+&nbsp;	 * @return an immutable list of all such constructors found; never {@code null}
+&nbsp;	 * but potentially empty
+&nbsp;	 * @see Class#getDeclaredConstructors()
+&nbsp;	 * @see Class#isSynthetic()
+&nbsp;	 */
+&nbsp;	public static List&lt;Constructor&lt;?&gt;&gt; findConstructors(Class&lt;?&gt; clazz, Predicate&lt;Constructor&lt;?&gt;&gt; predicate) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+&nbsp;
+&nbsp;		try {
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			return Arrays.stream(clazz.getDeclaredConstructors())</b>
+<b class="nc">&nbsp;					.filter(predicate)</b>
+<b class="nc">&nbsp;					.collect(toUnmodifiableList());</b>
+&nbsp;			// @formatter:on
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			throw ExceptionUtils.throwAsUncheckedException(getUnderlyingCause(t));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findFields(Class, Predicate, org.junit.platform.commons.support.HierarchyTraversalMode)
+&nbsp;	 */
+&nbsp;	public static List&lt;Field&gt; findFields(Class&lt;?&gt; clazz, Predicate&lt;Field&gt; predicate,
+&nbsp;			HierarchyTraversalMode traversalMode) {
+&nbsp;
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return findAllFieldsInHierarchy(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(predicate)</b>
+&nbsp;				// unmodifiable since returned by public, non-internal method(s)
+<b class="fc">&nbsp;				.collect(toUnmodifiableList());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Field&gt; findAllFieldsInHierarchy(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		List&lt;Field&gt; localFields = getDeclaredFields(clazz).stream()</b>
+<b class="fc">&nbsp;				.filter(field -&gt; !field.isSynthetic())</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+<b class="fc">&nbsp;		List&lt;Field&gt; superclassFields = getSuperclassFields(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(field -&gt; !isFieldShadowedByLocalFields(field, localFields))</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+<b class="fc">&nbsp;		List&lt;Field&gt; interfaceFields = getInterfaceFields(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(field -&gt; !isFieldShadowedByLocalFields(field, localFields))</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+&nbsp;		// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;		List&lt;Field&gt; fields = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;		if (traversalMode == TOP_DOWN) {</b>
+<b class="fc">&nbsp;			fields.addAll(superclassFields);</b>
+<b class="fc">&nbsp;			fields.addAll(interfaceFields);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		fields.addAll(localFields);</b>
+<b class="fc">&nbsp;		if (traversalMode == BOTTOM_UP) {</b>
+<b class="nc">&nbsp;			fields.addAll(interfaceFields);</b>
+<b class="nc">&nbsp;			fields.addAll(superclassFields);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return fields;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if a {@link Method} matching the supplied {@link Predicate}
+&nbsp;	 * is present within the type hierarchy of the specified class, beginning
+&nbsp;	 * with the specified class or interface and traversing up the type
+&nbsp;	 * hierarchy until such a method is found or the type hierarchy is exhausted.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the method; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param predicate the predicate to use to test for a match; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @return {@code true} if such a method is present
+&nbsp;	 * @see #findMethod(Class, String, String)
+&nbsp;	 * @see #findMethod(Class, String, Class...)
+&nbsp;	 */
+&nbsp;	public static boolean isMethodPresent(Class&lt;?&gt; clazz, Predicate&lt;Method&gt; predicate) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		return findMethod(clazz, predicate).isPresent();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link Method} in the specified class with the specified name
+&nbsp;	 * and parameter types.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method delegates to {@link Class#getMethod(String, Class...)} but
+&nbsp;	 * swallows any exception thrown.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class in which to search for the method; never {@code null}
+&nbsp;	 * @param methodName the name of the method to get; never {@code null} or blank
+&nbsp;	 * @param parameterTypes the parameter types of the method; may be {@code null}
+&nbsp;	 * or empty
+&nbsp;	 * @return an {@code Optional} containing the method; never {@code null} but
+&nbsp;	 * empty if the invocation of {@code Class#getMethod()} throws a
+&nbsp;	 * {@link NoSuchMethodException}
+&nbsp;	 * @deprecated Please use {@link #tryToGetMethod(Class, String, Class[])}
+&nbsp;	 * instead.
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;1.4&quot;)
+&nbsp;	@Deprecated
+&nbsp;	static Optional&lt;Method&gt; getMethod(Class&lt;?&gt; clazz, String methodName, Class&lt;?&gt;... parameterTypes) {
+<b class="nc">&nbsp;		return tryToGetMethod(clazz, methodName, parameterTypes).toOptional();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Try to get the {@link Method} in the specified class with the specified
+&nbsp;	 * name and parameter types.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method delegates to {@link Class#getMethod(String, Class...)} but
+&nbsp;	 * catches any exception thrown.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class in which to search for the method; never {@code null}
+&nbsp;	 * @param methodName the name of the method to get; never {@code null} or blank
+&nbsp;	 * @param parameterTypes the parameter types of the method; may be {@code null}
+&nbsp;	 * or empty
+&nbsp;	 * @return a successful {@link Try} containing the method or a failed
+&nbsp;	 * {@link Try} containing the {@link NoSuchMethodException} thrown by
+&nbsp;	 * {@code Class#getMethod()}; never {@code null}
+&nbsp;	 * @since 1.4
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;1.4&quot;)
+&nbsp;	public static Try&lt;Method&gt; tryToGetMethod(Class&lt;?&gt; clazz, String methodName, Class&lt;?&gt;... parameterTypes) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(methodName, &quot;Method name must not be null or blank&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return Try.call(() -&gt; clazz.getMethod(methodName, parameterTypes));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findMethod(Class, String, String)
+&nbsp;	 */
+&nbsp;	public static Optional&lt;Method&gt; findMethod(Class&lt;?&gt; clazz, String methodName, String parameterTypeNames) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(methodName, &quot;Method name must not be null or blank&quot;);</b>
+<b class="nc">&nbsp;		return findMethod(clazz, methodName, resolveParameterTypes(clazz, methodName, parameterTypeNames));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Class&lt;?&gt;[] resolveParameterTypes(Class&lt;?&gt; clazz, String methodName, String parameterTypeNames) {
+<b class="nc">&nbsp;		if (StringUtils.isBlank(parameterTypeNames)) {</b>
+<b class="nc">&nbsp;			return EMPTY_CLASS_ARRAY;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return Arrays.stream(parameterTypeNames.split(&quot;,&quot;))</b>
+<b class="nc">&nbsp;				.map(String::trim)</b>
+<b class="nc">&nbsp;				.map(typeName -&gt; loadRequiredParameterType(clazz, methodName, typeName))</b>
+<b class="nc">&nbsp;				.toArray(Class[]::new);</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Class&lt;?&gt; loadRequiredParameterType(Class&lt;?&gt; clazz, String methodName, String typeName) {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return tryToLoadClass(typeName)</b>
+<b class="nc">&nbsp;				.getOrThrow(cause -&gt; new JUnitException(</b>
+<b class="nc">&nbsp;						String.format(&quot;Failed to load parameter type [%s] for method [%s] in class [%s].&quot;,</b>
+<b class="nc">&nbsp;								typeName, methodName, clazz.getName()), cause));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findMethod(Class, String, Class...)
+&nbsp;	 */
+&nbsp;	public static Optional&lt;Method&gt; findMethod(Class&lt;?&gt; clazz, String methodName, Class&lt;?&gt;... parameterTypes) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(methodName, &quot;Method name must not be null or blank&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(parameterTypes, &quot;Parameter types array must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.containsNoNullElements(parameterTypes, &quot;Individual parameter types must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		return findMethod(clazz, method -&gt; hasCompatibleSignature(method, methodName, parameterTypes));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Optional&lt;Method&gt; findMethod(Class&lt;?&gt; clazz, Predicate&lt;Method&gt; predicate) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		for (Class&lt;?&gt; current = clazz; isSearchable(current); current = current.getSuperclass()) {</b>
+&nbsp;			// Search for match in current type
+<b class="fc">&nbsp;			List&lt;Method&gt; methods = current.isInterface() ? getMethods(current) : getDeclaredMethods(current, BOTTOM_UP);</b>
+<b class="fc">&nbsp;			for (Method method : methods) {</b>
+<b class="fc">&nbsp;				if (predicate.test(method)) {</b>
+<b class="fc">&nbsp;					return Optional.of(method);</b>
+&nbsp;				}
+<b class="nc">&nbsp;			}</b>
+&nbsp;
+&nbsp;			// Search for match in interfaces implemented by current type
+<b class="nc">&nbsp;			for (Class&lt;?&gt; ifc : current.getInterfaces()) {</b>
+<b class="nc">&nbsp;				Optional&lt;Method&gt; optional = findMethod(ifc, predicate);</b>
+<b class="nc">&nbsp;				if (optional.isPresent()) {</b>
+<b class="nc">&nbsp;					return optional;</b>
+&nbsp;				}
+&nbsp;			}
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the first {@link Method} of the supplied class or interface that
+&nbsp;	 * meets the specified criteria, beginning with the specified class or
+&nbsp;	 * interface and traversing up the type hierarchy until such a method is
+&nbsp;	 * found or the type hierarchy is exhausted.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Use this method as an alternative to
+&nbsp;	 * {@link #findMethod(Class, String, Class...)} for use cases in which the
+&nbsp;	 * method is required to be present.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the method;
+&nbsp;	 * never {@code null}
+&nbsp;	 * @param methodName the name of the method to find; never {@code null}
+&nbsp;	 * or empty
+&nbsp;	 * @param parameterTypes the types of parameters accepted by the method,
+&nbsp;	 * if any; never {@code null}
+&nbsp;	 * @return the {@code Method} found; never {@code null}
+&nbsp;	 * @throws JUnitException if no method is found
+&nbsp;	 *
+&nbsp;	 * @since 1.7
+&nbsp;	 * @see #findMethod(Class, String, Class...)
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.7&quot;)
+&nbsp;	public static Method getRequiredMethod(Class&lt;?&gt; clazz, String methodName, Class&lt;?&gt;... parameterTypes) {
+<b class="nc">&nbsp;		return ReflectionUtils.findMethod(clazz, methodName, parameterTypes).orElseThrow(</b>
+<b class="nc">&nbsp;			() -&gt; new JUnitException(format(&quot;Could not find method [%s] in class [%s]&quot;, methodName, clazz.getName())));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all {@linkplain Method methods} of the supplied class or interface
+&nbsp;	 * that match the specified {@code predicate}, using top-down search semantics
+&nbsp;	 * within the type hierarchy.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The results will not contain instance methods that are &lt;em&gt;overridden&lt;/em&gt;
+&nbsp;	 * or {@code static} methods that are &lt;em&gt;hidden&lt;/em&gt;.
+&nbsp;	 *
+&nbsp;	 * @param clazz the class or interface in which to find the methods; never {@code null}
+&nbsp;	 * @param predicate the method filter; never {@code null}
+&nbsp;	 * @return an immutable list of all such methods found; never {@code null}
+&nbsp;	 * @see HierarchyTraversalMode#TOP_DOWN
+&nbsp;	 * @see #findMethods(Class, Predicate, HierarchyTraversalMode)
+&nbsp;	 */
+&nbsp;	public static List&lt;Method&gt; findMethods(Class&lt;?&gt; clazz, Predicate&lt;Method&gt; predicate) {
+<b class="fc">&nbsp;		return findMethods(clazz, predicate, TOP_DOWN);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @see org.junit.platform.commons.support.ReflectionSupport#findMethods(Class, Predicate, org.junit.platform.commons.support.HierarchyTraversalMode)
+&nbsp;	 */
+&nbsp;	public static List&lt;Method&gt; findMethods(Class&lt;?&gt; clazz, Predicate&lt;Method&gt; predicate,
+&nbsp;			HierarchyTraversalMode traversalMode) {
+&nbsp;
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(predicate, &quot;Predicate must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return findAllMethodsInHierarchy(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(predicate)</b>
+<b class="fc">&nbsp;				.distinct()</b>
+&nbsp;				// unmodifiable since returned by public, non-internal method(s)
+<b class="fc">&nbsp;				.collect(toUnmodifiableList());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all non-synthetic methods in the superclass and interface hierarchy,
+&nbsp;	 * excluding Object.
+&nbsp;	 */
+&nbsp;	private static List&lt;Method&gt; findAllMethodsInHierarchy(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(traversalMode, &quot;HierarchyTraversalMode must not be null&quot;);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		List&lt;Method&gt; localMethods = getDeclaredMethods(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(method -&gt; !method.isSynthetic())</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+<b class="fc">&nbsp;		List&lt;Method&gt; superclassMethods = getSuperclassMethods(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(method -&gt; !isMethodShadowedByLocalMethods(method, localMethods))</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+<b class="fc">&nbsp;		List&lt;Method&gt; interfaceMethods = getInterfaceMethods(clazz, traversalMode).stream()</b>
+<b class="fc">&nbsp;				.filter(method -&gt; !isMethodShadowedByLocalMethods(method, localMethods))</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+&nbsp;		// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;		List&lt;Method&gt; methods = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;		if (traversalMode == TOP_DOWN) {</b>
+<b class="fc">&nbsp;			methods.addAll(superclassMethods);</b>
+<b class="fc">&nbsp;			methods.addAll(interfaceMethods);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		methods.addAll(localMethods);</b>
+<b class="fc">&nbsp;		if (traversalMode == BOTTOM_UP) {</b>
+<b class="fc">&nbsp;			methods.addAll(interfaceMethods);</b>
+<b class="fc">&nbsp;			methods.addAll(superclassMethods);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return methods;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Custom alternative to {@link Class#getFields()} that sorts the fields
+&nbsp;	 * and converts them to a mutable list.
+&nbsp;	 */
+&nbsp;	private static List&lt;Field&gt; getFields(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		return toSortedMutableList(clazz.getFields());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Custom alternative to {@link Class#getDeclaredFields()} that sorts the
+&nbsp;	 * fields and converts them to a mutable list.
+&nbsp;	 */
+&nbsp;	private static List&lt;Field&gt; getDeclaredFields(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		return toSortedMutableList(clazz.getDeclaredFields());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Custom alternative to {@link Class#getMethods()} that sorts the methods
+&nbsp;	 * and converts them to a mutable list.
+&nbsp;	 */
+&nbsp;	private static List&lt;Method&gt; getMethods(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		return toSortedMutableList(clazz.getMethods());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Custom alternative to {@link Class#getDeclaredMethods()} that sorts the
+&nbsp;	 * methods and converts them to a mutable list.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In addition, the list returned by this method includes interface
+&nbsp;	 * default methods which are either prepended or appended to the list of
+&nbsp;	 * declared methods depending on the supplied traversal mode.
+&nbsp;	 */
+&nbsp;	private static List&lt;Method&gt; getDeclaredMethods(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+&nbsp;		// Note: getDefaultMethods() already sorts the methods,
+<b class="fc">&nbsp;		List&lt;Method&gt; defaultMethods = getDefaultMethods(clazz);</b>
+<b class="fc">&nbsp;		List&lt;Method&gt; declaredMethods = toSortedMutableList(clazz.getDeclaredMethods());</b>
+&nbsp;
+&nbsp;		// Take the traversal mode into account in order to retain the inherited
+&nbsp;		// nature of interface default methods.
+<b class="fc">&nbsp;		if (traversalMode == BOTTOM_UP) {</b>
+<b class="fc">&nbsp;			declaredMethods.addAll(defaultMethods);</b>
+<b class="fc">&nbsp;			return declaredMethods;</b>
+&nbsp;		}
+&nbsp;		else {
+<b class="fc">&nbsp;			defaultMethods.addAll(declaredMethods);</b>
+<b class="fc">&nbsp;			return defaultMethods;</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get a sorted, mutable list of all default methods present in interfaces
+&nbsp;	 * implemented by the supplied class which are also &lt;em&gt;visible&lt;/em&gt; within
+&nbsp;	 * the supplied class.
+&nbsp;	 *
+&nbsp;	 * @see &lt;a href=&quot;https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#d5e9652&quot;&gt;Method Visibility&lt;/a&gt;
+&nbsp;	 * in the Java Language Specification
+&nbsp;	 */
+&nbsp;	private static List&lt;Method&gt; getDefaultMethods(Class&lt;?&gt; clazz) {
+&nbsp;		// @formatter:off
+&nbsp;		// Visible default methods are interface default methods that have not
+&nbsp;		// been overridden.
+<b class="fc">&nbsp;		List&lt;Method&gt; visibleDefaultMethods = Arrays.stream(clazz.getMethods())</b>
+<b class="fc">&nbsp;				.filter(Method::isDefault)</b>
+<b class="fc">&nbsp;				.collect(toCollection(ArrayList::new));</b>
+<b class="fc">&nbsp;		if (visibleDefaultMethods.isEmpty()) {</b>
+<b class="fc">&nbsp;			return visibleDefaultMethods;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return Arrays.stream(clazz.getInterfaces())</b>
+<b class="fc">&nbsp;				.map(ReflectionUtils::getMethods)</b>
+<b class="fc">&nbsp;				.flatMap(List::stream)</b>
+<b class="fc">&nbsp;				.filter(visibleDefaultMethods::contains)</b>
+<b class="fc">&nbsp;				.collect(toCollection(ArrayList::new));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Field&gt; toSortedMutableList(Field[] fields) {
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return Arrays.stream(fields)</b>
+<b class="fc">&nbsp;				.sorted(ReflectionUtils::defaultFieldSorter)</b>
+&nbsp;				// Use toCollection() instead of toList() to ensure list is mutable.
+<b class="fc">&nbsp;				.collect(toCollection(ArrayList::new));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Method&gt; toSortedMutableList(Method[] methods) {
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return Arrays.stream(methods)</b>
+<b class="fc">&nbsp;				.sorted(ReflectionUtils::defaultMethodSorter)</b>
+&nbsp;				// Use toCollection() instead of toList() to ensure list is mutable.
+<b class="fc">&nbsp;				.collect(toCollection(ArrayList::new));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Field comparator inspired by JUnit 4&#39;s {@code org.junit.internal.MethodSorter}
+&nbsp;	 * implementation.
+&nbsp;	 */
+&nbsp;	private static int defaultFieldSorter(Field field1, Field field2) {
+<b class="fc">&nbsp;		return Integer.compare(field1.getName().hashCode(), field2.getName().hashCode());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Method comparator based upon JUnit 4&#39;s {@code org.junit.internal.MethodSorter}
+&nbsp;	 * implementation.
+&nbsp;	 */
+&nbsp;	private static int defaultMethodSorter(Method method1, Method method2) {
+<b class="fc">&nbsp;		String name1 = method1.getName();</b>
+<b class="fc">&nbsp;		String name2 = method2.getName();</b>
+<b class="fc">&nbsp;		int comparison = Integer.compare(name1.hashCode(), name2.hashCode());</b>
+<b class="fc">&nbsp;		if (comparison == 0) {</b>
+<b class="fc">&nbsp;			comparison = name1.compareTo(name2);</b>
+<b class="fc">&nbsp;			if (comparison == 0) {</b>
+<b class="fc">&nbsp;				comparison = method1.toString().compareTo(method2.toString());</b>
+&nbsp;			}
+&nbsp;		}
+<b class="fc">&nbsp;		return comparison;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Method&gt; getInterfaceMethods(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		List&lt;Method&gt; allInterfaceMethods = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;		for (Class&lt;?&gt; ifc : clazz.getInterfaces()) {</b>
+&nbsp;
+&nbsp;			// @formatter:off
+<b class="fc">&nbsp;			List&lt;Method&gt; localInterfaceMethods = getMethods(ifc).stream()</b>
+<b class="fc">&nbsp;					.filter(m -&gt; !isAbstract(m))</b>
+<b class="fc">&nbsp;					.collect(toList());</b>
+&nbsp;
+<b class="fc">&nbsp;			List&lt;Method&gt; superinterfaceMethods = getInterfaceMethods(ifc, traversalMode).stream()</b>
+<b class="fc">&nbsp;					.filter(method -&gt; !isMethodShadowedByLocalMethods(method, localInterfaceMethods))</b>
+<b class="fc">&nbsp;					.collect(toList());</b>
+&nbsp;			// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;			if (traversalMode == TOP_DOWN) {</b>
+<b class="nc">&nbsp;				allInterfaceMethods.addAll(superinterfaceMethods);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			allInterfaceMethods.addAll(localInterfaceMethods);</b>
+<b class="fc">&nbsp;			if (traversalMode == BOTTOM_UP) {</b>
+<b class="fc">&nbsp;				allInterfaceMethods.addAll(superinterfaceMethods);</b>
+&nbsp;			}
+&nbsp;		}
+<b class="fc">&nbsp;		return allInterfaceMethods;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Field&gt; getInterfaceFields(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		List&lt;Field&gt; allInterfaceFields = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;		for (Class&lt;?&gt; ifc : clazz.getInterfaces()) {</b>
+<b class="nc">&nbsp;			List&lt;Field&gt; localInterfaceFields = getFields(ifc);</b>
+&nbsp;
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			List&lt;Field&gt; superinterfaceFields = getInterfaceFields(ifc, traversalMode).stream()</b>
+<b class="nc">&nbsp;					.filter(field -&gt; !isFieldShadowedByLocalFields(field, localInterfaceFields))</b>
+<b class="nc">&nbsp;					.collect(toList());</b>
+&nbsp;			// @formatter:on
+&nbsp;
+<b class="nc">&nbsp;			if (traversalMode == TOP_DOWN) {</b>
+<b class="nc">&nbsp;				allInterfaceFields.addAll(superinterfaceFields);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			allInterfaceFields.addAll(localInterfaceFields);</b>
+<b class="nc">&nbsp;			if (traversalMode == BOTTOM_UP) {</b>
+<b class="nc">&nbsp;				allInterfaceFields.addAll(superinterfaceFields);</b>
+&nbsp;			}
+&nbsp;		}
+<b class="fc">&nbsp;		return allInterfaceFields;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Field&gt; getSuperclassFields(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		Class&lt;?&gt; superclass = clazz.getSuperclass();</b>
+<b class="fc">&nbsp;		if (!isSearchable(superclass)) {</b>
+<b class="fc">&nbsp;			return Collections.emptyList();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return findAllFieldsInHierarchy(superclass, traversalMode);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static boolean isFieldShadowedByLocalFields(Field field, List&lt;Field&gt; localFields) {
+<b class="nc">&nbsp;		return localFields.stream().anyMatch(local -&gt; local.getName().equals(field.getName()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static List&lt;Method&gt; getSuperclassMethods(Class&lt;?&gt; clazz, HierarchyTraversalMode traversalMode) {
+<b class="fc">&nbsp;		Class&lt;?&gt; superclass = clazz.getSuperclass();</b>
+<b class="fc">&nbsp;		if (!isSearchable(superclass)) {</b>
+<b class="fc">&nbsp;			return Collections.emptyList();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return findAllMethodsInHierarchy(superclass, traversalMode);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static boolean isMethodShadowedByLocalMethods(Method method, List&lt;Method&gt; localMethods) {
+<b class="fc">&nbsp;		return localMethods.stream().anyMatch(local -&gt; isMethodShadowedBy(method, local));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static boolean isMethodShadowedBy(Method upper, Method lower) {
+<b class="fc">&nbsp;		return hasCompatibleSignature(upper, lower.getName(), lower.getParameterTypes());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied candidate method (typically a method higher in
+&nbsp;	 * the type hierarchy) has a signature that is compatible with a method that
+&nbsp;	 * has the supplied name and parameter types, taking method sub-signatures
+&nbsp;	 * and generics into account.
+&nbsp;	 */
+&nbsp;	private static boolean hasCompatibleSignature(Method candidate, String methodName, Class&lt;?&gt;[] parameterTypes) {
+<b class="fc">&nbsp;		if (!methodName.equals(candidate.getName())) {</b>
+<b class="fc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (parameterTypes.length != candidate.getParameterCount()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+&nbsp;		// trivial case: parameter types exactly match
+<b class="fc">&nbsp;		if (Arrays.equals(parameterTypes, candidate.getParameterTypes())) {</b>
+<b class="fc">&nbsp;			return true;</b>
+&nbsp;		}
+&nbsp;		// param count is equal, but types do not match exactly: check for method sub-signatures
+&nbsp;		// https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.4.2
+<b class="nc">&nbsp;		for (int i = 0; i &lt; parameterTypes.length; i++) {</b>
+<b class="nc">&nbsp;			Class&lt;?&gt; lowerType = parameterTypes[i];</b>
+<b class="nc">&nbsp;			Class&lt;?&gt; upperType = candidate.getParameterTypes()[i];</b>
+<b class="nc">&nbsp;			if (!upperType.isAssignableFrom(lowerType)) {</b>
+<b class="nc">&nbsp;				return false;</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;		// lower is sub-signature of upper: check for generics in upper method
+<b class="nc">&nbsp;		if (isGeneric(candidate)) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return false;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	static boolean isGeneric(Method method) {
+<b class="nc">&nbsp;		return isGeneric(method.getGenericReturnType())</b>
+<b class="nc">&nbsp;				|| Arrays.stream(method.getGenericParameterTypes()).anyMatch(ReflectionUtils::isGeneric);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static boolean isGeneric(Type type) {
+<b class="nc">&nbsp;		return type instanceof TypeVariable || type instanceof GenericArrayType;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@SuppressWarnings(&quot;deprecation&quot;) // &quot;AccessibleObject.isAccessible()&quot; is deprecated in Java 9
+&nbsp;	public static &lt;T extends AccessibleObject&gt; T makeAccessible(T object) {
+<b class="fc">&nbsp;		if (!object.isAccessible()) {</b>
+<b class="fc">&nbsp;			object.setAccessible(true);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return object;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return all classes and interfaces that can be used as assignment types
+&nbsp;	 * for instances of the specified {@link Class}, including itself.
+&nbsp;	 *
+&nbsp;	 * @param clazz the {@code Class} to look up
+&nbsp;	 * @see Class#isAssignableFrom
+&nbsp;	 */
+&nbsp;	public static Set&lt;Class&lt;?&gt;&gt; getAllAssignmentCompatibleClasses(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;		Preconditions.notNull(clazz, &quot;Class must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		Set&lt;Class&lt;?&gt;&gt; result = new LinkedHashSet&lt;&gt;();</b>
+<b class="nc">&nbsp;		getAllAssignmentCompatibleClasses(clazz, result);</b>
+<b class="nc">&nbsp;		return result;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static void getAllAssignmentCompatibleClasses(Class&lt;?&gt; clazz, Set&lt;Class&lt;?&gt;&gt; result) {
+<b class="nc">&nbsp;		for (Class&lt;?&gt; current = clazz; current != null; current = current.getSuperclass()) {</b>
+<b class="nc">&nbsp;			result.add(current);</b>
+<b class="nc">&nbsp;			for (Class&lt;?&gt; interfaceClass : current.getInterfaces()) {</b>
+<b class="nc">&nbsp;				if (!result.contains(interfaceClass)) {</b>
+<b class="nc">&nbsp;					getAllAssignmentCompatibleClasses(interfaceClass, result);</b>
+&nbsp;				}
+&nbsp;			}
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if the supplied class is &lt;em&gt;searchable&lt;/em&gt;: is non-null and is
+&nbsp;	 * not equal to the class reference for {@code java.lang.Object}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method is often used to determine if a superclass should be
+&nbsp;	 * searched but may be applicable for other use cases as well.
+&nbsp;	 * @since 1.6
+&nbsp;	 */
+&nbsp;	private static boolean isSearchable(Class&lt;?&gt; clazz) {
+<b class="fc">&nbsp;		return (clazz != null &amp;&amp; clazz != Object.class);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the underlying cause of the supplied {@link Throwable}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the supplied {@code Throwable} is an instance of
+&nbsp;	 * {@link InvocationTargetException}, this method will be invoked
+&nbsp;	 * recursively with the underlying
+&nbsp;	 * {@linkplain InvocationTargetException#getTargetException() target
+&nbsp;	 * exception}; otherwise, this method returns the supplied {@code Throwable}.
+&nbsp;	 */
+&nbsp;	private static Throwable getUnderlyingCause(Throwable t) {
+<b class="nc">&nbsp;		if (t instanceof InvocationTargetException) {</b>
+<b class="nc">&nbsp;			return getUnderlyingCause(((InvocationTargetException) t).getTargetException());</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return t;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

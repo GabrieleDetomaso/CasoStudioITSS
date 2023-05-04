@@ -1,0 +1,163 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HierarchicalTestExecutor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: HierarchicalTestExecutor (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HierarchicalTestExecutor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import java.util.concurrent.Future;
+&nbsp;
+&nbsp;import org.junit.platform.engine.EngineExecutionListener;
+&nbsp;import org.junit.platform.engine.ExecutionRequest;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestEngine;
+&nbsp;
+&nbsp;/**
+&nbsp; * Implementation core of all {@link TestEngine TestEngines} that wish to
+&nbsp; * use the {@link Node} abstraction as the driving principle for structuring
+&nbsp; * and executing test suites.
+&nbsp; *
+&nbsp; * &lt;p&gt;A {@code HierarchicalTestExecutor} is instantiated by a concrete
+&nbsp; * implementation of {@link HierarchicalTestEngine} and takes care of
+&nbsp; * executing nodes in the hierarchy in the appropriate order as well as
+&nbsp; * firing the necessary events in the {@link EngineExecutionListener}.
+&nbsp; *
+&nbsp; * @param &lt;C&gt; the type of {@code EngineExecutionContext} used by the
+&nbsp; * {@code HierarchicalTestEngine}
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;class HierarchicalTestExecutor&lt;C extends EngineExecutionContext&gt; {
+&nbsp;
+&nbsp;	private final ExecutionRequest request;
+&nbsp;	private final C rootContext;
+&nbsp;	private final HierarchicalTestExecutorService executorService;
+&nbsp;	private final ThrowableCollector.Factory throwableCollectorFactory;
+&nbsp;
+&nbsp;	HierarchicalTestExecutor(ExecutionRequest request, C rootContext, HierarchicalTestExecutorService executorService,
+<b class="fc">&nbsp;			ThrowableCollector.Factory throwableCollectorFactory) {</b>
+<b class="fc">&nbsp;		this.request = request;</b>
+<b class="fc">&nbsp;		this.rootContext = rootContext;</b>
+<b class="fc">&nbsp;		this.executorService = executorService;</b>
+<b class="fc">&nbsp;		this.throwableCollectorFactory = throwableCollectorFactory;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Future&lt;Void&gt; execute() {
+<b class="fc">&nbsp;		TestDescriptor rootTestDescriptor = this.request.getRootTestDescriptor();</b>
+<b class="fc">&nbsp;		EngineExecutionListener executionListener = this.request.getEngineExecutionListener();</b>
+<b class="fc">&nbsp;		NodeExecutionAdvisor executionAdvisor = new NodeTreeWalker().walk(rootTestDescriptor);</b>
+<b class="fc">&nbsp;		NodeTestTaskContext taskContext = new NodeTestTaskContext(executionListener, this.executorService,</b>
+&nbsp;			this.throwableCollectorFactory, executionAdvisor);
+<b class="fc">&nbsp;		NodeTestTask&lt;C&gt; rootTestTask = new NodeTestTask&lt;&gt;(taskContext, rootTestDescriptor);</b>
+<b class="fc">&nbsp;		rootTestTask.setParentContext(this.rootContext);</b>
+<b class="fc">&nbsp;		return this.executorService.submit(rootTestTask);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

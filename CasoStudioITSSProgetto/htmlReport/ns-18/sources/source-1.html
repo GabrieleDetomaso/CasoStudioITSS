@@ -1,0 +1,522 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Try</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.function</a>
+</div>
+
+<h1>Coverage Summary for Class: Try (org.junit.platform.commons.function)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Try</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    91,7%
+  </span>
+  <span class="absValue">
+    (11/12)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">Try$Failure</td>
+<td class="coverageStat">
+  <span class="percent">
+    15,4%
+  </span>
+  <span class="absValue">
+    (2/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    13%
+  </span>
+  <span class="absValue">
+    (3/23)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">Try$Success</td>
+<td class="coverageStat">
+  <span class="percent">
+    16,7%
+  </span>
+  <span class="absValue">
+    (2/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    14,3%
+  </span>
+  <span class="absValue">
+    (3/21)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    34,4%
+  </span>
+  <span class="absValue">
+    (11/32)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    30,4%
+  </span>
+  <span class="absValue">
+    (17/56)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.function;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.MAINTAINED;
+&nbsp;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.Callable;
+&nbsp;import java.util.function.Consumer;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;
+&nbsp;/**
+&nbsp; * A container object which may either contain a nullable value in case of
+&nbsp; * &lt;em&gt;success&lt;/em&gt; or an exception in case of &lt;em&gt;failure&lt;/em&gt;.
+&nbsp; *
+&nbsp; * &lt;p&gt;Instances of this class should be returned by methods instead of
+&nbsp; * {@link Optional} when callers might want to report the exception via logging
+&nbsp; * or by wrapping it in another exception at a later point in time, e.g. via
+&nbsp; * {@link #getOrThrow(Function)}.
+&nbsp; *
+&nbsp; * &lt;p&gt;Moreover, it makes it particularly convenient to attach follow-up actions
+&nbsp; * should the {@code Try} have been successful (cf. {@link #andThen} and
+&nbsp; * {@link #andThenTry}) or fallback actions should it not have been (cf.
+&nbsp; * {@link #orElse} and {@link #orElseTry}).
+&nbsp; *
+&nbsp; * @since 1.4
+&nbsp; */
+&nbsp;@API(status = MAINTAINED, since = &quot;1.4&quot;)
+<b class="fc">&nbsp;public abstract class Try&lt;V&gt; {</b>
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Call the supplied {@link Callable} and return a successful {@code Try}
+&nbsp;	 * that contains the returned value or, in case an exception was thrown, a
+&nbsp;	 * failed {@code Try} that contains the exception.
+&nbsp;	 *
+&nbsp;	 * @param action the action to try; must not be {@code null}
+&nbsp;	 * @return a succeeded or failed {@code Try} depending on the outcome of the
+&nbsp;	 * supplied action; never {@code null}
+&nbsp;	 * @see #success(Object)
+&nbsp;	 * @see #failure(Exception)
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; Try&lt;V&gt; call(Callable&lt;V&gt; action) {
+<b class="fc">&nbsp;		checkNotNull(action, &quot;action&quot;);</b>
+<b class="fc">&nbsp;		return Try.of(() -&gt; success(action.call()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Convert the supplied value into a succeeded {@code Try}.
+&nbsp;	 *
+&nbsp;	 * @param value the value to wrap; potentially {@code null}
+&nbsp;	 * @return a succeeded {@code Try} that contains the supplied value; never
+&nbsp;	 * {@code null}
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; Try&lt;V&gt; success(V value) {
+<b class="fc">&nbsp;		return new Success&lt;&gt;(value);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Convert the supplied exception into a failed {@code Try}.
+&nbsp;	 *
+&nbsp;	 * @param cause the exception to wrap; must not be {@code null}
+&nbsp;	 * @return a failed {@code Try} that contains the supplied value; never
+&nbsp;	 * {@code null}
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; Try&lt;V&gt; failure(Exception cause) {
+<b class="fc">&nbsp;		return new Failure&lt;&gt;(checkNotNull(cause, &quot;cause&quot;));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// Cannot use Preconditions due to package cycle
+&nbsp;	private static &lt;T&gt; T checkNotNull(T input, String title) {
+<b class="fc">&nbsp;		if (input == null) {</b>
+&nbsp;			// Cannot use PreconditionViolationException due to package cycle
+<b class="nc">&nbsp;			throw new JUnitException(title + &quot; must not be null&quot;);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return input;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static &lt;V&gt; Try&lt;V&gt; of(Callable&lt;Try&lt;V&gt;&gt; action) {
+&nbsp;		try {
+<b class="fc">&nbsp;			return action.call();</b>
+&nbsp;		}
+<b class="fc">&nbsp;		catch (Exception e) {</b>
+<b class="fc">&nbsp;			return failure(e);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private Try() {</b>
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a success, apply the supplied transformer to its
+&nbsp;	 * value and return a new successful or failed {@code Try} depending on the
+&nbsp;	 * transformer&#39;s outcome; if this {@code Try} is a failure, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param transformer the transformer to try; must not be {@code null}
+&nbsp;	 * @return a succeeded or failed {@code Try}; never {@code null}
+&nbsp;	 */
+&nbsp;	public abstract &lt;U&gt; Try&lt;U&gt; andThenTry(Transformer&lt;V, U&gt; transformer);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a success, apply the supplied function to its
+&nbsp;	 * value and return the resulting {@code Try}; if this {@code Try} is a
+&nbsp;	 * failure, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param function the function to apply; must not be {@code null}
+&nbsp;	 * @return a succeeded or failed {@code Try}; never {@code null}
+&nbsp;	 */
+&nbsp;	public abstract &lt;U&gt; Try&lt;U&gt; andThen(Function&lt;V, Try&lt;U&gt;&gt; function);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a failure, call the supplied action and return a
+&nbsp;	 * new successful or failed {@code Try} depending on the action&#39;s outcome;
+&nbsp;	 * if this {@code Try} is a success, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param action the action to try; must not be {@code null}
+&nbsp;	 * @return a succeeded or failed {@code Try}; never {@code null}
+&nbsp;	 */
+&nbsp;	public abstract Try&lt;V&gt; orElseTry(Callable&lt;V&gt; action);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a failure, call the supplied supplier and return
+&nbsp;	 * the resulting {@code Try}; if this {@code Try} is a success, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param supplier the supplier to call; must not be {@code null}
+&nbsp;	 * @return a succeeded or failed {@code Try}; never {@code null}
+&nbsp;	 */
+&nbsp;	public abstract Try&lt;V&gt; orElse(Supplier&lt;Try&lt;V&gt;&gt; supplier);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a success, get the contained value; if this
+&nbsp;	 * {@code Try} is a failure, throw the contained exception.
+&nbsp;	 *
+&nbsp;	 * @return the contained value, if available; potentially {@code null}
+&nbsp;	 * @throws Exception if this {@code Try} is a failure
+&nbsp;	 */
+&nbsp;	public abstract V get() throws Exception;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a success, get the contained value; if this
+&nbsp;	 * {@code Try} is a failure, call the supplied {@link Function} with the
+&nbsp;	 * contained exception and throw the resulting {@link Exception}.
+&nbsp;	 *
+&nbsp;	 * @param exceptionTransformer the transformer to be called with the
+&nbsp;	 * contained exception, if available; must not be {@code null}
+&nbsp;	 * @return the contained value, if available
+&nbsp;	 * @throws E if this {@code Try} is a failure
+&nbsp;	 */
+&nbsp;	public abstract &lt;E extends Exception&gt; V getOrThrow(Function&lt;? super Exception, E&gt; exceptionTransformer) throws E;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a success, call the supplied {@link Consumer} with
+&nbsp;	 * the contained value; otherwise, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param valueConsumer the consumer to be called with the contained value,
+&nbsp;	 * if available; must not be {@code null}
+&nbsp;	 * @return the same {@code Try} for method chaining
+&nbsp;	 */
+&nbsp;	public abstract Try&lt;V&gt; ifSuccess(Consumer&lt;V&gt; valueConsumer);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a failure, call the supplied {@link Consumer} with
+&nbsp;	 * the contained exception; otherwise, do nothing.
+&nbsp;	 *
+&nbsp;	 * @param causeConsumer the consumer to be called with the contained
+&nbsp;	 * exception, if available; must not be {@code null}
+&nbsp;	 * @return the same {@code Try} for method chaining
+&nbsp;	 */
+&nbsp;	public abstract Try&lt;V&gt; ifFailure(Consumer&lt;Exception&gt; causeConsumer);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * If this {@code Try} is a failure, return an empty {@link Optional}; if
+&nbsp;	 * this {@code Try} is a success, wrap the contained value using
+&nbsp;	 * {@link Optional#ofNullable(Object)}.
+&nbsp;	 *
+&nbsp;	 * @return an {@link Optional}; never {@code null} but potentially
+&nbsp;	 * &lt;em&gt;empty&lt;/em&gt;
+&nbsp;	 */
+&nbsp;	public abstract Optional&lt;V&gt; toOptional();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * A transformer for values of type {@code S} to type {@code T}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The {@code Transformer} interface is similar to {@link Function},
+&nbsp;	 * except that a {@code Transformer} may throw an exception.
+&nbsp;	 */
+&nbsp;	@FunctionalInterface
+&nbsp;	public interface Transformer&lt;S, T&gt; {
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Apply this transformer to the supplied value.
+&nbsp;		 *
+&nbsp;		 * @throws Exception if the transformation fails
+&nbsp;		 */
+&nbsp;		T apply(S value) throws Exception;
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	private static class Success&lt;V&gt; extends Try&lt;V&gt; {
+&nbsp;
+&nbsp;		private final V value;
+&nbsp;
+<b class="fc">&nbsp;		Success(V value) {</b>
+<b class="fc">&nbsp;			this.value = value;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;U&gt; Try&lt;U&gt; andThenTry(Transformer&lt;V, U&gt; transformer) {
+<b class="nc">&nbsp;			checkNotNull(transformer, &quot;transformer&quot;);</b>
+<b class="nc">&nbsp;			return Try.call(() -&gt; transformer.apply(this.value));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;U&gt; Try&lt;U&gt; andThen(Function&lt;V, Try&lt;U&gt;&gt; function) {
+<b class="nc">&nbsp;			checkNotNull(function, &quot;function&quot;);</b>
+<b class="nc">&nbsp;			return Try.of(() -&gt; function.apply(this.value));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; orElseTry(Callable&lt;V&gt; action) {
+&nbsp;			// don&#39;t call action because this Try is a success
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; orElse(Supplier&lt;Try&lt;V&gt;&gt; supplier) {
+&nbsp;			// don&#39;t call supplier because this Try is a success
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public V get() {
+<b class="nc">&nbsp;			return this.value;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;E extends Exception&gt; V getOrThrow(Function&lt;? super Exception, E&gt; exceptionTransformer) {
+&nbsp;			// don&#39;t call exceptionTransformer because this Try is a success
+<b class="fc">&nbsp;			return this.value;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; ifSuccess(Consumer&lt;V&gt; valueConsumer) {
+<b class="nc">&nbsp;			checkNotNull(valueConsumer, &quot;valueConsumer&quot;);</b>
+<b class="nc">&nbsp;			valueConsumer.accept(this.value);</b>
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; ifFailure(Consumer&lt;Exception&gt; causeConsumer) {
+&nbsp;			// don&#39;t call causeConsumer because this Try was a success
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Optional&lt;V&gt; toOptional() {
+<b class="nc">&nbsp;			return Optional.ofNullable(this.value);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public boolean equals(Object that) {
+<b class="nc">&nbsp;			if (this == that) {</b>
+<b class="nc">&nbsp;				return true;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (that == null || this.getClass() != that.getClass()) {</b>
+<b class="nc">&nbsp;				return false;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return Objects.equals(this.value, ((Success&lt;?&gt;) that).value);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public int hashCode() {
+<b class="nc">&nbsp;			return Objects.hash(value);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private static class Failure&lt;V&gt; extends Try&lt;V&gt; {
+&nbsp;
+&nbsp;		private final Exception cause;
+&nbsp;
+<b class="fc">&nbsp;		Failure(Exception cause) {</b>
+<b class="fc">&nbsp;			this.cause = cause;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;U&gt; Try&lt;U&gt; andThenTry(Transformer&lt;V, U&gt; transformer) {
+&nbsp;			// don&#39;t call transformer because this Try is a failure
+<b class="nc">&nbsp;			return uncheckedCast();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;U&gt; Try&lt;U&gt; andThen(Function&lt;V, Try&lt;U&gt;&gt; function) {
+&nbsp;			// don&#39;t call function because this Try is a failure
+<b class="nc">&nbsp;			return uncheckedCast();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;		private &lt;U&gt; Try&lt;U&gt; uncheckedCast() {
+<b class="nc">&nbsp;			return (Try&lt;U&gt;) this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; orElseTry(Callable&lt;V&gt; action) {
+<b class="nc">&nbsp;			checkNotNull(action, &quot;action&quot;);</b>
+<b class="nc">&nbsp;			return Try.call(action);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; orElse(Supplier&lt;Try&lt;V&gt;&gt; supplier) {
+<b class="nc">&nbsp;			checkNotNull(supplier, &quot;supplier&quot;);</b>
+<b class="nc">&nbsp;			return Try.of(supplier::get);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public V get() throws Exception {
+<b class="fc">&nbsp;			throw this.cause;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;E extends Exception&gt; V getOrThrow(Function&lt;? super Exception, E&gt; exceptionTransformer) throws E {
+<b class="nc">&nbsp;			checkNotNull(exceptionTransformer, &quot;exceptionTransformer&quot;);</b>
+<b class="nc">&nbsp;			throw exceptionTransformer.apply(this.cause);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; ifSuccess(Consumer&lt;V&gt; valueConsumer) {
+&nbsp;			// don&#39;t call valueConsumer because this Try is a failure
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Try&lt;V&gt; ifFailure(Consumer&lt;Exception&gt; causeConsumer) {
+<b class="nc">&nbsp;			checkNotNull(causeConsumer, &quot;causeConsumer&quot;);</b>
+<b class="nc">&nbsp;			causeConsumer.accept(this.cause);</b>
+<b class="nc">&nbsp;			return this;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Optional&lt;V&gt; toOptional() {
+<b class="nc">&nbsp;			return Optional.empty();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public boolean equals(Object that) {
+<b class="nc">&nbsp;			if (this == that) {</b>
+<b class="nc">&nbsp;				return true;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (that == null || this.getClass() != that.getClass()) {</b>
+<b class="nc">&nbsp;				return false;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return Objects.equals(this.cause, ((Failure&lt;?&gt;) that).cause);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public int hashCode() {
+<b class="nc">&nbsp;			return Objects.hash(cause);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

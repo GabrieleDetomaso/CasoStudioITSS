@@ -1,0 +1,264 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UniqueIdFormat</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine</a>
+</div>
+
+<h1>Coverage Summary for Class: UniqueIdFormat (org.junit.platform.engine)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UniqueIdFormat</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    92,9%
+  </span>
+  <span class="absValue">
+    (13/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86,8%
+  </span>
+  <span class="absValue">
+    (46/53)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.joining;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;
+&nbsp;import java.io.Serializable;
+&nbsp;import java.io.UnsupportedEncodingException;
+&nbsp;import java.net.URLDecoder;
+&nbsp;import java.net.URLEncoder;
+&nbsp;import java.nio.charset.StandardCharsets;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.engine.UniqueId.Segment;
+&nbsp;
+&nbsp;/**
+&nbsp; * Used to {@link #parse} a {@link UniqueId} from a string representation
+&nbsp; * or to {@link #format} a {@link UniqueId} into a string representation.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;class UniqueIdFormat implements Serializable {
+&nbsp;
+&nbsp;	private static final long serialVersionUID = 1L;
+&nbsp;
+<b class="fc">&nbsp;	private static final UniqueIdFormat defaultFormat = new UniqueIdFormat(&#39;[&#39;, &#39;:&#39;, &#39;]&#39;, &#39;/&#39;);</b>
+&nbsp;
+&nbsp;	static UniqueIdFormat getDefault() {
+<b class="fc">&nbsp;		return defaultFormat;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static String quote(char c) {
+<b class="fc">&nbsp;		return Pattern.quote(String.valueOf(c));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static String encode(char c) {
+&nbsp;		try {
+<b class="fc">&nbsp;			return URLEncoder.encode(String.valueOf(c), StandardCharsets.UTF_8.name());</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (UnsupportedEncodingException e) {</b>
+<b class="nc">&nbsp;			throw new AssertionError(&quot;UTF-8 should be supported&quot;, e);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private final char openSegment;
+&nbsp;	private final char closeSegment;
+&nbsp;	private final char segmentDelimiter;
+&nbsp;	private final char typeValueSeparator;
+&nbsp;	private final Pattern segmentPattern;
+<b class="fc">&nbsp;	private final HashMap&lt;Character, String&gt; encodedCharacterMap = new HashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;	UniqueIdFormat(char openSegment, char typeValueSeparator, char closeSegment, char segmentDelimiter) {</b>
+<b class="fc">&nbsp;		this.openSegment = openSegment;</b>
+<b class="fc">&nbsp;		this.typeValueSeparator = typeValueSeparator;</b>
+<b class="fc">&nbsp;		this.closeSegment = closeSegment;</b>
+<b class="fc">&nbsp;		this.segmentDelimiter = segmentDelimiter;</b>
+<b class="fc">&nbsp;		this.segmentPattern = Pattern.compile(</b>
+<b class="fc">&nbsp;			String.format(&quot;%s(.+)%s(.+)%s&quot;, quote(openSegment), quote(typeValueSeparator), quote(closeSegment)),</b>
+&nbsp;			Pattern.DOTALL);
+&nbsp;
+&nbsp;		// Compute &quot;forbidden&quot; character encoding map.
+&nbsp;		// Note that the map is always empty at this point. Thus the use of
+&nbsp;		// computeIfAbsent() is purely syntactic sugar.
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(&#39;%&#39;, UniqueIdFormat::encode);</b>
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(&#39;+&#39;, UniqueIdFormat::encode);</b>
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(openSegment, UniqueIdFormat::encode);</b>
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(typeValueSeparator, UniqueIdFormat::encode);</b>
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(closeSegment, UniqueIdFormat::encode);</b>
+<b class="fc">&nbsp;		encodedCharacterMap.computeIfAbsent(segmentDelimiter, UniqueIdFormat::encode);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Parse a {@code UniqueId} from the supplied string representation.
+&nbsp;	 *
+&nbsp;	 * @return a properly constructed {@code UniqueId}
+&nbsp;	 * @throws JUnitException if the string cannot be parsed
+&nbsp;	 */
+&nbsp;	UniqueId parse(String source) throws JUnitException {
+<b class="fc">&nbsp;		String[] parts = source.split(String.valueOf(this.segmentDelimiter));</b>
+<b class="fc">&nbsp;		List&lt;Segment&gt; segments = Arrays.stream(parts).map(this::createSegment).collect(toList());</b>
+<b class="fc">&nbsp;		return new UniqueId(this, segments);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Segment createSegment(String segmentString) throws JUnitException {
+<b class="fc">&nbsp;		Matcher segmentMatcher = this.segmentPattern.matcher(segmentString);</b>
+<b class="fc">&nbsp;		if (!segmentMatcher.matches()) {</b>
+<b class="nc">&nbsp;			throw new JUnitException(String.format(&quot;&#39;%s&#39; is not a well-formed UniqueId segment&quot;, segmentString));</b>
+&nbsp;		}
+<b class="fc">&nbsp;		String type = decode(checkAllowed(segmentMatcher.group(1)));</b>
+<b class="fc">&nbsp;		String value = decode(checkAllowed(segmentMatcher.group(2)));</b>
+<b class="fc">&nbsp;		return new Segment(type, value);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private String checkAllowed(String typeOrValue) {
+<b class="fc">&nbsp;		checkDoesNotContain(typeOrValue, this.segmentDelimiter);</b>
+<b class="fc">&nbsp;		checkDoesNotContain(typeOrValue, this.typeValueSeparator);</b>
+<b class="fc">&nbsp;		checkDoesNotContain(typeOrValue, this.openSegment);</b>
+<b class="fc">&nbsp;		checkDoesNotContain(typeOrValue, this.closeSegment);</b>
+<b class="fc">&nbsp;		return typeOrValue;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void checkDoesNotContain(String typeOrValue, char forbiddenCharacter) {
+<b class="fc">&nbsp;		Preconditions.condition(typeOrValue.indexOf(forbiddenCharacter) &lt; 0,</b>
+<b class="nc">&nbsp;			() -&gt; String.format(&quot;type or value &#39;%s&#39; must not contain &#39;%s&#39;&quot;, typeOrValue, forbiddenCharacter));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Format and return the string representation of the supplied {@code UniqueId}.
+&nbsp;	 */
+&nbsp;	String format(UniqueId uniqueId) {
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return uniqueId.getSegments().stream()</b>
+<b class="fc">&nbsp;			.map(this::describe)</b>
+<b class="fc">&nbsp;			.collect(joining(String.valueOf(this.segmentDelimiter)));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private String describe(Segment segment) {
+<b class="fc">&nbsp;		String body = encode(segment.getType()) + typeValueSeparator + encode(segment.getValue());</b>
+<b class="fc">&nbsp;		return openSegment + body + closeSegment;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private String encode(String s) {
+<b class="fc">&nbsp;		StringBuilder builder = new StringBuilder(s.length());</b>
+<b class="fc">&nbsp;		for (int i = 0; i &lt; s.length(); i++) {</b>
+<b class="fc">&nbsp;			char c = s.charAt(i);</b>
+<b class="fc">&nbsp;			String value = encodedCharacterMap.get(c);</b>
+<b class="fc">&nbsp;			if (value == null) {</b>
+<b class="fc">&nbsp;				builder.append(c);</b>
+<b class="fc">&nbsp;				continue;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			builder.append(value);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return builder.toString();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static String decode(String s) {
+&nbsp;		try {
+<b class="fc">&nbsp;			return URLDecoder.decode(s, StandardCharsets.UTF_8.name());</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (UnsupportedEncodingException e) {</b>
+<b class="nc">&nbsp;			throw new JUnitException(&quot;UTF-8 should be supported&quot;, e);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

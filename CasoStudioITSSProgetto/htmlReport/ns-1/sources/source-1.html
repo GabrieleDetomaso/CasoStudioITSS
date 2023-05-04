@@ -1,0 +1,333 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > CourseManagerGroup1Test</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">&lt;empty package name&gt;</a>
+</div>
+
+<h1>Coverage Summary for Class: CourseManagerGroup1Test (&lt;empty package name&gt;)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CourseManagerGroup1Test</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (30/30)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88,9%
+  </span>
+  <span class="absValue">
+    (48/54)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;import entities.CourseManager;
+&nbsp;import entities.CourseSubscription;
+&nbsp;import entities.Student;
+&nbsp;import exceptions.CourseEmptyException;
+&nbsp;import exceptions.NullStudentException;
+&nbsp;import exceptions.RangeDateException;
+&nbsp;import org.junit.jupiter.api.*;
+&nbsp;import org.junit.jupiter.params.ParameterizedTest;
+&nbsp;import org.junit.jupiter.params.provider.*;
+&nbsp;
+&nbsp;import java.time.DateTimeException;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.util.*;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;/**
+&nbsp; * Classe di test per CourseManager
+&nbsp; *
+&nbsp; * @author Gabriele Detomaso, Giacomo Detomaso, Alessandra Pipoli, Roberto Scorrano
+&nbsp; * */
+<b class="fc">&nbsp;public class CourseManagerGroup1Test {</b>
+&nbsp;
+&nbsp;    // Definizione di studenti di test
+<b class="fc">&nbsp;    private static Student s1 = new Student(&quot;Gianni&quot;, &quot;Verdi&quot;, &quot;111111&quot;);</b>
+<b class="fc">&nbsp;    private static Student s2 = new Student(&quot;Marco&quot;, &quot;Bari&quot;, &quot;111112&quot;);</b>
+<b class="fc">&nbsp;    private static Student s3 = new Student(&quot;Angelo&quot;, &quot;Valentino&quot;, &quot;111113&quot;);</b>
+<b class="fc">&nbsp;    private static Student s4 = new Student(&quot;Oscar&quot;, &quot;Bravo&quot;, &quot;111114&quot;);</b>
+<b class="fc">&nbsp;    private static Student s5 = new Student(&quot;Leo&quot;, &quot;DiCaprio&quot;, &quot;111115&quot;);</b>
+&nbsp;
+&nbsp;    //GRUPPO 1
+&nbsp;    private static CourseManager courseManager1;
+&nbsp;    private static CourseManager courseManager3;
+&nbsp;
+&nbsp;    //GRUPPO 2
+&nbsp;    private static CourseManager courseManager2;
+&nbsp;
+&nbsp;    // Metodi del ciclo di vita JUnit
+&nbsp;
+&nbsp;    @BeforeAll
+&nbsp;    static void setup() {
+<b class="fc">&nbsp;        courseManager1 = new CourseManager(&quot;Integrazione e test 1&quot;, LocalDate.now().plusDays(10));</b>
+<b class="fc">&nbsp;        courseManager3 = new CourseManager(&quot;Integrazione e test 3&quot;, LocalDate.now().minusDays(1));</b>
+<b class="fc">&nbsp;        courseManager2 = new CourseManager(&quot;Integrazione e test 2&quot;, LocalDate.now());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @BeforeEach
+&nbsp;    void init() {
+&nbsp;        // Aggiunta studenti per courseManager1
+&nbsp;        try {
+<b class="fc">&nbsp;            courseManager1.addNewCourseAttender(s1, LocalDate.now());</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            System.out.println(&quot;Eccezione lanciata 1&quot;);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;
+&nbsp;        // Aggiunta studenti per courseManager2
+&nbsp;        try {
+&nbsp;            //courseManager2.addNewCourseAttender(s5, LocalDate.parse(&quot;2022-11-03&quot;));
+<b class="fc">&nbsp;            courseManager2.addNewCourseAttender(s1, LocalDate.parse(&quot;2022-11-04&quot;));</b>
+<b class="nc">&nbsp;            courseManager2.addNewCourseAttender(s2, LocalDate.parse(&quot;2022-11-10&quot;));</b>
+<b class="nc">&nbsp;            courseManager2.addNewCourseAttender(s3, LocalDate.parse(&quot;2022-11-11&quot;));</b>
+<b class="nc">&nbsp;            courseManager2.addNewCourseAttender(s4, LocalDate.parse(&quot;2022-11-11&quot;));</b>
+<b class="fc">&nbsp;        } catch (Exception e) {</b>
+<b class="fc">&nbsp;            System.out.println(&quot;Eccezione lanciata 2&quot;);</b>
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @AfterEach
+&nbsp;    void tearDown() {
+<b class="fc">&nbsp;        courseManager1.deleteCourseStudents();</b>
+<b class="fc">&nbsp;        courseManager2.deleteCourseStudents();</b>
+<b class="fc">&nbsp;        courseManager3.deleteCourseStudents();</b>
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @AfterAll
+&nbsp;    static void clear() {
+<b class="fc">&nbsp;        courseManager1 = null;</b>
+<b class="fc">&nbsp;        courseManager2 = null;</b>
+<b class="fc">&nbsp;        courseManager3 = null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // GRUPPO 1
+&nbsp;    // metodo testato: assignMarkToStudent;
+&nbsp;
+&nbsp;    @ParameterizedTest //Uniti test: T2, T4 e T5
+&nbsp;    @MethodSource(&quot;marksProviderOfmarkWrong&quot;)
+&nbsp;    @DisplayName(&quot;Inserimento di vari voti non accettabili&quot;)
+&nbsp;    void markWrong(int mark) {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager1.assignMarkToStudent(mark, s1.getMat())</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;Integer&gt; marksProviderOfmarkWrong() {
+<b class="fc">&nbsp;        return Stream.of(17, 32, -1);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @ParameterizedTest //Uniti test: T1 e T3
+&nbsp;    @MethodSource(&quot;marksProviderOfmarkRight&quot;)
+&nbsp;    @DisplayName(&quot;Inserimento di vari voti accettabili ad uno studente iscritto&quot;)
+&nbsp;    void markRight(int mark) {
+<b class="fc">&nbsp;        Assertions.assertDoesNotThrow(() -&gt;</b>
+<b class="fc">&nbsp;                courseManager1.assignMarkToStudent(mark, s1.getMat())</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;Integer&gt; marksProviderOfmarkRight() {
+<b class="fc">&nbsp;        return Stream.of(18, 31);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @ParameterizedTest //Uniti test: T6, T7, T8, T9, T10, T11 e T12
+&nbsp;    @NullAndEmptySource
+&nbsp;    @MethodSource(&quot;matsProvider&quot;)
+&nbsp;    @DisplayName(&quot;Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti&quot;)
+&nbsp;    void registerWrong(String mat) {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager1.assignMarkToStudent(28, mat));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;String&gt; matsProvider() {
+<b class="fc">&nbsp;        return Stream.of(&quot;11111&quot;,</b>
+&nbsp;                &quot;A2G27T&quot;,
+&nbsp;                &quot;1234567&quot;,
+<b class="fc">&nbsp;                s4.getMat(),</b>
+&nbsp;                &quot;999999&quot;
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // metodo testato: addNewCourseAttender;
+&nbsp;
+&nbsp;    @Test // T1
+&nbsp;    @DisplayName(&quot;Studente nullo&quot;)
+&nbsp;    void studentNull() {
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager1.addNewCourseAttender(null, LocalDate.now())</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;    @ParameterizedTest // Uniti tet: T2 e T3
+&nbsp;    @MethodSource(&quot;studentsProviderOfRegistrationStudent&quot;)
+&nbsp;    @DisplayName(&quot;Studente già iscritto e studente non iscritto&quot;)
+&nbsp;    void registrationStudent(Boolean expectedResult, Student s) throws NullStudentException {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertEquals(expectedResult, courseManager1.addNewCourseAttender(s, LocalDate.now()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;Arguments&gt; studentsProviderOfRegistrationStudent() {
+&nbsp;
+<b class="fc">&nbsp;        return Stream.of(</b>
+<b class="fc">&nbsp;                Arguments.of(false, s1),</b>
+<b class="fc">&nbsp;                Arguments.of(true, s4)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @ParameterizedTest //Uniti test: T4 e T6
+&nbsp;    @NullSource
+&nbsp;    @MethodSource(&quot;datesProviderOfDateWrong&quot;)
+&nbsp;    @DisplayName(&quot;Data nulla e data non scaduta ma non odierna&quot;)
+&nbsp;    void dateWrong(LocalDate testDate) {
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt; courseManager1.addNewCourseAttender(s4, testDate));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private static Stream&lt;LocalDate&gt; datesProviderOfDateWrong() {
+<b class="fc">&nbsp;        return Stream.of(LocalDate.now().plusDays(2));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Test //T5
+&nbsp;    @DisplayName(&quot;Data corretta&quot;)
+&nbsp;    void dateRight() throws NullStudentException {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertTrue(courseManager1.addNewCourseAttender(new Student(&quot;a&quot;, &quot;a&quot;, &quot;111112&quot;)</b>
+<b class="fc">&nbsp;                , LocalDate.now()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Test //T7
+&nbsp;    @DisplayName(&quot;Data scaduta&quot;)
+&nbsp;    void dateExpired() {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager3.addNewCourseAttender(s4, LocalDate.now())</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Test //T8
+&nbsp;    @DisplayName(&quot;Data reale scaduta data iscrizione falsata &quot;)
+&nbsp;    void realDateExpiredRegistrationDateFalsed() {
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager3.addNewCourseAttender(s4, LocalDate.now().minusDays(1))</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    // metodo testato: getSpecificSubscription;
+&nbsp;
+&nbsp;    @Test // T1
+&nbsp;    @DisplayName(&quot;matricola nulla&quot;)
+&nbsp;    void RegisterNull() {
+<b class="fc">&nbsp;        Assertions.assertThrows(Exception.class, () -&gt;</b>
+<b class="fc">&nbsp;                courseManager1.getSpecificSubscription(null)</b>
+&nbsp;        );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @ParameterizedTest //Uniti test:  T2, T3, T4, T6, T7 e T8
+&nbsp;    @EmptySource
+&nbsp;    @MethodSource(&quot;matsProvider&quot;)
+&nbsp;    @DisplayName(&quot;Inserimento di matricole di formato sbagliato o non iscritti/esistenti&quot;)
+&nbsp;    void subscriberSearchWrong( String mat) {
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertNull( courseManager1.getSpecificSubscription(mat) );</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Test // T5
+&nbsp;    @DisplayName(&quot;Inserimento matricola di uno studente iscritto&quot;)
+&nbsp;    void registerCorrect(){
+&nbsp;
+<b class="fc">&nbsp;        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

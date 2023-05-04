@@ -1,0 +1,218 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > HierarchicalTestEngine</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: HierarchicalTestEngine (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">HierarchicalTestEngine</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.MAINTAINED;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.engine.ExecutionRequest;
+&nbsp;import org.junit.platform.engine.TestEngine;
+&nbsp;
+&nbsp;/**
+&nbsp; * Abstract base class for all {@link TestEngine} implementations that wish
+&nbsp; * to organize test suites hierarchically based on the {@link Node} abstraction.
+&nbsp; *
+&nbsp; * @param &lt;C&gt; the type of {@code EngineExecutionContext} used by this engine
+&nbsp; * @since 1.0
+&nbsp; * @see Node
+&nbsp; */
+&nbsp;@API(status = MAINTAINED, since = &quot;1.0&quot;)
+&nbsp;public abstract class HierarchicalTestEngine&lt;C extends EngineExecutionContext&gt; implements TestEngine {
+&nbsp;
+<b class="fc">&nbsp;	public HierarchicalTestEngine() {</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create an {@linkplain #createExecutorService(ExecutionRequest) executor
+&nbsp;	 * service}; create an initial {@linkplain #createExecutionContext execution
+&nbsp;	 * context}; execute the behavior of all {@linkplain Node nodes} in the
+&nbsp;	 * hierarchy starting with the supplied {@code request}&#39;s
+&nbsp;	 * {@linkplain ExecutionRequest#getRootTestDescriptor() root} and notify
+&nbsp;	 * its {@linkplain ExecutionRequest#getEngineExecutionListener() execution
+&nbsp;	 * listener} of test execution events.
+&nbsp;	 *
+&nbsp;	 * @see Node
+&nbsp;	 * @see #createExecutorService
+&nbsp;	 * @see #createExecutionContext
+&nbsp;	 */
+&nbsp;	@Override
+&nbsp;	public final void execute(ExecutionRequest request) {
+<b class="fc">&nbsp;		try (HierarchicalTestExecutorService executorService = createExecutorService(request)) {</b>
+<b class="fc">&nbsp;			C executionContext = createExecutionContext(request);</b>
+<b class="fc">&nbsp;			ThrowableCollector.Factory throwableCollectorFactory = createThrowableCollectorFactory(request);</b>
+<b class="fc">&nbsp;			new HierarchicalTestExecutor&lt;&gt;(request, executionContext, executorService,</b>
+<b class="fc">&nbsp;				throwableCollectorFactory).execute().get();</b>
+<b class="fc">&nbsp;		}</b>
+<b class="nc">&nbsp;		catch (Exception exception) {</b>
+<b class="nc">&nbsp;			throw new JUnitException(&quot;Error executing tests for engine &quot; + getId(), exception);</b>
+<b class="fc">&nbsp;		}</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create the {@linkplain HierarchicalTestExecutorService executor service}
+&nbsp;	 * to use for executing the supplied {@linkplain ExecutionRequest request}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;An engine may use the information in the supplied &lt;em&gt;request&lt;/em&gt;
+&nbsp;	 * such as the contained
+&nbsp;	 * {@linkplain ExecutionRequest#getConfigurationParameters() configuration parameters}
+&nbsp;	 * to decide what kind of service to return or how to configure it.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;By default, this method returns an instance of
+&nbsp;	 * {@link SameThreadHierarchicalTestExecutorService}.
+&nbsp;	 *
+&nbsp;	 * @param request the request about to be executed
+&nbsp;	 * @since 1.3
+&nbsp;	 * @see ForkJoinPoolHierarchicalTestExecutorService
+&nbsp;	 * @see SameThreadHierarchicalTestExecutorService
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;1.3&quot;)
+&nbsp;	protected HierarchicalTestExecutorService createExecutorService(ExecutionRequest request) {
+<b class="fc">&nbsp;		return new SameThreadHierarchicalTestExecutorService();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create the {@linkplain ThrowableCollector.Factory factory} for creating
+&nbsp;	 * {@link ThrowableCollector} instances used to handle exceptions that occur
+&nbsp;	 * during execution of this engine&#39;s tests.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;An engine may use the information in the supplied &lt;em&gt;request&lt;/em&gt;
+&nbsp;	 * such as the contained
+&nbsp;	 * {@linkplain ExecutionRequest#getConfigurationParameters() configuration parameters}
+&nbsp;	 * to decide what kind of factory to return or how to configure it.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;By default, this method returns a factory that always creates instances of
+&nbsp;	 * {@link OpenTest4JAwareThrowableCollector}.
+&nbsp;	 *
+&nbsp;	 * @param request the request about to be executed
+&nbsp;	 * @since 1.3
+&nbsp;	 * @see OpenTest4JAwareThrowableCollector
+&nbsp;	 * @see ThrowableCollector
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;1.3&quot;)
+&nbsp;	protected ThrowableCollector.Factory createThrowableCollectorFactory(ExecutionRequest request) {
+<b class="nc">&nbsp;		return OpenTest4JAwareThrowableCollector::new;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create the initial execution context for executing the supplied
+&nbsp;	 * {@linkplain ExecutionRequest request}.
+&nbsp;	 *
+&nbsp;	 * @param request the request about to be executed
+&nbsp;	 * @return the initial context that will be passed to nodes in the hierarchy
+&nbsp;	 */
+&nbsp;	protected abstract C createExecutionContext(ExecutionRequest request);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

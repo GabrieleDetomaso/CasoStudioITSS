@@ -1,0 +1,258 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestTemplateTestDescriptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: TestTemplateTestDescriptor (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TestTemplateTestDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (10/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86%
+  </span>
+  <span class="absValue">
+    (37/43)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.joining;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;import static org.junit.jupiter.engine.descriptor.ExtensionUtils.populateNewExtensionRegistryFromExtendWithAnnotation;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.atomic.AtomicInteger;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.ExecutableInvoker;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.extension.TestInstances;
+&nbsp;import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
+&nbsp;import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.jupiter.engine.execution.DefaultExecutableInvoker;
+&nbsp;import org.junit.jupiter.engine.execution.JupiterEngineExecutionContext;
+&nbsp;import org.junit.jupiter.engine.extension.ExtensionRegistry;
+&nbsp;import org.junit.jupiter.engine.extension.MutableExtensionRegistry;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@link TestDescriptor} for {@link org.junit.jupiter.api.TestTemplate @TestTemplate}
+&nbsp; * methods.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;5.0&quot;)
+&nbsp;public class TestTemplateTestDescriptor extends MethodBasedTestDescriptor implements Filterable {
+&nbsp;
+&nbsp;	public static final String SEGMENT_TYPE = &quot;test-template&quot;;
+<b class="fc">&nbsp;	private final DynamicDescendantFilter dynamicDescendantFilter = new DynamicDescendantFilter();</b>
+&nbsp;
+&nbsp;	public TestTemplateTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method templateMethod,
+&nbsp;			JupiterConfiguration configuration) {
+<b class="fc">&nbsp;		super(uniqueId, testClass, templateMethod, configuration);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- Filterable ----------------------------------------------------------
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public DynamicDescendantFilter getDynamicDescendantFilter() {
+<b class="fc">&nbsp;		return dynamicDescendantFilter;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- TestDescriptor ------------------------------------------------------
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Type getType() {
+<b class="fc">&nbsp;		return Type.CONTAINER;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean mayRegisterTests() {
+<b class="fc">&nbsp;		return true;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- Node ----------------------------------------------------------------
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public JupiterEngineExecutionContext prepare(JupiterEngineExecutionContext context) throws Exception {
+<b class="fc">&nbsp;		MutableExtensionRegistry registry = populateNewExtensionRegistryFromExtendWithAnnotation(</b>
+<b class="fc">&nbsp;			context.getExtensionRegistry(), getTestMethod());</b>
+&nbsp;
+&nbsp;		// The test instance should be properly maintained by the enclosing class&#39;s ExtensionContext.
+<b class="fc">&nbsp;		TestInstances testInstances = context.getExtensionContext().getTestInstances().orElse(null);</b>
+&nbsp;
+<b class="fc">&nbsp;		ExecutableInvoker executableInvoker = new DefaultExecutableInvoker(context);</b>
+<b class="fc">&nbsp;		ExtensionContext extensionContext = new TestTemplateExtensionContext(context.getExtensionContext(),</b>
+<b class="fc">&nbsp;			context.getExecutionListener(), this, context.getConfiguration(), testInstances, executableInvoker);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return context.extend()</b>
+<b class="fc">&nbsp;				.withExtensionRegistry(registry)</b>
+<b class="fc">&nbsp;				.withExtensionContext(extensionContext)</b>
+<b class="fc">&nbsp;				.build();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public JupiterEngineExecutionContext execute(JupiterEngineExecutionContext context,
+&nbsp;			DynamicTestExecutor dynamicTestExecutor) throws Exception {
+&nbsp;
+<b class="fc">&nbsp;		ExtensionContext extensionContext = context.getExtensionContext();</b>
+<b class="fc">&nbsp;		List&lt;TestTemplateInvocationContextProvider&gt; providers = validateProviders(extensionContext,</b>
+<b class="fc">&nbsp;			context.getExtensionRegistry());</b>
+<b class="fc">&nbsp;		AtomicInteger invocationIndex = new AtomicInteger();</b>
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		providers.stream()</b>
+<b class="fc">&nbsp;				.flatMap(provider -&gt; provider.provideTestTemplateInvocationContexts(extensionContext))</b>
+<b class="fc">&nbsp;				.map(invocationContext -&gt; createInvocationTestDescriptor(invocationContext, invocationIndex.incrementAndGet()))</b>
+<b class="fc">&nbsp;				.filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;				.map(Optional::get)</b>
+<b class="fc">&nbsp;				.forEach(invocationTestDescriptor -&gt; execute(dynamicTestExecutor, invocationTestDescriptor));</b>
+&nbsp;		// @formatter:on
+<b class="fc">&nbsp;		validateWasAtLeastInvokedOnce(invocationIndex.get(), providers);</b>
+<b class="fc">&nbsp;		return context;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private List&lt;TestTemplateInvocationContextProvider&gt; validateProviders(ExtensionContext extensionContext,
+&nbsp;			ExtensionRegistry extensionRegistry) {
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		List&lt;TestTemplateInvocationContextProvider&gt; providers = extensionRegistry.stream(TestTemplateInvocationContextProvider.class)</b>
+<b class="fc">&nbsp;				.filter(provider -&gt; provider.supportsTestTemplate(extensionContext))</b>
+<b class="fc">&nbsp;				.collect(toList());</b>
+&nbsp;		// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;		return Preconditions.notEmpty(providers,</b>
+<b class="nc">&nbsp;			() -&gt; String.format(&quot;You must register at least one %s that supports @TestTemplate method [%s]&quot;,</b>
+<b class="nc">&nbsp;				TestTemplateInvocationContextProvider.class.getSimpleName(), getTestMethod()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TestDescriptor&gt; createInvocationTestDescriptor(TestTemplateInvocationContext invocationContext,
+&nbsp;			int index) {
+<b class="fc">&nbsp;		UniqueId uniqueId = getUniqueId().append(TestTemplateInvocationTestDescriptor.SEGMENT_TYPE, &quot;#&quot; + index);</b>
+<b class="fc">&nbsp;		if (getDynamicDescendantFilter().test(uniqueId, index - 1)) {</b>
+<b class="fc">&nbsp;			return Optional.of(new TestTemplateInvocationTestDescriptor(uniqueId, getTestClass(), getTestMethod(),</b>
+&nbsp;				invocationContext, index, configuration));
+&nbsp;		}
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void execute(DynamicTestExecutor dynamicTestExecutor, TestDescriptor testDescriptor) {
+<b class="fc">&nbsp;		testDescriptor.setParent(this);</b>
+<b class="fc">&nbsp;		dynamicTestExecutor.execute(testDescriptor);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void validateWasAtLeastInvokedOnce(int invocationIndex,
+&nbsp;			List&lt;TestTemplateInvocationContextProvider&gt; providers) {
+&nbsp;
+<b class="fc">&nbsp;		Preconditions.condition(invocationIndex &gt; 0,</b>
+<b class="nc">&nbsp;			() -&gt; &quot;None of the supporting &quot; + TestTemplateInvocationContextProvider.class.getSimpleName() + &quot;s &quot;</b>
+<b class="nc">&nbsp;					+ providers.stream().map(provider -&gt; provider.getClass().getSimpleName()).collect(</b>
+<b class="nc">&nbsp;						joining(&quot;, &quot;, &quot;[&quot;, &quot;]&quot;))</b>
+&nbsp;					+ &quot; provided a non-empty stream&quot;);
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

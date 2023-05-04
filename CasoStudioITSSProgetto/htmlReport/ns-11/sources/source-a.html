@@ -1,0 +1,169 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TimeoutDurationParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TimeoutDurationParser (org.junit.jupiter.engine.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TimeoutDurationParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57,9%
+  </span>
+  <span class="absValue">
+    (11/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.extension;
+&nbsp;
+&nbsp;import static java.util.concurrent.TimeUnit.DAYS;
+&nbsp;import static java.util.concurrent.TimeUnit.HOURS;
+&nbsp;import static java.util.concurrent.TimeUnit.MICROSECONDS;
+&nbsp;import static java.util.concurrent.TimeUnit.MILLISECONDS;
+&nbsp;import static java.util.concurrent.TimeUnit.MINUTES;
+&nbsp;import static java.util.concurrent.TimeUnit.NANOSECONDS;
+&nbsp;import static java.util.concurrent.TimeUnit.SECONDS;
+&nbsp;import static java.util.regex.Pattern.CASE_INSENSITIVE;
+&nbsp;import static java.util.regex.Pattern.UNICODE_CASE;
+&nbsp;
+&nbsp;import java.time.format.DateTimeParseException;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Locale;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.TimeUnit;
+&nbsp;import java.util.regex.Matcher;
+&nbsp;import java.util.regex.Pattern;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.5
+&nbsp; */
+<b class="fc">&nbsp;class TimeoutDurationParser {</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Pattern PATTERN = Pattern.compile(&quot;([1-9]\\d*) ?((?:[n?m]?s)|m|h|d)?&quot;,</b>
+&nbsp;		CASE_INSENSITIVE | UNICODE_CASE);
+&nbsp;	private static final Map&lt;String, TimeUnit&gt; UNITS_BY_ABBREVIATION;
+&nbsp;
+&nbsp;	static {
+<b class="fc">&nbsp;		Map&lt;String, TimeUnit&gt; unitsByAbbreviation = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;ns&quot;, NANOSECONDS);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;?s&quot;, MICROSECONDS);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;ms&quot;, MILLISECONDS);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;s&quot;, SECONDS);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;m&quot;, MINUTES);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;h&quot;, HOURS);</b>
+<b class="fc">&nbsp;		unitsByAbbreviation.put(&quot;d&quot;, DAYS);</b>
+<b class="fc">&nbsp;		UNITS_BY_ABBREVIATION = Collections.unmodifiableMap(unitsByAbbreviation);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	TimeoutDuration parse(CharSequence text) throws DateTimeParseException {
+<b class="nc">&nbsp;		Matcher matcher = PATTERN.matcher(text);</b>
+<b class="nc">&nbsp;		if (matcher.matches()) {</b>
+<b class="nc">&nbsp;			long value = Long.parseLong(matcher.group(1));</b>
+<b class="nc">&nbsp;			String unitAbbreviation = matcher.group(2);</b>
+<b class="nc">&nbsp;			TimeUnit unit = unitAbbreviation == null ? SECONDS</b>
+<b class="nc">&nbsp;					: UNITS_BY_ABBREVIATION.get(unitAbbreviation.toLowerCase(Locale.ENGLISH));</b>
+<b class="nc">&nbsp;			return new TimeoutDuration(value, unit);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		throw new DateTimeParseException(&quot;Timeout duration is not in the expected format (&lt;number&gt; [ns|?s|ms|s|m|h|d])&quot;,</b>
+&nbsp;			text, 0);
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

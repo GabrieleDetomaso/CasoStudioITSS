@@ -1,0 +1,564 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DisplayNameGenerator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: DisplayNameGenerator (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DisplayNameGenerator</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76,9%
+  </span>
+  <span class="absValue">
+    (10/13)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DisplayNameGenerator$IndicativeSentences</td>
+<td class="coverageStat">
+  <span class="percent">
+    16,7%
+  </span>
+  <span class="absValue">
+    (2/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5,3%
+  </span>
+  <span class="absValue">
+    (2/38)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DisplayNameGenerator$ReplaceUnderscores</td>
+<td class="coverageStat">
+  <span class="percent">
+    33,3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    33,3%
+  </span>
+  <span class="absValue">
+    (2/6)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DisplayNameGenerator$Simple</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    28,6%
+  </span>
+  <span class="absValue">
+    (2/7)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">DisplayNameGenerator$Standard</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71,4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    34,5%
+  </span>
+  <span class="absValue">
+    (10/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    29,6%
+  </span>
+  <span class="absValue">
+    (21/71)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;import static org.junit.platform.commons.support.ModifierSupport.isStatic;
+&nbsp;import static org.junit.platform.commons.util.AnnotationUtils.findAnnotation;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.function.Predicate;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.util.ClassUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code DisplayNameGenerator} defines the SPI for generating display names
+&nbsp; * programmatically.
+&nbsp; *
+&nbsp; * &lt;p&gt;Display names are typically used for test reporting in IDEs and build
+&nbsp; * tools and may contain spaces, special characters, and even emoji.
+&nbsp; *
+&nbsp; * &lt;p&gt;Concrete implementations must have a &lt;em&gt;default constructor&lt;/em&gt;.
+&nbsp; *
+&nbsp; * &lt;p&gt;A {@link DisplayNameGenerator} can be configured &lt;em&gt;globally&lt;/em&gt; for the
+&nbsp; * entire test suite via the {@value #DEFAULT_GENERATOR_PROPERTY_NAME}
+&nbsp; * configuration parameter (see the User Guide for details) or &lt;em&gt;locally&lt;/em&gt;
+&nbsp; * for a test class via the {@link DisplayNameGeneration @DisplayNameGeneration}
+&nbsp; * annotation.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Built-in Implementations&lt;/h2&gt;
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;{@link Standard}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link Simple}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link ReplaceUnderscores}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link IndicativeSentences}&lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; * @see DisplayName @DisplayName
+&nbsp; * @see DisplayNameGeneration @DisplayNameGeneration
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface DisplayNameGenerator {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Property name used to set the default display name generator class name:
+&nbsp;	 * {@value}
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Supported Values&lt;/h4&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Supported values include fully qualified class names for types that
+&nbsp;	 * implement {@link DisplayNameGenerator}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If not specified, the default is
+&nbsp;	 * {@link DisplayNameGenerator.Standard}.
+&nbsp;	 *
+&nbsp;	 * @since 5.5
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.9&quot;)
+&nbsp;	String DEFAULT_GENERATOR_PROPERTY_NAME = &quot;junit.jupiter.displayname.generator.default&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Generate a display name for the given top-level or {@code static} nested test class.
+&nbsp;	 *
+&nbsp;	 * @param testClass the class to generate a name for; never {@code null}
+&nbsp;	 * @return the display name for the class; never {@code null} or blank
+&nbsp;	 */
+&nbsp;	String generateDisplayNameForClass(Class&lt;?&gt; testClass);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Generate a display name for the given {@link Nested @Nested} inner test class.
+&nbsp;	 *
+&nbsp;	 * @param nestedClass the class to generate a name for; never {@code null}
+&nbsp;	 * @return the display name for the nested class; never {@code null} or blank
+&nbsp;	 */
+&nbsp;	String generateDisplayNameForNestedClass(Class&lt;?&gt; nestedClass);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Generate a display name for the given method.
+&nbsp;	 *
+&nbsp;	 * @implNote The class instance supplied as {@code testClass} may differ from
+&nbsp;	 * the class returned by {@code testMethod.getDeclaringClass()} &amp;mdash; for
+&nbsp;	 * example, when a test method is inherited from a superclass.
+&nbsp;	 *
+&nbsp;	 * @param testClass the class the test method is invoked on; never {@code null}
+&nbsp;	 * @param testMethod method to generate a display name for; never {@code null}
+&nbsp;	 * @return the display name for the test; never {@code null} or blank
+&nbsp;	 */
+&nbsp;	String generateDisplayNameForMethod(Class&lt;?&gt; testClass, Method testMethod);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Generate a string representation of the formal parameters of the supplied
+&nbsp;	 * method, consisting of the {@linkplain Class#getSimpleName() simple names}
+&nbsp;	 * of the parameter types, separated by commas, and enclosed in parentheses.
+&nbsp;	 *
+&nbsp;	 * @param method the method from to extract the parameter types from; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @return a string representation of all parameter types of the supplied
+&nbsp;	 * method or {@code &quot;()&quot;} if the method declares no parameters
+&nbsp;	 */
+&nbsp;	static String parameterTypesAsString(Method method) {
+<b class="nc">&nbsp;		Preconditions.notNull(method, &quot;Method must not be null&quot;);</b>
+<b class="nc">&nbsp;		return &#39;(&#39; + ClassUtils.nullSafeToString(Class::getSimpleName, method.getParameterTypes()) + &#39;)&#39;;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Standard {@code DisplayNameGenerator}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This implementation matches the standard display name generation
+&nbsp;	 * behavior in place since JUnit Jupiter 5.0 was released.
+&nbsp;	 */
+&nbsp;	class Standard implements DisplayNameGenerator {
+&nbsp;
+<b class="fc">&nbsp;		static final DisplayNameGenerator INSTANCE = new Standard();</b>
+&nbsp;
+<b class="fc">&nbsp;		public Standard() {</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForClass(Class&lt;?&gt; testClass) {
+<b class="fc">&nbsp;			String name = testClass.getName();</b>
+<b class="fc">&nbsp;			int lastDot = name.lastIndexOf(&#39;.&#39;);</b>
+<b class="fc">&nbsp;			return name.substring(lastDot + 1);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForNestedClass(Class&lt;?&gt; nestedClass) {
+<b class="nc">&nbsp;			return nestedClass.getSimpleName();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForMethod(Class&lt;?&gt; testClass, Method testMethod) {
+<b class="nc">&nbsp;			return testMethod.getName() + parameterTypesAsString(testMethod);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Simple {@code DisplayNameGenerator} that removes trailing parentheses
+&nbsp;	 * for methods with no parameters.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This generator extends the functionality of {@link Standard} by
+&nbsp;	 * removing parentheses ({@code &#39;()&#39;}) found at the end of method names
+&nbsp;	 * with no parameters.
+&nbsp;	 */
+&nbsp;	class Simple extends Standard {
+&nbsp;
+<b class="fc">&nbsp;		static final DisplayNameGenerator INSTANCE = new Simple();</b>
+&nbsp;
+<b class="fc">&nbsp;		public Simple() {</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForMethod(Class&lt;?&gt; testClass, Method testMethod) {
+<b class="nc">&nbsp;			String displayName = testMethod.getName();</b>
+<b class="nc">&nbsp;			if (hasParameters(testMethod)) {</b>
+<b class="nc">&nbsp;				displayName += &#39; &#39; + parameterTypesAsString(testMethod);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return displayName;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private static boolean hasParameters(Method method) {
+<b class="nc">&nbsp;			return method.getParameterCount() &gt; 0;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code DisplayNameGenerator} that replaces underscores with spaces.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This generator extends the functionality of {@link Simple} by
+&nbsp;	 * replacing all underscores ({@code &#39;_&#39;}) found in class and method names
+&nbsp;	 * with spaces ({@code &#39; &#39;}).
+&nbsp;	 */
+&nbsp;	class ReplaceUnderscores extends Simple {
+&nbsp;
+<b class="fc">&nbsp;		static final DisplayNameGenerator INSTANCE = new ReplaceUnderscores();</b>
+&nbsp;
+<b class="fc">&nbsp;		public ReplaceUnderscores() {</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForClass(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return replaceUnderscores(super.generateDisplayNameForClass(testClass));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForNestedClass(Class&lt;?&gt; nestedClass) {
+<b class="nc">&nbsp;			return replaceUnderscores(super.generateDisplayNameForNestedClass(nestedClass));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForMethod(Class&lt;?&gt; testClass, Method testMethod) {
+<b class="nc">&nbsp;			return replaceUnderscores(super.generateDisplayNameForMethod(testClass, testMethod));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private static String replaceUnderscores(String name) {
+<b class="nc">&nbsp;			return name.replace(&#39;_&#39;, &#39; &#39;);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code DisplayNameGenerator} that generates complete sentences.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This generator generates display names that build up complete sentences
+&nbsp;	 * by concatenating the names of the test and the enclosing classes. The
+&nbsp;	 * sentence fragments are concatenated using a separator. The separator and
+&nbsp;	 * the display name generator for individual sentence fragments can be configured
+&nbsp;	 * via the {@link IndicativeSentencesGeneration @IndicativeSentencesGeneration}
+&nbsp;	 * annotation.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.7&quot;)
+&nbsp;	class IndicativeSentences implements DisplayNameGenerator {
+&nbsp;
+<b class="fc">&nbsp;		static final DisplayNameGenerator INSTANCE = new IndicativeSentences();</b>
+&nbsp;
+<b class="fc">&nbsp;		public IndicativeSentences() {</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForClass(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return getGeneratorFor(testClass).generateDisplayNameForClass(testClass);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForNestedClass(Class&lt;?&gt; nestedClass) {
+<b class="nc">&nbsp;			return getSentenceBeginning(nestedClass);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public String generateDisplayNameForMethod(Class&lt;?&gt; testClass, Method testMethod) {
+<b class="nc">&nbsp;			return getSentenceBeginning(testClass) + getFragmentSeparator(testClass)</b>
+<b class="nc">&nbsp;					+ getGeneratorFor(testClass).generateDisplayNameForMethod(testClass, testMethod);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private String getSentenceBeginning(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			Class&lt;?&gt; enclosingClass = testClass.getEnclosingClass();</b>
+<b class="nc">&nbsp;			boolean topLevelTestClass = (enclosingClass == null || isStatic(testClass));</b>
+<b class="nc">&nbsp;			Optional&lt;String&gt; displayName = findAnnotation(testClass, DisplayName.class)//</b>
+<b class="nc">&nbsp;					.map(DisplayName::value).map(String::trim);</b>
+&nbsp;
+<b class="nc">&nbsp;			if (topLevelTestClass) {</b>
+<b class="nc">&nbsp;				if (displayName.isPresent()) {</b>
+<b class="nc">&nbsp;					return displayName.get();</b>
+&nbsp;				}
+<b class="nc">&nbsp;				Class&lt;? extends DisplayNameGenerator&gt; generatorClass = findDisplayNameGeneration(testClass)//</b>
+<b class="nc">&nbsp;						.map(DisplayNameGeneration::value)//</b>
+<b class="nc">&nbsp;						.filter(not(IndicativeSentences.class))//</b>
+<b class="nc">&nbsp;						.orElse(null);</b>
+<b class="nc">&nbsp;				if (generatorClass != null) {</b>
+<b class="nc">&nbsp;					return getDisplayNameGenerator(generatorClass).generateDisplayNameForClass(testClass);</b>
+&nbsp;				}
+<b class="nc">&nbsp;				return generateDisplayNameForClass(testClass);</b>
+&nbsp;			}
+&nbsp;
+&nbsp;			// Only build prefix based on the enclosing class if the enclosing
+&nbsp;			// class is also configured to use the IndicativeSentences generator.
+<b class="nc">&nbsp;			boolean buildPrefix = findDisplayNameGeneration(enclosingClass)//</b>
+<b class="nc">&nbsp;					.map(DisplayNameGeneration::value)//</b>
+<b class="nc">&nbsp;					.filter(IndicativeSentences.class::equals)//</b>
+<b class="nc">&nbsp;					.isPresent();</b>
+&nbsp;
+<b class="nc">&nbsp;			String prefix = (buildPrefix ? getSentenceBeginning(enclosingClass) + getFragmentSeparator(testClass) : &quot;&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;			return prefix + displayName.orElseGet(</b>
+<b class="nc">&nbsp;				() -&gt; getGeneratorFor(testClass).generateDisplayNameForNestedClass(testClass));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the sentence fragment separator.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If {@link IndicativeSentencesGeneration @IndicativeSentencesGeneration}
+&nbsp;		 * is present (searching enclosing classes if not found locally), the
+&nbsp;		 * configured {@link IndicativeSentencesGeneration#separator() separator}
+&nbsp;		 * will be used. Otherwise, {@link IndicativeSentencesGeneration#DEFAULT_SEPARATOR}
+&nbsp;		 * will be used.
+&nbsp;		 *
+&nbsp;		 * @param testClass the test class to search on for {@code @IndicativeSentencesGeneration}
+&nbsp;		 * @return the sentence fragment separator
+&nbsp;		 */
+&nbsp;		private static String getFragmentSeparator(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return findIndicativeSentencesGeneration(testClass)//</b>
+<b class="nc">&nbsp;					.map(IndicativeSentencesGeneration::separator)//</b>
+<b class="nc">&nbsp;					.orElse(IndicativeSentencesGeneration.DEFAULT_SEPARATOR);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Get the display name generator to use for the supplied test class.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If {@link IndicativeSentencesGeneration @IndicativeSentencesGeneration}
+&nbsp;		 * is present (searching enclosing classes if not found locally), the
+&nbsp;		 * configured {@link IndicativeSentencesGeneration#generator() generator}
+&nbsp;		 * will be used. Otherwise, {@link IndicativeSentencesGeneration#DEFAULT_GENERATOR}
+&nbsp;		 * will be used.
+&nbsp;		 *
+&nbsp;		 * @param testClass the test class to search on for {@code @IndicativeSentencesGeneration}
+&nbsp;		 * @return the {@code DisplayNameGenerator} instance to use
+&nbsp;		 */
+&nbsp;		private static DisplayNameGenerator getGeneratorFor(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return findIndicativeSentencesGeneration(testClass)//</b>
+<b class="nc">&nbsp;					.map(IndicativeSentencesGeneration::generator)//</b>
+<b class="nc">&nbsp;					.filter(not(IndicativeSentences.class))//</b>
+<b class="nc">&nbsp;					.map(DisplayNameGenerator::getDisplayNameGenerator)//</b>
+<b class="nc">&nbsp;					.orElseGet(() -&gt; getDisplayNameGenerator(IndicativeSentencesGeneration.DEFAULT_GENERATOR));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Find the first {@code DisplayNameGeneration} annotation that is either
+&nbsp;		 * &lt;em&gt;directly present&lt;/em&gt;, &lt;em&gt;meta-present&lt;/em&gt;, or &lt;em&gt;indirectly present&lt;/em&gt;
+&nbsp;		 * on the supplied {@code testClass} or on an enclosing class.
+&nbsp;		 *
+&nbsp;		 * @param testClass the test class on which to find the annotation; never {@code null}
+&nbsp;		 * @return an {@code Optional} containing the annotation, potentially empty if not found
+&nbsp;		 */
+&nbsp;		private static Optional&lt;DisplayNameGeneration&gt; findDisplayNameGeneration(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return findAnnotation(testClass, DisplayNameGeneration.class, true);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Find the first {@code IndicativeSentencesGeneration} annotation that is either
+&nbsp;		 * &lt;em&gt;directly present&lt;/em&gt;, &lt;em&gt;meta-present&lt;/em&gt;, or &lt;em&gt;indirectly present&lt;/em&gt;
+&nbsp;		 * on the supplied {@code testClass} or on an enclosing class.
+&nbsp;		 *
+&nbsp;		 * @param testClass the test class on which to find the annotation; never {@code null}
+&nbsp;		 * @return an {@code Optional} containing the annotation, potentially empty if not found
+&nbsp;		 */
+&nbsp;		private static Optional&lt;IndicativeSentencesGeneration&gt; findIndicativeSentencesGeneration(Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			return findAnnotation(testClass, IndicativeSentencesGeneration.class, true);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private static Predicate&lt;Class&lt;?&gt;&gt; not(Class&lt;?&gt; clazz) {
+<b class="nc">&nbsp;			return ((Predicate&lt;Class&lt;?&gt;&gt;) clazz::equals).negate();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return the {@code DisplayNameGenerator} instance corresponding to the
+&nbsp;	 * given {@code Class}.
+&nbsp;	 *
+&nbsp;	 * @param generatorClass the generator&#39;s {@code Class}; never {@code null},
+&nbsp;	 * has to be a {@code DisplayNameGenerator} implementation
+&nbsp;	 * @return a {@code DisplayNameGenerator} implementation instance
+&nbsp;	 */
+&nbsp;	static DisplayNameGenerator getDisplayNameGenerator(Class&lt;?&gt; generatorClass) {
+<b class="fc">&nbsp;		Preconditions.notNull(generatorClass, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.condition(DisplayNameGenerator.class.isAssignableFrom(generatorClass),</b>
+&nbsp;			&quot;Class must be a DisplayNameGenerator implementation&quot;);
+<b class="fc">&nbsp;		if (generatorClass == Standard.class) {</b>
+<b class="fc">&nbsp;			return Standard.INSTANCE;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (generatorClass == Simple.class) {</b>
+<b class="fc">&nbsp;			return Simple.INSTANCE;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (generatorClass == ReplaceUnderscores.class) {</b>
+<b class="fc">&nbsp;			return ReplaceUnderscores.INSTANCE;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (generatorClass == IndicativeSentences.class) {</b>
+<b class="fc">&nbsp;			return IndicativeSentences.INSTANCE;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return (DisplayNameGenerator) ReflectionUtils.newInstance(generatorClass);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

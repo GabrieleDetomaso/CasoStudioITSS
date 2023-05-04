@@ -1,0 +1,139 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ResourceLock</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.parallel</a>
+</div>
+
+<h1>Coverage Summary for Class: ResourceLock (org.junit.jupiter.api.parallel)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ResourceLock</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.parallel;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Inherited;
+&nbsp;import java.lang.annotation.Repeatable;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @ResourceLock} is used to declare that the annotated test class or test
+&nbsp; * method requires access to a shared resource identified by a key.
+&nbsp; *
+&nbsp; * &lt;p&gt;The resource key is specified via {@link #value}. In addition,
+&nbsp; * {@link #mode} allows you to specify whether the annotated test class or test
+&nbsp; * method requires {@link ResourceAccessMode#READ_WRITE READ_WRITE} or only
+&nbsp; * {@link ResourceAccessMode#READ READ} access to the resource. In the former case,
+&nbsp; * execution of the annotated element will occur while no other test class or
+&nbsp; * test method that uses the shared resource is being executed. In the latter case,
+&nbsp; * the annotated element may be executed concurrently with other test classes or
+&nbsp; * methods that also require {@code READ} access but not at the same time as any
+&nbsp; * other test that requires {@code READ_WRITE} access.
+&nbsp; *
+&nbsp; * &lt;p&gt;This annotation can be repeated to declare the use of multiple shared resources.
+&nbsp; *
+&nbsp; * &lt;p&gt;Since JUnit Jupiter 5.4, this annotation is {@linkplain Inherited inherited}
+&nbsp; * within class hierarchies.
+&nbsp; *
+&nbsp; * @see Isolated
+&nbsp; * @see Resources
+&nbsp; * @see ResourceAccessMode
+&nbsp; * @see ResourceLocks
+&nbsp; * @since 5.3
+&nbsp; */
+&nbsp;@API(status = EXPERIMENTAL, since = &quot;5.3&quot;)
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Target({ ElementType.TYPE, ElementType.METHOD })
+&nbsp;@Inherited
+&nbsp;@Repeatable(ResourceLocks.class)
+&nbsp;public @interface ResourceLock {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The resource key.
+&nbsp;	 *
+&nbsp;	 * @see Resources
+&nbsp;	 */
+&nbsp;	String value();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The resource access mode.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Defaults to {@link ResourceAccessMode#READ_WRITE READ_WRITE}.
+&nbsp;	 *
+&nbsp;	 * @see ResourceAccessMode
+&nbsp;	 */
+&nbsp;	ResourceAccessMode mode() default ResourceAccessMode.READ_WRITE;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

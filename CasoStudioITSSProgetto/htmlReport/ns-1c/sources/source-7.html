@@ -1,0 +1,218 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Filter</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine</a>
+</div>
+
+<h1>Coverage Summary for Class: Filter (org.junit.platform.engine)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Filter</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (3/15)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine;
+&nbsp;
+&nbsp;import static java.util.Arrays.asList;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;import static org.junit.platform.commons.util.CollectionUtils.getOnlyElement;
+&nbsp;import static org.junit.platform.engine.CompositeFilter.alwaysIncluded;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Predicate;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;
+&nbsp;/**
+&nbsp; * A {@link Filter} can be applied to determine if an object should be
+&nbsp; * &lt;em&gt;included&lt;/em&gt; or &lt;em&gt;excluded&lt;/em&gt; in a result set.
+&nbsp; *
+&nbsp; * &lt;p&gt;For example, tests may be filtered during or after test discovery
+&nbsp; * based on certain criteria.
+&nbsp; *
+&nbsp; * &lt;p&gt;Clients should not implement this interface directly but rather one of
+&nbsp; * its subinterfaces.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see DiscoveryFilter
+&nbsp; */
+&nbsp;@FunctionalInterface
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public interface Filter&lt;T&gt; {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return a filter that will include elements if and only if all of the
+&nbsp;	 * filters in the supplied array of {@link Filter filters} include it.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the array is empty, the returned filter will include all elements
+&nbsp;	 * it is asked to filter.
+&nbsp;	 *
+&nbsp;	 * @param filters the array of filters to compose; never {@code null}
+&nbsp;	 * @see #composeFilters(Collection)
+&nbsp;	 */
+&nbsp;	@SafeVarargs
+&nbsp;	@SuppressWarnings(&quot;varargs&quot;)
+&nbsp;	static &lt;T&gt; Filter&lt;T&gt; composeFilters(Filter&lt;T&gt;... filters) {
+<b class="nc">&nbsp;		Preconditions.notNull(filters, &quot;filters array must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.containsNoNullElements(filters, &quot;individual filters must not be null&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		if (filters.length == 0) {</b>
+<b class="nc">&nbsp;			return alwaysIncluded();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (filters.length == 1) {</b>
+<b class="nc">&nbsp;			return filters[0];</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return new CompositeFilter&lt;&gt;(asList(filters));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return a filter that will include elements if and only if all of the
+&nbsp;	 * filters in the supplied collection of {@link Filter filters} include it.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the collection is empty, the returned filter will include all
+&nbsp;	 * elements it is asked to filter.
+&nbsp;	 *
+&nbsp;	 * @param filters the collection of filters to compose; never {@code null}
+&nbsp;	 * @see #composeFilters(Filter...)
+&nbsp;	 */
+&nbsp;	static &lt;T&gt; Filter&lt;T&gt; composeFilters(Collection&lt;? extends Filter&lt;T&gt;&gt; filters) {
+<b class="fc">&nbsp;		Preconditions.notNull(filters, &quot;Filters must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		if (filters.isEmpty()) {</b>
+<b class="fc">&nbsp;			return alwaysIncluded();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (filters.size() == 1) {</b>
+<b class="nc">&nbsp;			return getOnlyElement(filters);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return new CompositeFilter&lt;&gt;(filters);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return a filter that will include elements if and only if the adapted
+&nbsp;	 * {@code Filter} includes the value converted using the supplied
+&nbsp;	 * {@link Function}.
+&nbsp;	 *
+&nbsp;	 * @param adaptee the filter to be adapted
+&nbsp;	 * @param converter the converter function to apply
+&nbsp;	 */
+&nbsp;	static &lt;T, V&gt; Filter&lt;T&gt; adaptFilter(Filter&lt;V&gt; adaptee, Function&lt;T, V&gt; converter) {
+<b class="nc">&nbsp;		return input -&gt; adaptee.apply(converter.apply(input));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Apply this filter to the supplied object.
+&nbsp;	 */
+&nbsp;	FilterResult apply(T object);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Return a {@link Predicate} that returns {@code true} if this filter
+&nbsp;	 * &lt;em&gt;includes&lt;/em&gt; the object supplied to the predicate&#39;s
+&nbsp;	 * {@link Predicate#test test} method.
+&nbsp;	 */
+&nbsp;	default Predicate&lt;T&gt; toPredicate() {
+<b class="nc">&nbsp;		return object -&gt; apply(object).included();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

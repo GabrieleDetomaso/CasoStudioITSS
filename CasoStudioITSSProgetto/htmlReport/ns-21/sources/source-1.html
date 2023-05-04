@@ -1,0 +1,263 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ExclusiveResource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: ExclusiveResource (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExclusiveResource</td>
+<td class="coverageStat">
+  <span class="percent">
+    57,1%
+  </span>
+  <span class="absValue">
+    (4/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    38,9%
+  </span>
+  <span class="absValue">
+    (7/18)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ExclusiveResource$LockMode</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    47,6%
+  </span>
+  <span class="absValue">
+    (10/21)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.concurrent.locks.ReadWriteLock;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node.ExecutionMode;
+&nbsp;
+&nbsp;/**
+&nbsp; * An exclusive resource identified by a key with a lock mode that is used to
+&nbsp; * synchronize access to shared resources when executing nodes in parallel.
+&nbsp; *
+&nbsp; * @since 1.3
+&nbsp; * @see Node#getExecutionMode()
+&nbsp; */
+&nbsp;@API(status = EXPERIMENTAL, since = &quot;1.3&quot;)
+&nbsp;public class ExclusiveResource {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Key of the global resource lock that all direct children of the engine
+&nbsp;	 * descriptor acquire in {@linkplain LockMode#READ read mode} by default:
+&nbsp;	 * {@value}
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If any node {@linkplain Node#getExclusiveResources() requires} an
+&nbsp;	 * exclusive resource with the same key in
+&nbsp;	 * {@linkplain LockMode#READ_WRITE read-write mode}, the lock will be
+&nbsp;	 * coarsened to be acquired by the node&#39;s ancestor that is a direct child of
+&nbsp;	 * the engine descriptor and all of the ancestor&#39;s descendants will be
+&nbsp;	 * forced to run in the {@linkplain ExecutionMode#SAME_THREAD same thread}.
+&nbsp;	 *
+&nbsp;	 * @since 1.7
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;1.7&quot;)
+&nbsp;	public static final String GLOBAL_KEY = &quot;org.junit.platform.engine.support.hierarchical.ExclusiveResource.GLOBAL_KEY&quot;;
+&nbsp;
+<b class="fc">&nbsp;	static final ExclusiveResource GLOBAL_READ = new ExclusiveResource(GLOBAL_KEY, LockMode.READ);</b>
+<b class="fc">&nbsp;	static final ExclusiveResource GLOBAL_READ_WRITE = new ExclusiveResource(GLOBAL_KEY, LockMode.READ_WRITE);</b>
+&nbsp;
+&nbsp;	private final String key;
+&nbsp;	private final LockMode lockMode;
+&nbsp;	private int hash;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ExclusiveResource}.
+&nbsp;	 *
+&nbsp;	 * @param key the identifier of the resource; never {@code null} or blank
+&nbsp;	 * @param lockMode the lock mode to use to synchronize access to the
+&nbsp;	 * resource; never {@code null}
+&nbsp;	 */
+<b class="fc">&nbsp;	public ExclusiveResource(String key, LockMode lockMode) {</b>
+<b class="fc">&nbsp;		this.key = Preconditions.notBlank(key, &quot;key must not be blank&quot;);</b>
+<b class="fc">&nbsp;		this.lockMode = Preconditions.notNull(lockMode, &quot;lockMode must not be null&quot;);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the key of this resource.
+&nbsp;	 */
+&nbsp;	public String getKey() {
+<b class="fc">&nbsp;		return key;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the lock mode of this resource.
+&nbsp;	 */
+&nbsp;	public LockMode getLockMode() {
+<b class="fc">&nbsp;		return lockMode;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		ExclusiveResource that = (ExclusiveResource) o;</b>
+<b class="nc">&nbsp;		return Objects.equals(key, that.key) &amp;&amp; lockMode == that.lockMode;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="nc">&nbsp;		int h = hash;</b>
+<b class="nc">&nbsp;		if (h == 0) {</b>
+<b class="nc">&nbsp;			h = hash = Objects.hash(key, lockMode);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return h;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+<b class="nc">&nbsp;		return new ToStringBuilder(this).append(&quot;key&quot;, key).append(&quot;lockMode&quot;, lockMode).toString();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code LockMode} translates to the respective {@link ReadWriteLock}
+&nbsp;	 * locks.
+&nbsp;	 *
+&nbsp;	 * @implNote Enum order is important, since it can be used to sort locks, so
+&nbsp;	 * the stronger mode has to be first.
+&nbsp;	 */
+<b class="fc">&nbsp;	public enum LockMode {</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Require read and write access to the resource.
+&nbsp;		 *
+&nbsp;		 * @see ReadWriteLock#writeLock()
+&nbsp;		 */
+<b class="fc">&nbsp;		READ_WRITE,</b>
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Require only read access to the resource.
+&nbsp;		 *
+&nbsp;		 * @see ReadWriteLock#readLock()
+&nbsp;		 */
+<b class="fc">&nbsp;		READ</b>
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

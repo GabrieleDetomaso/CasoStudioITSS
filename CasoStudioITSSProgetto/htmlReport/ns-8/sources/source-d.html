@@ -1,0 +1,138 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ExecutionCondition</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: ExecutionCondition (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ExecutionCondition</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code ExecutionCondition} defines the {@link Extension} API for
+&nbsp; * programmatic, &lt;em&gt;conditional test execution&lt;/em&gt;.
+&nbsp; *
+&nbsp; * &lt;p&gt;An {@code ExecutionCondition} is
+&nbsp; * {@linkplain #evaluateExecutionCondition(ExtensionContext) evaluated}
+&nbsp; * to determine if a given container or test should be executed based on the
+&nbsp; * supplied {@link ExtensionContext}.
+&nbsp; *
+&nbsp; * &lt;p&gt;If an {@code ExecutionCondition} {@linkplain ConditionEvaluationResult#disabled
+&nbsp; * disables} a test method, that does not prevent the test class from being
+&nbsp; * instantiated. Rather, it prevents the execution of the test method and
+&nbsp; * method-level lifecycle callbacks such as {@code @BeforeEach} methods,
+&nbsp; * {@code @AfterEach} methods, and corresponding extension APIs.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Constructor Requirements&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Consult the documentation in {@link Extension} for details on
+&nbsp; * constructor requirements.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see org.junit.jupiter.api.Disabled
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledIf
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledIf
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledOnOs
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledOnOs
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledOnJre
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledOnJre
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledForJreRange
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledForJreRange
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledInNativeImage
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledInNativeImage
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledIfSystemProperty
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledIfSystemProperty
+&nbsp; * @see org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
+&nbsp; * @see org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
+&nbsp; */
+&nbsp;@FunctionalInterface
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;public interface ExecutionCondition extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Evaluate this condition for the supplied {@link ExtensionContext}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;An {@linkplain ConditionEvaluationResult#enabled enabled} result
+&nbsp;	 * indicates that the container or test should be executed; whereas, a
+&nbsp;	 * {@linkplain ConditionEvaluationResult#disabled disabled} result
+&nbsp;	 * indicates that the container or test should not be executed.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @return the result of evaluating this condition; never {@code null}
+&nbsp;	 */
+&nbsp;	ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

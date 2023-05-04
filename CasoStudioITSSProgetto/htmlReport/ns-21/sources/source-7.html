@@ -1,0 +1,413 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NodeTestTask</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: NodeTestTask (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NodeTestTask</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (15/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76,1%
+  </span>
+  <span class="absValue">
+    (51/67)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">NodeTestTask$DefaultDynamicTestExecutor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    63%
+  </span>
+  <span class="absValue">
+    (17/27)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">NodeTestTask$DynamicTaskState</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75,9%
+  </span>
+  <span class="absValue">
+    (22/29)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71,4%
+  </span>
+  <span class="absValue">
+    (70/98)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import static java.util.concurrent.CompletableFuture.completedFuture;
+&nbsp;import static java.util.stream.Collectors.toCollection;
+&nbsp;import static org.junit.platform.engine.TestExecutionResult.failed;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.concurrent.CancellationException;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.ExecutionException;
+&nbsp;import java.util.concurrent.Future;
+&nbsp;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.ExceptionUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.EngineExecutionListener;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutorService.TestTask;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node.DynamicTestExecutor;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node.ExecutionMode;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node.SkipResult;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 1.3
+&nbsp; */
+<b class="fc">&nbsp;class NodeTestTask&lt;C extends EngineExecutionContext&gt; implements TestTask {</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(NodeTestTask.class);</b>
+<b class="fc">&nbsp;	private static final Runnable NOOP = () -&gt; {</b>
+<b class="fc">&nbsp;	};</b>
+&nbsp;
+&nbsp;	private final NodeTestTaskContext taskContext;
+&nbsp;	private final TestDescriptor testDescriptor;
+&nbsp;	private final Node&lt;C&gt; node;
+&nbsp;	private final Runnable finalizer;
+&nbsp;
+&nbsp;	private C parentContext;
+&nbsp;	private C context;
+&nbsp;
+&nbsp;	private SkipResult skipResult;
+&nbsp;	private boolean started;
+&nbsp;	private ThrowableCollector throwableCollector;
+&nbsp;
+&nbsp;	NodeTestTask(NodeTestTaskContext taskContext, TestDescriptor testDescriptor) {
+<b class="fc">&nbsp;		this(taskContext, testDescriptor, NOOP);</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	NodeTestTask(NodeTestTaskContext taskContext, TestDescriptor testDescriptor, Runnable finalizer) {</b>
+<b class="fc">&nbsp;		this.taskContext = taskContext;</b>
+<b class="fc">&nbsp;		this.testDescriptor = testDescriptor;</b>
+<b class="fc">&nbsp;		this.node = NodeUtils.asNode(testDescriptor);</b>
+<b class="fc">&nbsp;		this.finalizer = finalizer;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ResourceLock getResourceLock() {
+<b class="nc">&nbsp;		return taskContext.getExecutionAdvisor().getResourceLock(testDescriptor);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ExecutionMode getExecutionMode() {
+<b class="nc">&nbsp;		return taskContext.getExecutionAdvisor().getForcedExecutionMode(testDescriptor).orElse(node.getExecutionMode());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	void setParentContext(C parentContext) {
+<b class="fc">&nbsp;		this.parentContext = parentContext;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public void execute() {
+&nbsp;		try {
+<b class="fc">&nbsp;			throwableCollector = taskContext.getThrowableCollectorFactory().create();</b>
+<b class="fc">&nbsp;			prepare();</b>
+<b class="fc">&nbsp;			if (throwableCollector.isEmpty()) {</b>
+<b class="fc">&nbsp;				checkWhetherSkipped();</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (throwableCollector.isEmpty() &amp;&amp; !skipResult.isSkipped()) {</b>
+<b class="fc">&nbsp;				executeRecursively();</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (context != null) {</b>
+<b class="fc">&nbsp;				cleanUp();</b>
+&nbsp;			}
+<b class="fc">&nbsp;			reportCompletion();</b>
+&nbsp;		}
+&nbsp;		finally {
+&nbsp;			// Ensure that the &#39;interrupted status&#39; flag for the current thread
+&nbsp;			// is cleared for reuse of the thread in subsequent task executions.
+&nbsp;			// See https://github.com/junit-team/junit5/issues/1688
+<b class="fc">&nbsp;			if (Thread.interrupted()) {</b>
+<b class="nc">&nbsp;				logger.debug(() -&gt; String.format(</b>
+&nbsp;					&quot;Execution of TestDescriptor with display name [%s] &quot;
+&nbsp;							+ &quot;and unique ID [%s] failed to clear the &#39;interrupted status&#39; flag for the &quot;
+&nbsp;							+ &quot;current thread. JUnit has cleared the flag, but you may wish to investigate &quot;
+&nbsp;							+ &quot;why the flag was not cleared by user code.&quot;,
+<b class="nc">&nbsp;					this.testDescriptor.getDisplayName(), this.testDescriptor.getUniqueId()));</b>
+&nbsp;			}
+<b class="fc">&nbsp;			finalizer.run();</b>
+<b class="fc">&nbsp;		}</b>
+&nbsp;
+&nbsp;		// Clear reference to context to allow it to be garbage collected.
+&nbsp;		// See https://github.com/junit-team/junit5/issues/1578
+<b class="fc">&nbsp;		context = null;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void prepare() {
+<b class="fc">&nbsp;		throwableCollector.execute(() -&gt; context = node.prepare(parentContext));</b>
+&nbsp;
+&nbsp;		// Clear reference to parent context to allow it to be garbage collected.
+&nbsp;		// See https://github.com/junit-team/junit5/issues/1578
+<b class="fc">&nbsp;		parentContext = null;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void checkWhetherSkipped() {
+<b class="fc">&nbsp;		throwableCollector.execute(() -&gt; skipResult = node.shouldBeSkipped(context));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void executeRecursively() {
+<b class="fc">&nbsp;		taskContext.getListener().executionStarted(testDescriptor);</b>
+<b class="fc">&nbsp;		started = true;</b>
+&nbsp;
+<b class="fc">&nbsp;		throwableCollector.execute(() -&gt; {</b>
+<b class="fc">&nbsp;			node.around(context, ctx -&gt; {</b>
+<b class="fc">&nbsp;				context = ctx;</b>
+<b class="fc">&nbsp;				throwableCollector.execute(() -&gt; {</b>
+&nbsp;					// @formatter:off
+<b class="fc">&nbsp;					List&lt;NodeTestTask&lt;C&gt;&gt; children = testDescriptor.getChildren().stream()</b>
+<b class="fc">&nbsp;							.map(descriptor -&gt; new NodeTestTask&lt;C&gt;(taskContext, descriptor))</b>
+<b class="fc">&nbsp;							.collect(toCollection(ArrayList::new));</b>
+&nbsp;					// @formatter:on
+&nbsp;
+<b class="fc">&nbsp;					context = node.before(context);</b>
+&nbsp;
+<b class="fc">&nbsp;					final DynamicTestExecutor dynamicTestExecutor = new DefaultDynamicTestExecutor();</b>
+<b class="fc">&nbsp;					context = node.execute(context, dynamicTestExecutor);</b>
+&nbsp;
+<b class="fc">&nbsp;					if (!children.isEmpty()) {</b>
+<b class="fc">&nbsp;						children.forEach(child -&gt; child.setParentContext(context));</b>
+<b class="fc">&nbsp;						taskContext.getExecutorService().invokeAll(children);</b>
+&nbsp;					}
+&nbsp;
+<b class="fc">&nbsp;					throwableCollector.execute(dynamicTestExecutor::awaitFinished);</b>
+&nbsp;				});
+&nbsp;
+<b class="fc">&nbsp;				throwableCollector.execute(() -&gt; node.after(context));</b>
+&nbsp;			});
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;	private void cleanUp() {
+<b class="fc">&nbsp;		throwableCollector.execute(() -&gt; node.cleanUp(context));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void reportCompletion() {
+<b class="fc">&nbsp;		if (throwableCollector.isEmpty() &amp;&amp; skipResult.isSkipped()) {</b>
+&nbsp;			try {
+<b class="nc">&nbsp;				node.nodeSkipped(context, testDescriptor, skipResult);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Throwable throwable) {</b>
+<b class="nc">&nbsp;				UnrecoverableExceptions.rethrowIfUnrecoverable(throwable);</b>
+<b class="nc">&nbsp;				logger.debug(throwable,</b>
+<b class="nc">&nbsp;					() -&gt; String.format(&quot;Failed to invoke nodeSkipped() on Node %s&quot;, testDescriptor.getUniqueId()));</b>
+<b class="nc">&nbsp;			}</b>
+<b class="nc">&nbsp;			taskContext.getListener().executionSkipped(testDescriptor, skipResult.getReason().orElse(&quot;&lt;unknown&gt;&quot;));</b>
+&nbsp;			return;
+&nbsp;		}
+<b class="fc">&nbsp;		if (!started) {</b>
+&nbsp;			// Call executionStarted first to comply with the contract of EngineExecutionListener.
+<b class="nc">&nbsp;			taskContext.getListener().executionStarted(testDescriptor);</b>
+&nbsp;		}
+&nbsp;		try {
+<b class="fc">&nbsp;			node.nodeFinished(context, testDescriptor, throwableCollector.toTestExecutionResult());</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable throwable) {</b>
+<b class="nc">&nbsp;			UnrecoverableExceptions.rethrowIfUnrecoverable(throwable);</b>
+<b class="nc">&nbsp;			logger.debug(throwable,</b>
+<b class="nc">&nbsp;				() -&gt; String.format(&quot;Failed to invoke nodeFinished() on Node %s&quot;, testDescriptor.getUniqueId()));</b>
+<b class="fc">&nbsp;		}</b>
+<b class="fc">&nbsp;		taskContext.getListener().executionFinished(testDescriptor, throwableCollector.toTestExecutionResult());</b>
+<b class="fc">&nbsp;		throwableCollector = null;</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private class DefaultDynamicTestExecutor implements DynamicTestExecutor {</b>
+<b class="fc">&nbsp;		private final Map&lt;UniqueId, DynamicTaskState&gt; unfinishedTasks = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void execute(TestDescriptor testDescriptor) {
+<b class="fc">&nbsp;			execute(testDescriptor, taskContext.getListener());</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Future&lt;?&gt; execute(TestDescriptor testDescriptor, EngineExecutionListener executionListener) {
+<b class="fc">&nbsp;			Preconditions.notNull(testDescriptor, &quot;testDescriptor must not be null&quot;);</b>
+<b class="fc">&nbsp;			Preconditions.notNull(executionListener, &quot;executionListener must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;			executionListener.dynamicTestRegistered(testDescriptor);</b>
+<b class="fc">&nbsp;			Set&lt;ExclusiveResource&gt; exclusiveResources = NodeUtils.asNode(testDescriptor).getExclusiveResources();</b>
+<b class="fc">&nbsp;			if (!exclusiveResources.isEmpty()) {</b>
+<b class="nc">&nbsp;				executionListener.executionStarted(testDescriptor);</b>
+<b class="nc">&nbsp;				String message = &quot;Dynamic test descriptors must not declare exclusive resources: &quot; + exclusiveResources;</b>
+<b class="nc">&nbsp;				executionListener.executionFinished(testDescriptor, failed(new JUnitException(message)));</b>
+<b class="nc">&nbsp;				return completedFuture(null);</b>
+&nbsp;			}
+&nbsp;			else {
+<b class="fc">&nbsp;				UniqueId uniqueId = testDescriptor.getUniqueId();</b>
+<b class="fc">&nbsp;				NodeTestTask&lt;C&gt; nodeTestTask = new NodeTestTask&lt;&gt;(taskContext.withListener(executionListener),</b>
+<b class="fc">&nbsp;					testDescriptor, () -&gt; unfinishedTasks.remove(uniqueId));</b>
+<b class="fc">&nbsp;				nodeTestTask.setParentContext(context);</b>
+<b class="fc">&nbsp;				unfinishedTasks.put(uniqueId, DynamicTaskState.unscheduled());</b>
+<b class="fc">&nbsp;				Future&lt;Void&gt; future = taskContext.getExecutorService().submit(nodeTestTask);</b>
+<b class="fc">&nbsp;				unfinishedTasks.computeIfPresent(uniqueId, (__, state) -&gt; DynamicTaskState.scheduled(future));</b>
+<b class="fc">&nbsp;				return future;</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public void awaitFinished() throws InterruptedException {
+<b class="fc">&nbsp;			for (DynamicTaskState state : unfinishedTasks.values()) {</b>
+&nbsp;				try {
+<b class="nc">&nbsp;					state.awaitFinished();</b>
+&nbsp;				}
+<b class="nc">&nbsp;				catch (CancellationException ignore) {</b>
+&nbsp;					// Futures returned by execute() may have been cancelled
+&nbsp;				}
+<b class="nc">&nbsp;				catch (ExecutionException e) {</b>
+<b class="nc">&nbsp;					ExceptionUtils.throwAsUncheckedException(e.getCause());</b>
+<b class="nc">&nbsp;				}</b>
+<b class="nc">&nbsp;			}</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	@FunctionalInterface
+&nbsp;	private interface DynamicTaskState {
+&nbsp;
+<b class="fc">&nbsp;		DynamicTaskState UNSCHEDULED = () -&gt; {</b>
+<b class="nc">&nbsp;		};</b>
+&nbsp;
+&nbsp;		static DynamicTaskState unscheduled() {
+<b class="fc">&nbsp;			return UNSCHEDULED;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		static DynamicTaskState scheduled(Future&lt;Void&gt; future) {
+<b class="nc">&nbsp;			return future::get;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		void awaitFinished() throws CancellationException, ExecutionException, InterruptedException;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

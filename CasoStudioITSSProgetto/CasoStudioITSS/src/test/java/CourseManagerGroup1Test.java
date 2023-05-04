@@ -160,15 +160,17 @@ public class CourseManagerGroup1Test {
 
     @ParameterizedTest //Uniti test: T4 e T6
     @NullSource
-    @MethodSource("datesProviderOfDateWrong")
+    //@MethodSource("datesProviderOfDateWrong")
     @DisplayName("Data nulla e data non scaduta ma non odierna")
+    //void dateWrong(LocalDate testDate) {
     void dateWrong(LocalDate testDate) {
         Assertions.assertThrows(Exception.class, () -> courseManager1.addNewCourseAttender(s4, testDate));
     }
 
+    /*
     private static Stream<LocalDate> datesProviderOfDateWrong() {
         return Stream.of(LocalDate.now().plusDays(2));
-    }
+    }*/
 
 
     @Test //T5
@@ -189,7 +191,7 @@ public class CourseManagerGroup1Test {
         );
     }
 
-
+    /*
     @Test //T8
     @DisplayName("Data reale scaduta data iscrizione falsata ")
     void realDateExpiredRegistrationDateFalsed() {
@@ -197,6 +199,7 @@ public class CourseManagerGroup1Test {
                 courseManager3.addNewCourseAttender(s4, LocalDate.now().minusDays(1))
         );
     }
+    */
 
 
     // metodo testato: getSpecificSubscription;

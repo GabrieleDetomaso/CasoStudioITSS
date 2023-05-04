@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestInstances</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TestInstances (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">TestInstances</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code TestInstances} encapsulates the &lt;em&gt;test instances&lt;/em&gt; of a test.
+&nbsp; *
+&nbsp; * &lt;p&gt;While top-level tests only have a single test instance, nested tests
+&nbsp; * have one additional instance for each enclosing test class.
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; * @see ExtensionContext#getTestInstances()
+&nbsp; * @see ExtensionContext#getRequiredTestInstances()
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface TestInstances {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the innermost test instance.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The innermost instance is the one closest to the test method.
+&nbsp;	 *
+&nbsp;	 * @return the innermost test instance; never {@code null}
+&nbsp;	 */
+&nbsp;	Object getInnermostInstance();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the enclosing test instances, excluding the innermost test instance,
+&nbsp;	 * ordered from outermost to innermost.
+&nbsp;	 *
+&nbsp;	 * @return the enclosing test instances; never {@code null} or containing
+&nbsp;	 * {@code null}, but potentially empty
+&nbsp;	 */
+&nbsp;	List&lt;Object&gt; getEnclosingInstances();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get all test instances, ordered from outermost to innermost.
+&nbsp;	 *
+&nbsp;	 * @return all test instances; never {@code null}, containing {@code null},
+&nbsp;	 * or empty
+&nbsp;	 */
+&nbsp;	List&lt;Object&gt; getAllInstances();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find the first test instance that is an instance of the supplied required
+&nbsp;	 * type, checking from innermost to outermost.
+&nbsp;	 *
+&nbsp;	 * @param requiredType the type to search for
+&nbsp;	 * @return the first test instance of the required type; never {@code null}
+&nbsp;	 * but potentially empty
+&nbsp;	 */
+&nbsp;	&lt;T&gt; Optional&lt;T&gt; findInstance(Class&lt;T&gt; requiredType);
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

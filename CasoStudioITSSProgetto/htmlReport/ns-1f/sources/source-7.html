@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > UriSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: UriSource (org.junit.platform.engine.support.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UriSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.descriptor;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.net.URI;
+&nbsp;import java.nio.file.Files;
+&nbsp;import java.nio.file.Path;
+&nbsp;import java.nio.file.Paths;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.engine.TestSource;
+&nbsp;
+&nbsp;/**
+&nbsp; * A {@link TestSource} that can be represented as a {@link URI}.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.engine.discovery.UriSelector
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public interface UriSource extends TestSource {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link URI} that represents this source.
+&nbsp;	 *
+&nbsp;	 * @return the source {@code URI}; never {@code null}
+&nbsp;	 */
+&nbsp;	URI getUri();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code UriSource} using the supplied {@code URI}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This implementation first attempts to resolve the supplied {@code URI}
+&nbsp;	 * to a path-based {@code UriSource} in the local filesystem. If that fails
+&nbsp;	 * for any reason, an instance of the default {@code UriSource}
+&nbsp;	 * implementation storing the supplied {@code URI} &lt;em&gt;as-is&lt;/em&gt; will be
+&nbsp;	 * returned.
+&nbsp;	 *
+&nbsp;	 * @param uri the URI to use as the source; never {@code null}
+&nbsp;	 * @return an appropriate {@code UriSource} for the supplied {@code URI}
+&nbsp;	 * @since 1.3
+&nbsp;	 * @see org.junit.platform.engine.support.descriptor.FileSource
+&nbsp;	 * @see org.junit.platform.engine.support.descriptor.DirectorySource
+&nbsp;	 */
+&nbsp;	static UriSource from(URI uri) {
+<b class="nc">&nbsp;		Preconditions.notNull(uri, &quot;URI must not be null&quot;);</b>
+&nbsp;
+&nbsp;		try {
+<b class="nc">&nbsp;			URI uriWithoutQuery = ResourceUtils.stripQueryComponent(uri);</b>
+<b class="nc">&nbsp;			Path path = Paths.get(uriWithoutQuery);</b>
+<b class="nc">&nbsp;			if (Files.isRegularFile(path)) {</b>
+<b class="nc">&nbsp;				return FileSource.from(path.toFile(), FilePosition.fromQuery(uri.getQuery()).orElse(null));</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (Files.isDirectory(path)) {</b>
+<b class="nc">&nbsp;				return DirectorySource.from(path.toFile());</b>
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		catch (RuntimeException ex) {</b>
+<b class="nc">&nbsp;			LoggerFactory.getLogger(UriSource.class).debug(ex, () -&gt; String.format(</b>
+&nbsp;				&quot;The supplied URI [%s] is not path-based. Falling back to default UriSource implementation.&quot;, uri));
+<b class="nc">&nbsp;		}</b>
+&nbsp;
+&nbsp;		// Store supplied URI as-is
+<b class="nc">&nbsp;		return new DefaultUriSource(uri);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

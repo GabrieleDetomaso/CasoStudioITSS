@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > LockManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.hierarchical</a>
+</div>
+
+<h1>Coverage Summary for Class: LockManager (org.junit.platform.engine.support.hierarchical)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LockManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    62,5%
+  </span>
+  <span class="absValue">
+    (5/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36%
+  </span>
+  <span class="absValue">
+    (9/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.hierarchical;
+&nbsp;
+&nbsp;import static java.util.Comparator.comparing;
+&nbsp;import static java.util.Comparator.naturalOrder;
+&nbsp;import static java.util.stream.Collectors.groupingBy;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static org.junit.platform.commons.util.CollectionUtils.getOnlyElement;
+&nbsp;import static org.junit.platform.engine.support.hierarchical.ExclusiveResource.GLOBAL_KEY;
+&nbsp;import static org.junit.platform.engine.support.hierarchical.ExclusiveResource.LockMode.READ;
+&nbsp;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.locks.Lock;
+&nbsp;import java.util.concurrent.locks.ReadWriteLock;
+&nbsp;import java.util.concurrent.locks.ReentrantReadWriteLock;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 1.3
+&nbsp; */
+<b class="fc">&nbsp;class LockManager {</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Comparator&lt;ExclusiveResource&gt; COMPARATOR //</b>
+<b class="fc">&nbsp;		= comparing(ExclusiveResource::getKey, globalKeyFirst().thenComparing(naturalOrder())) //</b>
+<b class="fc">&nbsp;				.thenComparing(ExclusiveResource::getLockMode);</b>
+&nbsp;
+&nbsp;	private static Comparator&lt;String&gt; globalKeyFirst() {
+<b class="fc">&nbsp;		return comparing(key -&gt; !GLOBAL_KEY.equals(key));</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private final Map&lt;String, ReadWriteLock&gt; locksByKey = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;	ResourceLock getLockForResources(Collection&lt;ExclusiveResource&gt; resources) {
+<b class="nc">&nbsp;		if (resources.size() == 1) {</b>
+<b class="nc">&nbsp;			return getLockForResource(getOnlyElement(resources));</b>
+&nbsp;		}
+<b class="nc">&nbsp;		List&lt;Lock&gt; locks = getDistinctSortedLocks(resources);</b>
+<b class="nc">&nbsp;		return toResourceLock(locks);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	ResourceLock getLockForResource(ExclusiveResource resource) {
+<b class="fc">&nbsp;		return new SingleLock(toLock(resource));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private List&lt;Lock&gt; getDistinctSortedLocks(Collection&lt;ExclusiveResource&gt; resources) {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		Map&lt;String, List&lt;ExclusiveResource&gt;&gt; resourcesByKey = resources.stream()</b>
+<b class="nc">&nbsp;				.sorted(COMPARATOR)</b>
+<b class="nc">&nbsp;				.distinct()</b>
+<b class="nc">&nbsp;				.collect(groupingBy(ExclusiveResource::getKey, LinkedHashMap::new, toList()));</b>
+&nbsp;
+<b class="nc">&nbsp;		return resourcesByKey.values().stream()</b>
+<b class="nc">&nbsp;				.map(resourcesWithSameKey -&gt; resourcesWithSameKey.get(0))</b>
+<b class="nc">&nbsp;				.map(this::toLock)</b>
+<b class="nc">&nbsp;				.collect(toList());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private Lock toLock(ExclusiveResource resource) {
+<b class="fc">&nbsp;		ReadWriteLock lock = this.locksByKey.computeIfAbsent(resource.getKey(), key -&gt; new ReentrantReadWriteLock());</b>
+<b class="fc">&nbsp;		return resource.getLockMode() == READ ? lock.readLock() : lock.writeLock();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private ResourceLock toResourceLock(List&lt;Lock&gt; locks) {
+<b class="nc">&nbsp;		switch (locks.size()) {</b>
+&nbsp;			case 0:
+<b class="nc">&nbsp;				return NopLock.INSTANCE;</b>
+&nbsp;			case 1:
+<b class="nc">&nbsp;				return new SingleLock(locks.get(0));</b>
+&nbsp;			default:
+<b class="nc">&nbsp;				return new CompositeLock(locks);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,377 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > InvocationInterceptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: InvocationInterceptor (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">InvocationInterceptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (1/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    10%
+  </span>
+  <span class="absValue">
+    (1/10)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">InvocationInterceptor$Invocation</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    9,1%
+  </span>
+  <span class="absValue">
+    (1/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    9,1%
+  </span>
+  <span class="absValue">
+    (1/11)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.DEPRECATED;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;
+&nbsp;import java.lang.reflect.Constructor;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.AfterAll;
+&nbsp;import org.junit.jupiter.api.AfterEach;
+&nbsp;import org.junit.jupiter.api.BeforeAll;
+&nbsp;import org.junit.jupiter.api.BeforeEach;
+&nbsp;import org.junit.jupiter.api.DynamicTest;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.junit.jupiter.api.TestFactory;
+&nbsp;import org.junit.jupiter.api.TestTemplate;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code InvocationInterceptor} defines the API for {@link Extension
+&nbsp; * Extensions} that wish to intercept calls to test code.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Invocation Contract&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Each method in this class must call {@link Invocation#proceed()} or {@link
+&nbsp; * Invocation#skip()} exactly once on the supplied invocation. Otherwise, the
+&nbsp; * enclosing test or container will be reported as failed.
+&nbsp; *
+&nbsp; * &lt;p&gt;The default implementation calls {@link Invocation#proceed()
+&nbsp; * proceed()} on the supplied {@linkplain Invocation invocation}.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Constructor Requirements&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Consult the documentation in {@link Extension} for details on
+&nbsp; * constructor requirements.
+&nbsp; *
+&nbsp; * @since 5.5
+&nbsp; * @see Invocation
+&nbsp; * @see ReflectiveInvocationContext
+&nbsp; * @see ExtensionContext
+&nbsp; */
+&nbsp;@API(status = EXPERIMENTAL, since = &quot;5.5&quot;)
+&nbsp;public interface InvocationInterceptor extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a test class constructor.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note that the test class may &lt;em&gt;not&lt;/em&gt; have been initialized
+&nbsp;	 * (static initialization) when this method is invoked.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @param &lt;T&gt; the result type
+&nbsp;	 * @return the result of the invocation; never {@code null}
+&nbsp;	 * @throws Throwable in case of failure
+&nbsp;	 */
+&nbsp;	default &lt;T&gt; T interceptTestClassConstructor(Invocation&lt;T&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Constructor&lt;T&gt;&gt; invocationContext, ExtensionContext extensionContext)
+&nbsp;			throws Throwable {
+<b class="fc">&nbsp;		return invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link BeforeAll @BeforeAll} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptBeforeAllMethod(Invocation&lt;Void&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link BeforeEach @BeforeEach} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptBeforeEachMethod(Invocation&lt;Void&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link Test @Test} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptTestMethod(Invocation&lt;Void&gt; invocation, ReflectiveInvocationContext&lt;Method&gt; invocationContext,
+&nbsp;			ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link TestFactory @TestFactory} method,
+&nbsp;	 * such as a {@link org.junit.jupiter.api.RepeatedTest @RepeatedTest} or
+&nbsp;	 * {@code @ParameterizedTest} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @param &lt;T&gt; the result type
+&nbsp;	 * @return the result of the invocation; potentially {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default &lt;T&gt; T interceptTestFactoryMethod(Invocation&lt;T&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		return invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link TestTemplate @TestTemplate} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptTestTemplateMethod(Invocation&lt;Void&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link DynamicTest}.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 * @deprecated use {@link #interceptDynamicTest(Invocation, DynamicTestInvocationContext, ExtensionContext)} instead
+&nbsp;	 */
+&nbsp;	@Deprecated
+&nbsp;	@API(status = DEPRECATED, since = &quot;5.8&quot;)
+&nbsp;	default void interceptDynamicTest(Invocation&lt;Void&gt; invocation, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of a {@link DynamicTest}.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	default void interceptDynamicTest(Invocation&lt;Void&gt; invocation, DynamicTestInvocationContext invocationContext,
+&nbsp;			ExtensionContext extensionContext) throws Throwable {
+&nbsp;		// by default call the old interceptDynamicTest(Invocation, ExtensionContext) method so that existing extensions still work
+<b class="nc">&nbsp;		interceptDynamicTest(invocation, extensionContext);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of an {@link AfterEach @AfterEach} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptAfterEachMethod(Invocation&lt;Void&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Intercept the invocation of an {@link AfterAll @AfterAll} method.
+&nbsp;	 *
+&nbsp;	 * @param invocation the invocation that is being intercepted; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @param invocationContext the context of the invocation that is being
+&nbsp;	 * intercepted; never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @throws Throwable in case of failures
+&nbsp;	 */
+&nbsp;	default void interceptAfterAllMethod(Invocation&lt;Void&gt; invocation,
+&nbsp;			ReflectiveInvocationContext&lt;Method&gt; invocationContext, ExtensionContext extensionContext) throws Throwable {
+<b class="nc">&nbsp;		invocation.proceed();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * An invocation that returns a result and may throw a {@link Throwable}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This interface is not intended to be implemented by clients.
+&nbsp;	 *
+&nbsp;	 * @param &lt;T&gt; the result type
+&nbsp;	 * @since 5.5
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.5&quot;)
+&nbsp;	interface Invocation&lt;T&gt; {
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Proceed with this invocation.
+&nbsp;		 *
+&nbsp;		 * @return the result of this invocation; potentially {@code null}.
+&nbsp;		 * @throws Throwable in case the invocation failed
+&nbsp;		 */
+&nbsp;		T proceed() throws Throwable;
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Explicitly skip this invocation.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;This allows to bypass the check that {@link #proceed()} must be
+&nbsp;		 * called at least once. The default implementation does nothing.
+&nbsp;		 */
+&nbsp;		@API(status = EXPERIMENTAL, since = &quot;5.6&quot;)
+&nbsp;		default void skip() {
+&nbsp;			// do nothing
+<b class="nc">&nbsp;		}</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

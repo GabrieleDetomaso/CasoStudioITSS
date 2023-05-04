@@ -1,0 +1,230 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NestedClassSelector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.discovery</a>
+</div>
+
+<h1>Coverage Summary for Class: NestedClassSelector (org.junit.platform.engine.discovery)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NestedClassSelector</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.discovery;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;import org.junit.platform.engine.DiscoverySelector;
+&nbsp;
+&nbsp;/**
+&nbsp; * A {@link DiscoverySelector} that selects a nested {@link Class}
+&nbsp; * or class name enclosed in other classes so that
+&nbsp; * {@link org.junit.platform.engine.TestEngine TestEngines} can discover
+&nbsp; * tests or containers based on classes.
+&nbsp; *
+&nbsp; * &lt;p&gt;If Java {@link Class} references are provided for the nested class or
+&nbsp; * the enclosing classes, the selector will return these {@code Class} and
+&nbsp; * their class names accordingly. If class names are provided, the selector
+&nbsp; * will only attempt to lazily load the {@link Class} if
+&nbsp; * {@link #getEnclosingClasses()} or {@link #getNestedClass()} are invoked.
+&nbsp; *
+&nbsp; * &lt;p&gt;In this context, Java {@link Class} means anything that can be referenced
+&nbsp; * as a {@link Class} on the JVM &amp;mdash; for example, classes from other JVM
+&nbsp; * languages such Groovy, Scala, etc.
+&nbsp; *
+&nbsp; * @since 1.6
+&nbsp; * @see DiscoverySelectors#selectNestedClass(List, Class)
+&nbsp; * @see DiscoverySelectors#selectNestedClass(List, String)
+&nbsp; * @see org.junit.platform.engine.support.descriptor.ClassSource
+&nbsp; * @see ClassSelector
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.6&quot;)
+&nbsp;public class NestedClassSelector implements DiscoverySelector {
+&nbsp;
+&nbsp;	private List&lt;ClassSelector&gt; enclosingClassSelectors;
+&nbsp;	private ClassSelector nestedClassSelector;
+&nbsp;
+<b class="nc">&nbsp;	NestedClassSelector(List&lt;String&gt; enclosingClassNames, String nestedClassName) {</b>
+<b class="nc">&nbsp;		this.enclosingClassSelectors = enclosingClassNames.stream().map(ClassSelector::new).collect(toList());</b>
+<b class="nc">&nbsp;		this.nestedClassSelector = new ClassSelector(nestedClassName);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	NestedClassSelector(List&lt;Class&lt;?&gt;&gt; enclosingClasses, Class&lt;?&gt; nestedClass) {</b>
+<b class="nc">&nbsp;		this.enclosingClassSelectors = enclosingClasses.stream().map(ClassSelector::new).collect(toList());</b>
+<b class="nc">&nbsp;		this.nestedClassSelector = new ClassSelector(nestedClass);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the names of the classes enclosing the selected nested class.
+&nbsp;	 */
+&nbsp;	public List&lt;String&gt; getEnclosingClassNames() {
+<b class="nc">&nbsp;		return enclosingClassSelectors.stream().map(ClassSelector::getClassName).collect(toList());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the list of {@link Class} enclosing the selected nested
+&nbsp;	 * {@link Class}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Class} were not provided, but only the name of the
+&nbsp;	 * nested class and its enclosing classes, this method attempts to lazily
+&nbsp;	 * load the list of enclosing {@link Class} and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the classes cannot be loaded.
+&nbsp;	 */
+&nbsp;	public List&lt;Class&lt;?&gt;&gt; getEnclosingClasses() {
+<b class="nc">&nbsp;		return enclosingClassSelectors.stream().map(ClassSelector::getJavaClass).collect(toList());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the name of the selected nested class.
+&nbsp;	 */
+&nbsp;	public String getNestedClassName() {
+<b class="nc">&nbsp;		return nestedClassSelector.getClassName();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the selected nested {@link Class}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Class} were not provided, but only the name of the
+&nbsp;	 * nested class and its enclosing classes, this method attempts to lazily
+&nbsp;	 * load the nested {@link Class} and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the class cannot be loaded.
+&nbsp;	 */
+&nbsp;	public Class&lt;?&gt; getNestedClass() {
+<b class="nc">&nbsp;		return nestedClassSelector.getJavaClass();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		NestedClassSelector that = (NestedClassSelector) o;</b>
+<b class="nc">&nbsp;		return enclosingClassSelectors.equals(that.enclosingClassSelectors)</b>
+<b class="nc">&nbsp;				&amp;&amp; nestedClassSelector.equals(that.nestedClassSelector);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="nc">&nbsp;		return Objects.hash(enclosingClassSelectors, nestedClassSelector);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+<b class="nc">&nbsp;		return new ToStringBuilder(this) //</b>
+<b class="nc">&nbsp;				.append(&quot;enclosingClassNames&quot;, getEnclosingClassNames()) //</b>
+<b class="nc">&nbsp;				.append(&quot;nestedClassName&quot;, getNestedClassName()) //</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

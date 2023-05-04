@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestEngine</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine</a>
+</div>
+
+<h1>Coverage Summary for Class: TestEngine (org.junit.platform.engine)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TestEngine</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.util.ModuleUtils;
+&nbsp;import org.junit.platform.commons.util.PackageUtils;
+&nbsp;
+&nbsp;/**
+&nbsp; * A {@code TestEngine} facilitates &lt;em&gt;discovery&lt;/em&gt; and &lt;em&gt;execution&lt;/em&gt; of
+&nbsp; * tests for a particular programming model.
+&nbsp; *
+&nbsp; * &lt;p&gt;For example, JUnit provides a {@code TestEngine} that discovers and
+&nbsp; * executes tests written using the JUnit Jupiter programming model.
+&nbsp; *
+&nbsp; * &lt;p&gt;Every {@code TestEngine} must {@linkplain #getId provide its own unique ID},
+&nbsp; * {@linkplain #discover discover tests} from
+&nbsp; * {@link EngineDiscoveryRequest EngineDiscoveryRequests},
+&nbsp; * and {@linkplain #execute execute those tests} according to
+&nbsp; * {@link ExecutionRequest ExecutionRequests}.
+&nbsp; *
+&nbsp; * &lt;p&gt;In order to facilitate test discovery within IDEs and tools prior
+&nbsp; * to launching the JUnit Platform, {@code TestEngine} implementations are
+&nbsp; * encouraged to make use of the
+&nbsp; * {@link org.junit.platform.commons.annotation.Testable @Testable} annotation.
+&nbsp; * For example, the {@code @Test} and {@code @TestFactory} annotations in JUnit
+&nbsp; * Jupiter are meta-annotated with {@code @Testable}. Consult the Javadoc for
+&nbsp; * {@code @Testable} for further details.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.engine.EngineDiscoveryRequest
+&nbsp; * @see org.junit.platform.engine.ExecutionRequest
+&nbsp; * @see org.junit.platform.commons.annotation.Testable
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public interface TestEngine {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the ID that uniquely identifies this test engine.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Each test engine must provide a unique ID. For example, JUnit Vintage
+&nbsp;	 * and JUnit Jupiter use {@code &quot;junit-vintage&quot;} and {@code &quot;junit-jupiter&quot;},
+&nbsp;	 * respectively. When in doubt, you may use the fully qualified name of your
+&nbsp;	 * custom {@code TestEngine} implementation class.
+&nbsp;	 */
+&nbsp;	String getId();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Discover tests according to the supplied {@link EngineDiscoveryRequest}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The supplied {@link UniqueId} must be used as the unique ID of the
+&nbsp;	 * returned root {@link TestDescriptor}. In addition, the {@code UniqueId}
+&nbsp;	 * must be used to create unique IDs for children of the root&#39;s descriptor
+&nbsp;	 * by calling {@link UniqueId#append}.
+&nbsp;	 *
+&nbsp;	 * @param discoveryRequest the discovery request; never {@code null}
+&nbsp;	 * @param uniqueId the unique ID to be used for this test engine&#39;s
+&nbsp;	 * {@code TestDescriptor}; never {@code null}
+&nbsp;	 * @return the root {@code TestDescriptor} of this engine, typically an
+&nbsp;	 * instance of {@code EngineDescriptor}
+&nbsp;	 * @see org.junit.platform.engine.support.descriptor.EngineDescriptor
+&nbsp;	 */
+&nbsp;	TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Execute tests according to the supplied {@link ExecutionRequest}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The {@code request} passed to this method contains the root
+&nbsp;	 * {@link TestDescriptor} that was previously returned by {@link #discover},
+&nbsp;	 * the {@link EngineExecutionListener} to be notified of test execution
+&nbsp;	 * events, and {@link ConfigurationParameters} that may influence test execution.
+&nbsp;	 *
+&nbsp;	 * @param request the request to execute tests for; never {@code null}
+&nbsp;	 */
+&nbsp;	void execute(ExecutionRequest request);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;Group ID&lt;/em&gt; of the JAR in which this test engine is packaged.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This information is used solely for debugging and reporting purposes.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation returns an empty {@link Optional},
+&nbsp;	 * signaling that the group ID is unknown.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Concrete test engine implementations may override this method in
+&nbsp;	 * order to provide a known group ID.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the group ID; never {@code null}
+&nbsp;	 * but potentially empty if the group ID is unknown
+&nbsp;	 * @see #getArtifactId()
+&nbsp;	 * @see #getVersion()
+&nbsp;	 */
+&nbsp;	default Optional&lt;String&gt; getGroupId() {
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;Artifact ID&lt;/em&gt; of the JAR in which this test engine is packaged.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This information is used solely for debugging and reporting purposes.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The default implementation assumes the implementation title is equivalent
+&nbsp;	 * to the artifact ID and therefore attempts to query the
+&nbsp;	 * {@linkplain Package#getImplementationTitle() implementation title}
+&nbsp;	 * from the package attributes for the {@link Package} in which the engine
+&nbsp;	 * resides. Note that a package only has attributes if the information is
+&nbsp;	 * defined in the {@link java.util.jar.Manifest Manifest} of the JAR
+&nbsp;	 * containing that package, and if the class loader created the
+&nbsp;	 * {@link Package} instance with the attributes from the manifest.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the implementation title cannot be queried from the package
+&nbsp;	 * attributes, the default implementation returns an empty
+&nbsp;	 * {@link Optional}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Concrete test engine implementations may override this method in
+&nbsp;	 * order to determine the artifact ID by some other means.
+&nbsp;	 *
+&nbsp;	 * @implNote Since JUnit Platform version 1.1 this default implementation
+&nbsp;	 * returns the &quot;module name&quot; stored in the module (modular jar on the
+&nbsp;	 * module-path) of this test engine.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the artifact ID; never
+&nbsp;	 * {@code null} but potentially empty if the artifact ID is unknown
+&nbsp;	 * @see Class#getPackage()
+&nbsp;	 * @see Package#getImplementationTitle()
+&nbsp;	 * @see #getGroupId()
+&nbsp;	 * @see #getVersion()
+&nbsp;	 */
+&nbsp;	default Optional&lt;String&gt; getArtifactId() {
+<b class="nc">&nbsp;		Optional&lt;String&gt; moduleName = ModuleUtils.getModuleName(getClass());</b>
+<b class="nc">&nbsp;		if (moduleName.isPresent()) {</b>
+<b class="nc">&nbsp;			return moduleName;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return PackageUtils.getAttribute(getClass(), Package::getImplementationTitle);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the version of this test engine.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This information is used solely for debugging and reporting purposes.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Initially, the default implementation tries to retrieve the engine
+&nbsp;	 * version from the manifest attribute named: {@code &quot;Engine-Version-&quot; + getId()}
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Then the default implementation attempts to query the
+&nbsp;	 * {@linkplain Package#getImplementationVersion() implementation version}
+&nbsp;	 * from the package attributes for the {@link Package} in which the engine
+&nbsp;	 * resides. Note that a package only has attributes if the information is
+&nbsp;	 * defined in the {@link java.util.jar.Manifest Manifest} of the JAR
+&nbsp;	 * containing that package, and if the class loader created the
+&nbsp;	 * {@link Package} instance with the attributes from the manifest.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the implementation version cannot be queried from the package
+&nbsp;	 * attributes, the default implementation returns {@code &quot;DEVELOPMENT&quot;}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Concrete test engine implementations may override this method to
+&nbsp;	 * determine the version by some other means.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;implNote: Since JUnit Platform version 1.1 this default implementation
+&nbsp;	 * honors the &quot;raw version&quot; information stored in the module (modular jar
+&nbsp;	 * on the module-path) of this test engine.
+&nbsp;	 *
+&nbsp;	 * @return an {@code Optional} containing the version; never {@code null}
+&nbsp;	 * but potentially empty if the version is unknown
+&nbsp;	 * @see Class#getPackage()
+&nbsp;	 * @see Package#getImplementationVersion()
+&nbsp;	 * @see #getGroupId()
+&nbsp;	 * @see #getArtifactId()
+&nbsp;	 */
+&nbsp;	default Optional&lt;String&gt; getVersion() {
+<b class="nc">&nbsp;		Optional&lt;String&gt; standalone = PackageUtils.getAttribute(getClass(), &quot;Engine-Version-&quot; + getId());</b>
+<b class="nc">&nbsp;		if (standalone.isPresent()) {</b>
+<b class="nc">&nbsp;			return standalone;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		String fallback = &quot;DEVELOPMENT&quot;;</b>
+<b class="nc">&nbsp;		Optional&lt;String&gt; moduleVersion = ModuleUtils.getModuleVersion(getClass());</b>
+<b class="nc">&nbsp;		if (moduleVersion.isPresent()) {</b>
+<b class="nc">&nbsp;			return moduleVersion;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return Optional.of(PackageUtils.getAttribute(getClass(), Package::getImplementationVersion).orElse(fallback));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

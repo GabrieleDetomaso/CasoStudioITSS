@@ -48,7 +48,7 @@ public class CourseManagerGroup2Test {
             courseManager1.addNewCourseAttender(s4, LocalDate.parse("2022-11-11"));
         }
         catch(Exception e) {
-            System.out.println("Eccezione lanciata 2");
+            System.out.println("Eccezione lanciata 2" + e.getMessage());
         }
 
         try {

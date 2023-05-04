@@ -1,0 +1,326 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClassSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassSource (org.junit.platform.engine.support.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    17,6%
+  </span>
+  <span class="absValue">
+    (3/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    15%
+  </span>
+  <span class="absValue">
+    (6/40)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.descriptor;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.net.URI;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;import org.junit.platform.engine.TestSource;
+&nbsp;
+&nbsp;/**
+&nbsp; * Class based {@link org.junit.platform.engine.TestSource TestSource} with
+&nbsp; * an optional {@linkplain FilePosition file position}.
+&nbsp; *
+&nbsp; * &lt;p&gt;If a Java {@link Class} reference is provided, the {@code ClassSource}
+&nbsp; * will contain that {@code Class} and its class name accordingly. If a class
+&nbsp; * name is provided, the {@code ClassSource} will contain the class name and
+&nbsp; * will only attempt to lazily load the {@link Class} if {@link #getJavaClass()}
+&nbsp; * is invoked.
+&nbsp; *
+&nbsp; * &lt;p&gt;In this context, Java {@link Class} means anything that can be referenced
+&nbsp; * as a {@link Class} on the JVM &amp;mdash; for example, classes from other JVM
+&nbsp; * languages such Groovy, Scala, etc.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.engine.discovery.ClassSelector
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public class ClassSource implements TestSource {
+&nbsp;
+&nbsp;	private static final long serialVersionUID = 1L;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@link URI} {@linkplain URI#getScheme() scheme} for class sources: {@value}
+&nbsp;	 *
+&nbsp;	 * @since 1.8
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.8&quot;)
+&nbsp;	public static final String CLASS_SCHEME = &quot;class&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassSource} using the supplied class name.
+&nbsp;	 *
+&nbsp;	 * @param className the class name; must not be {@code null} or blank
+&nbsp;	 */
+&nbsp;	public static ClassSource from(String className) {
+<b class="nc">&nbsp;		return new ClassSource(className);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassSource} using the supplied class name and
+&nbsp;	 * {@linkplain FilePosition file position}.
+&nbsp;	 *
+&nbsp;	 * @param className the class name; must not be {@code null} or blank
+&nbsp;	 * @param filePosition the position in the source file; may be {@code null}
+&nbsp;	 */
+&nbsp;	public static ClassSource from(String className, FilePosition filePosition) {
+<b class="nc">&nbsp;		return new ClassSource(className, filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassSource} using the supplied {@linkplain Class class}.
+&nbsp;	 *
+&nbsp;	 * @param javaClass the Java class; must not be {@code null}
+&nbsp;	 */
+&nbsp;	public static ClassSource from(Class&lt;?&gt; javaClass) {
+<b class="fc">&nbsp;		return new ClassSource(javaClass);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassSource} using the supplied {@linkplain Class class}
+&nbsp;	 * and {@linkplain FilePosition file position}.
+&nbsp;	 *
+&nbsp;	 * @param javaClass the Java class; must not be {@code null}
+&nbsp;	 * @param filePosition the position in the Java source file; may be {@code null}
+&nbsp;	 */
+&nbsp;	public static ClassSource from(Class&lt;?&gt; javaClass, FilePosition filePosition) {
+<b class="nc">&nbsp;		return new ClassSource(javaClass, filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassSource} from the supplied {@link URI}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;URIs should be formatted as {@code class:fully.qualified.class.Name}.
+&nbsp;	 * The {@linkplain URI#getQuery() query} component of the {@code URI}, if
+&nbsp;	 * present, will be used to retrieve the {@link FilePosition} via
+&nbsp;	 * {@link FilePosition#fromQuery(String)}. For example, line 42 and column
+&nbsp;	 * 13 can be referenced in class {@code org.example.MyType} via the following
+&nbsp;	 * URI: {@code class:com.example.MyType?line=42&amp;column=13}. The URI fragment,
+&nbsp;	 * if present, will be ignored.
+&nbsp;	 *
+&nbsp;	 * @param uri the {@code URI} for the class source; never {@code null}
+&nbsp;	 * @return a new {@code ClassSource}; never {@code null}
+&nbsp;	 * @throws PreconditionViolationException if the supplied {@code URI} is
+&nbsp;	 * {@code null}, if the scheme of the supplied {@code URI} is not equal
+&nbsp;	 * to the {@link #CLASS_SCHEME}, or if the specified class name is empty
+&nbsp;	 * @since 1.8
+&nbsp;	 * @see #CLASS_SCHEME
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.8&quot;)
+&nbsp;	public static ClassSource from(URI uri) {
+<b class="nc">&nbsp;		Preconditions.notNull(uri, &quot;URI must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.condition(CLASS_SCHEME.equals(uri.getScheme()),</b>
+<b class="nc">&nbsp;			() -&gt; &quot;URI [&quot; + uri + &quot;] must have [&quot; + CLASS_SCHEME + &quot;] scheme&quot;);</b>
+&nbsp;
+<b class="nc">&nbsp;		String className = uri.getSchemeSpecificPart();</b>
+<b class="nc">&nbsp;		FilePosition filePosition = null;</b>
+<b class="nc">&nbsp;		int indexOfQuery = className.indexOf(&#39;?&#39;);</b>
+<b class="nc">&nbsp;		if (indexOfQuery &gt;= 0) {</b>
+<b class="nc">&nbsp;			filePosition = FilePosition.fromQuery(className.substring(indexOfQuery + 1)).orElse(null);</b>
+<b class="nc">&nbsp;			className = className.substring(0, indexOfQuery);</b>
+&nbsp;		}
+&nbsp;
+<b class="nc">&nbsp;		return ClassSource.from(className, filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private final String className;
+&nbsp;	private final FilePosition filePosition;
+&nbsp;	private Class&lt;?&gt; javaClass;
+&nbsp;
+&nbsp;	private ClassSource(String className) {
+<b class="nc">&nbsp;		this(className, null);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	private ClassSource(String className, FilePosition filePosition) {</b>
+<b class="nc">&nbsp;		this.className = Preconditions.notBlank(className, &quot;Class name must not be null or blank&quot;);</b>
+<b class="nc">&nbsp;		this.filePosition = filePosition;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private ClassSource(Class&lt;?&gt; javaClass) {
+<b class="fc">&nbsp;		this(javaClass, null);</b>
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private ClassSource(Class&lt;?&gt; javaClass, FilePosition filePosition) {</b>
+<b class="fc">&nbsp;		this.javaClass = Preconditions.notNull(javaClass, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		this.className = this.javaClass.getName();</b>
+<b class="fc">&nbsp;		this.filePosition = filePosition;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the class name of this source.
+&nbsp;	 *
+&nbsp;	 * @see #getJavaClass()
+&nbsp;	 * @see #getPosition()
+&nbsp;	 */
+&nbsp;	public final String getClassName() {
+<b class="nc">&nbsp;		return this.className;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@linkplain Class Java class} of this source.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Class} was not provided, but only the name, this method
+&nbsp;	 * attempts to lazily load the {@link Class} based on its name and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the class cannot be loaded.
+&nbsp;	 *
+&nbsp;	 * @see #getClassName()
+&nbsp;	 * @see #getPosition()
+&nbsp;	 */
+&nbsp;	public final Class&lt;?&gt; getJavaClass() {
+<b class="nc">&nbsp;		if (this.javaClass == null) {</b>
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			this.javaClass = ReflectionUtils.tryToLoadClass(this.className).getOrThrow(</b>
+<b class="nc">&nbsp;				cause -&gt; new PreconditionViolationException(&quot;Could not load class with name: &quot; + this.className, cause));</b>
+&nbsp;			// @formatter:on
+&nbsp;		}
+<b class="nc">&nbsp;		return this.javaClass;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@linkplain FilePosition position} in the source file for
+&nbsp;	 * the associated {@linkplain #getClassName class}, if available.
+&nbsp;	 *
+&nbsp;	 * @see #getClassName()
+&nbsp;	 * @see #getJavaClass()
+&nbsp;	 */
+&nbsp;	public final Optional&lt;FilePosition&gt; getPosition() {
+<b class="nc">&nbsp;		return Optional.ofNullable(this.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		ClassSource that = (ClassSource) o;</b>
+<b class="nc">&nbsp;		return Objects.equals(this.className, that.className) &amp;&amp; Objects.equals(this.filePosition, that.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="nc">&nbsp;		return Objects.hash(this.className, this.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return new ToStringBuilder(this)</b>
+<b class="nc">&nbsp;				.append(&quot;className&quot;, this.className)</b>
+<b class="nc">&nbsp;				.append(&quot;filePosition&quot;, this.filePosition)</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

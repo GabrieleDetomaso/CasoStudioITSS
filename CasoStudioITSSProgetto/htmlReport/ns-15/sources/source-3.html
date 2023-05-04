@@ -1,0 +1,249 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodArgumentsProvider</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.params.provider</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodArgumentsProvider (org.junit.jupiter.params.provider)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodArgumentsProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (9/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60,9%
+  </span>
+  <span class="absValue">
+    (28/46)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.params.provider;
+&nbsp;
+&nbsp;import static java.lang.String.format;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static org.junit.jupiter.params.provider.Arguments.arguments;
+&nbsp;import static org.junit.platform.commons.util.AnnotationUtils.isAnnotated;
+&nbsp;import static org.junit.platform.commons.util.CollectionUtils.isConvertibleToStream;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.List;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;import org.junit.jupiter.api.Test;
+&nbsp;import org.junit.jupiter.api.TestFactory;
+&nbsp;import org.junit.jupiter.api.TestTemplate;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.params.support.AnnotationConsumer;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.CollectionUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.StringUtils;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.0
+&nbsp; */
+<b class="fc">&nbsp;class MethodArgumentsProvider implements ArgumentsProvider, AnnotationConsumer&lt;MethodSource&gt; {</b>
+&nbsp;
+&nbsp;	private String[] methodNames;
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public void accept(MethodSource annotation) {
+<b class="fc">&nbsp;		this.methodNames = annotation.value();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Stream&lt;Arguments&gt; provideArguments(ExtensionContext context) {
+<b class="fc">&nbsp;		Object testInstance = context.getTestInstance().orElse(null);</b>
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return Arrays.stream(this.methodNames)</b>
+<b class="fc">&nbsp;				.map(factoryMethodName -&gt; getFactoryMethod(context, factoryMethodName))</b>
+<b class="fc">&nbsp;				.map(factoryMethod -&gt; context.getExecutableInvoker().invoke(factoryMethod, testInstance))</b>
+<b class="fc">&nbsp;				.flatMap(CollectionUtils::toStream)</b>
+<b class="fc">&nbsp;				.map(MethodArgumentsProvider::toArguments);</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private Method getFactoryMethod(ExtensionContext context, String factoryMethodName) {
+<b class="fc">&nbsp;		Method testMethod = context.getRequiredTestMethod();</b>
+<b class="fc">&nbsp;		if (StringUtils.isBlank(factoryMethodName)) {</b>
+<b class="nc">&nbsp;			factoryMethodName = testMethod.getName();</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (factoryMethodName.contains(&quot;.&quot;) || factoryMethodName.contains(&quot;#&quot;)) {</b>
+<b class="nc">&nbsp;			return getFactoryMethodByFullyQualifiedName(factoryMethodName);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return getFactoryMethodBySimpleName(context.getRequiredTestClass(), testMethod, factoryMethodName);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Method getFactoryMethodByFullyQualifiedName(String fullyQualifiedMethodName) {
+<b class="nc">&nbsp;		String[] methodParts = ReflectionUtils.parseFullyQualifiedMethodName(fullyQualifiedMethodName);</b>
+<b class="nc">&nbsp;		String className = methodParts[0];</b>
+<b class="nc">&nbsp;		String methodName = methodParts[1];</b>
+<b class="nc">&nbsp;		String methodParameters = methodParts[2];</b>
+&nbsp;
+<b class="nc">&nbsp;		return ReflectionUtils.findMethod(loadRequiredClass(className), methodName, methodParameters).orElseThrow(</b>
+<b class="nc">&nbsp;			() -&gt; new JUnitException(format(&quot;Could not find factory method [%s(%s)] in class [%s]&quot;, methodName,</b>
+&nbsp;				methodParameters, className)));
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Find all methods in the given {@code testClass} with the desired {@code factoryMethodName}
+&nbsp;	 * which have return types that can be converted to a {@link Stream}, ignoring the
+&nbsp;	 * {@code testMethod} itself as well as any {@code @Test}, {@code @TestTemplate},
+&nbsp;	 * or {@code @TestFactory} methods with the same name.
+&nbsp;	 */
+&nbsp;	private Method getFactoryMethodBySimpleName(Class&lt;?&gt; testClass, Method testMethod, String factoryMethodName) {
+<b class="fc">&nbsp;		Predicate&lt;Method&gt; isCandidate = candidate -&gt; factoryMethodName.equals(candidate.getName())</b>
+<b class="fc">&nbsp;				&amp;&amp; !testMethod.equals(candidate);</b>
+<b class="fc">&nbsp;		List&lt;Method&gt; candidates = ReflectionUtils.findMethods(testClass, isCandidate);</b>
+<b class="fc">&nbsp;		Predicate&lt;Method&gt; isFactoryMethod = method -&gt; isConvertibleToStream(method.getReturnType())</b>
+<b class="fc">&nbsp;				&amp;&amp; !isTestMethod(method);</b>
+<b class="fc">&nbsp;		List&lt;Method&gt; factoryMethods = candidates.stream().filter(isFactoryMethod).collect(toList());</b>
+<b class="fc">&nbsp;		Preconditions.condition(factoryMethods.size() &gt; 0, () -&gt; {</b>
+&nbsp;			// If we didn&#39;t find the factory method using the isFactoryMethod Predicate, perhaps
+&nbsp;			// the specified factory method has an invalid return type or is a test method.
+&nbsp;			// In that case, we report the invalid candidates that were found.
+<b class="nc">&nbsp;			if (candidates.size() &gt; 0) {</b>
+<b class="nc">&nbsp;				return format(</b>
+&nbsp;					&quot;Could not find valid factory method [%s] in class [%s] but found the following invalid candidates: %s&quot;,
+<b class="nc">&nbsp;					factoryMethodName, testClass.getName(), candidates);</b>
+&nbsp;			}
+&nbsp;			// Otherwise, report that we didn&#39;t find anything.
+<b class="nc">&nbsp;			return format(&quot;Could not find factory method [%s] in class [%s]&quot;, factoryMethodName, testClass.getName());</b>
+&nbsp;		});
+<b class="fc">&nbsp;		Preconditions.condition(factoryMethods.size() == 1,</b>
+<b class="nc">&nbsp;			() -&gt; format(&quot;%d factory methods named [%s] were found in class [%s]: %s&quot;, factoryMethods.size(),</b>
+<b class="nc">&nbsp;				factoryMethodName, testClass.getName(), factoryMethods));</b>
+<b class="fc">&nbsp;		return factoryMethods.get(0);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private boolean isTestMethod(Method candidate) {
+<b class="fc">&nbsp;		return isAnnotated(candidate, Test.class) || isAnnotated(candidate, TestTemplate.class)</b>
+<b class="fc">&nbsp;				|| isAnnotated(candidate, TestFactory.class);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Class&lt;?&gt; loadRequiredClass(String className) {
+<b class="nc">&nbsp;		return ReflectionUtils.tryToLoadClass(className).getOrThrow(</b>
+<b class="nc">&nbsp;			cause -&gt; new JUnitException(format(&quot;Could not load class [%s]&quot;, className), cause));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Arguments toArguments(Object item) {
+&nbsp;
+&nbsp;		// Nothing to do except cast.
+<b class="fc">&nbsp;		if (item instanceof Arguments) {</b>
+<b class="fc">&nbsp;			return (Arguments) item;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		// Pass all multidimensional arrays &quot;as is&quot;, in contrast to Object[].
+&nbsp;		// See https://github.com/junit-team/junit5/issues/1665
+<b class="fc">&nbsp;		if (ReflectionUtils.isMultidimensionalArray(item)) {</b>
+<b class="nc">&nbsp;			return arguments(item);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		// Special treatment for one-dimensional reference arrays.
+&nbsp;		// See https://github.com/junit-team/junit5/issues/1665
+<b class="fc">&nbsp;		if (item instanceof Object[]) {</b>
+<b class="nc">&nbsp;			return arguments((Object[]) item);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		// Pass everything else &quot;as is&quot;.
+<b class="fc">&nbsp;		return arguments(item);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

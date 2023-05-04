@@ -1,0 +1,222 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > RepeatedTest</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: RepeatedTest (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">RepeatedTest</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.annotation.Documented;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @RepeatedTest} is used to signal that the annotated method is a
+&nbsp; * &lt;em&gt;test template&lt;/em&gt; method that should be repeated a {@linkplain #value
+&nbsp; * specified number of times} with a configurable {@linkplain #name display
+&nbsp; * name}.
+&nbsp; *
+&nbsp; * &lt;p&gt;Each invocation of the repeated test behaves like the execution of a
+&nbsp; * regular {@link Test @Test} method with full support for the same lifecycle
+&nbsp; * callbacks and extensions. In addition, the current repetition and total
+&nbsp; * number of repetitions can be accessed by having the {@link RepetitionInfo}
+&nbsp; * injected.
+&nbsp; *
+&nbsp; * &lt;p&gt;{@code @RepeatedTest} methods must not be {@code private} or {@code static}
+&nbsp; * and must return {@code void}.
+&nbsp; *
+&nbsp; * &lt;p&gt;{@code @RepeatedTest} methods may optionally declare parameters to be
+&nbsp; * resolved by {@link org.junit.jupiter.api.extension.ParameterResolver
+&nbsp; * ParameterResolvers}.
+&nbsp; *
+&nbsp; * &lt;p&gt;{@code @RepeatedTest} may also be used as a meta-annotation in order to
+&nbsp; * create a custom &lt;em&gt;composed annotation&lt;/em&gt; that inherits the semantics
+&nbsp; * of {@code @RepeatedTest}.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Test Execution Order&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;By default, test methods will be ordered using an algorithm that is
+&nbsp; * deterministic but intentionally nonobvious. This ensures that subsequent runs
+&nbsp; * of a test suite execute test methods in the same order, thereby allowing for
+&nbsp; * repeatable builds. In this context, a &lt;em&gt;test method&lt;/em&gt; is any instance
+&nbsp; * method that is directly annotated or meta-annotated with {@code @Test},
+&nbsp; * {@code @RepeatedTest}, {@code @ParameterizedTest}, {@code @TestFactory}, or
+&nbsp; * {@code @TestTemplate}.
+&nbsp; *
+&nbsp; * &lt;p&gt;Although true &lt;em&gt;unit tests&lt;/em&gt; typically should not rely on the order
+&nbsp; * in which they are executed, there are times when it is necessary to enforce
+&nbsp; * a specific test method execution order?&amp;mdash;?for example, when writing
+&nbsp; * &lt;em&gt;integration tests&lt;/em&gt; or &lt;em&gt;functional tests&lt;/em&gt; where the sequence of
+&nbsp; * the tests is important, especially in conjunction with
+&nbsp; * {@link TestInstance @TestInstance(Lifecycle.PER_CLASS)}.
+&nbsp; *
+&nbsp; * &lt;p&gt;To control the order in which test methods are executed, annotate your
+&nbsp; * test class or test interface with {@link TestMethodOrder @TestMethodOrder}
+&nbsp; * and specify the desired {@link MethodOrderer} implementation.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see DisplayName
+&nbsp; * @see RepetitionInfo
+&nbsp; * @see TestTemplate
+&nbsp; * @see TestInfo
+&nbsp; * @see Test
+&nbsp; */
+&nbsp;@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD })
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Documented
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;@TestTemplate
+&nbsp;public @interface RepeatedTest {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Placeholder for the {@linkplain TestInfo#getDisplayName display name} of
+&nbsp;	 * a {@code @RepeatedTest} method: &lt;code&gt;{displayName}&lt;/code&gt;
+&nbsp;	 */
+&nbsp;	String DISPLAY_NAME_PLACEHOLDER = &quot;{displayName}&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Placeholder for the current repetition count of a {@code @RepeatedTest}
+&nbsp;	 * method: &lt;code&gt;{currentRepetition}&lt;/code&gt;
+&nbsp;	 */
+&nbsp;	String CURRENT_REPETITION_PLACEHOLDER = &quot;{currentRepetition}&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Placeholder for the total number of repetitions of a {@code @RepeatedTest}
+&nbsp;	 * method: &lt;code&gt;{totalRepetitions}&lt;/code&gt;
+&nbsp;	 */
+&nbsp;	String TOTAL_REPETITIONS_PLACEHOLDER = &quot;{totalRepetitions}&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Short&lt;/em&gt; display name pattern for a repeated test: {@value}
+&nbsp;	 *
+&nbsp;	 * @see #CURRENT_REPETITION_PLACEHOLDER
+&nbsp;	 * @see #TOTAL_REPETITIONS_PLACEHOLDER
+&nbsp;	 * @see #LONG_DISPLAY_NAME
+&nbsp;	 */
+&nbsp;	String SHORT_DISPLAY_NAME = &quot;repetition &quot; + CURRENT_REPETITION_PLACEHOLDER + &quot; of &quot; + TOTAL_REPETITIONS_PLACEHOLDER;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Long&lt;/em&gt; display name pattern for a repeated test: {@value}
+&nbsp;	 *
+&nbsp;	 * @see #DISPLAY_NAME_PLACEHOLDER
+&nbsp;	 * @see #SHORT_DISPLAY_NAME
+&nbsp;	 */
+&nbsp;	String LONG_DISPLAY_NAME = DISPLAY_NAME_PLACEHOLDER + &quot; :: &quot; + SHORT_DISPLAY_NAME;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The number of repetitions.
+&nbsp;	 *
+&nbsp;	 * @return the number of repetitions; must be greater than zero
+&nbsp;	 */
+&nbsp;	int value();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The display name for each repetition of the repeated test.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Supported placeholders&lt;/h4&gt;
+&nbsp;	 * &lt;ul&gt;
+&nbsp;	 * &lt;li&gt;{@link #DISPLAY_NAME_PLACEHOLDER}&lt;/li&gt;
+&nbsp;	 * &lt;li&gt;{@link #CURRENT_REPETITION_PLACEHOLDER}&lt;/li&gt;
+&nbsp;	 * &lt;li&gt;{@link #TOTAL_REPETITIONS_PLACEHOLDER}&lt;/li&gt;
+&nbsp;	 * &lt;/ul&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Defaults to {@link #SHORT_DISPLAY_NAME}, resulting in
+&nbsp;	 * names such as {@code &quot;repetition 1 of 2&quot;}, {@code &quot;repetition 2 of 2&quot;},
+&nbsp;	 * etc.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Can be set to &lt;code&gt;{@link #LONG_DISPLAY_NAME}&lt;/code&gt;, resulting in
+&nbsp;	 * names such as {@code &quot;myRepeatedTest() :: repetition 1 of 2&quot;},
+&nbsp;	 * {@code &quot;myRepeatedTest() :: repetition 2 of 2&quot;}, etc.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Alternatively, you can provide a custom display name, optionally
+&nbsp;	 * using the aforementioned placeholders.
+&nbsp;	 *
+&nbsp;	 * @return a custom display name; never blank or consisting solely of
+&nbsp;	 * whitespace
+&nbsp;	 * @see #SHORT_DISPLAY_NAME
+&nbsp;	 * @see #LONG_DISPLAY_NAME
+&nbsp;	 * @see #DISPLAY_NAME_PLACEHOLDER
+&nbsp;	 * @see #CURRENT_REPETITION_PLACEHOLDER
+&nbsp;	 * @see #TOTAL_REPETITIONS_PLACEHOLDER
+&nbsp;	 * @see TestInfo#getDisplayName()
+&nbsp;	 */
+&nbsp;	String name() default SHORT_DISPLAY_NAME;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

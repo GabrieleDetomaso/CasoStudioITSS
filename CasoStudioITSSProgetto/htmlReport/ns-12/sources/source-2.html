@@ -1,0 +1,173 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > OpenTest4JAndJUnit4AwareThrowableCollector</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.support</a>
+</div>
+
+<h1>Coverage Summary for Class: OpenTest4JAndJUnit4AwareThrowableCollector (org.junit.jupiter.engine.support)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OpenTest4JAndJUnit4AwareThrowableCollector</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76,5%
+  </span>
+  <span class="absValue">
+    (13/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.support;
+&nbsp;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.function.Supplier;
+&nbsp;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.support.hierarchical.ThrowableCollector;
+&nbsp;import org.opentest4j.TestAbortedException;
+&nbsp;
+&nbsp;/**
+&nbsp; * Specialization of {@link ThrowableCollector} that treats instances of the
+&nbsp; * OTA&#39;s {@link org.opentest4j.TestAbortedException} and JUnit 4&#39;s
+&nbsp; * {@code org.junit.AssumptionViolatedException} as &lt;em&gt;aborting&lt;/em&gt;.
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; * @see ThrowableCollector
+&nbsp; * @see org.junit.platform.engine.support.hierarchical.OpenTest4JAwareThrowableCollector
+&nbsp; */
+&nbsp;class OpenTest4JAndJUnit4AwareThrowableCollector extends ThrowableCollector {
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(OpenTest4JAndJUnit4AwareThrowableCollector.class);</b>
+&nbsp;
+&nbsp;	private static final String ASSUMPTION_VIOLATED_EXCEPTION = &quot;org.junit.internal.AssumptionViolatedException&quot;;
+&nbsp;
+<b class="fc">&nbsp;	private static final String COMMON_FAILURE_MESSAGE = &quot;Failed to load class &quot; + ASSUMPTION_VIOLATED_EXCEPTION</b>
+<b class="fc">&nbsp;			+ &quot;: only supporting &quot; + TestAbortedException.class.getName() + &quot; for aborted execution.&quot;;</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Predicate&lt;? super Throwable&gt; abortedExecutionPredicate = createAbortedExecutionPredicate();</b>
+&nbsp;
+&nbsp;	OpenTest4JAndJUnit4AwareThrowableCollector() {
+<b class="fc">&nbsp;		super(abortedExecutionPredicate);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private static Predicate&lt;? super Throwable&gt; createAbortedExecutionPredicate() {
+<b class="fc">&nbsp;		Predicate&lt;Throwable&gt; otaPredicate = TestAbortedException.class::isInstance;</b>
+&nbsp;
+&nbsp;		// Additionally support JUnit 4&#39;s AssumptionViolatedException?
+&nbsp;		try {
+<b class="fc">&nbsp;			Class&lt;?&gt; clazz = ReflectionUtils.tryToLoadClass(ASSUMPTION_VIOLATED_EXCEPTION).get();</b>
+<b class="nc">&nbsp;			if (clazz != null) {</b>
+<b class="nc">&nbsp;				return otaPredicate.or(clazz::isInstance);</b>
+&nbsp;			}
+&nbsp;		}
+<b class="fc">&nbsp;		catch (Throwable throwable) {</b>
+<b class="fc">&nbsp;			UnrecoverableExceptions.rethrowIfUnrecoverable(throwable);</b>
+<b class="fc">&nbsp;			Supplier&lt;String&gt; messageSupplier = (throwable instanceof NoClassDefFoundError)</b>
+<b class="nc">&nbsp;					? () -&gt; COMMON_FAILURE_MESSAGE + &quot; Note that &quot; + ASSUMPTION_VIOLATED_EXCEPTION</b>
+&nbsp;							+ &quot; requires that Hamcrest is on the classpath.&quot;
+<b class="fc">&nbsp;					: () -&gt; COMMON_FAILURE_MESSAGE;</b>
+<b class="fc">&nbsp;			logger.debug(throwable, messageSupplier);</b>
+<b class="nc">&nbsp;		}</b>
+&nbsp;
+&nbsp;		// Else just OTA&#39;s TestAbortedException
+<b class="fc">&nbsp;		return otaPredicate;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

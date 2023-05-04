@@ -1,0 +1,437 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodOrderer</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodOrderer (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodOrderer</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static java.util.Comparator.comparingInt;
+&nbsp;import static org.apiguardian.api.API.Status.DEPRECATED;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.Comparator;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.parallel.ExecutionMode;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.ClassUtils;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code MethodOrderer} defines the API for ordering the &lt;em&gt;test methods&lt;/em&gt;
+&nbsp; * in a given test class.
+&nbsp; *
+&nbsp; * &lt;p&gt;In this context, the term &quot;test method&quot; refers to any method annotated with
+&nbsp; * {@code @Test}, {@code @RepeatedTest}, {@code @ParameterizedTest},
+&nbsp; * {@code @TestFactory}, or {@code @TestTemplate}.
+&nbsp; *
+&nbsp; * &lt;p&gt;A {@link MethodOrderer} can be configured &lt;em&gt;globally&lt;/em&gt; for the entire
+&nbsp; * test suite via the {@value #DEFAULT_ORDER_PROPERTY_NAME} configuration
+&nbsp; * parameter (see the User Guide for details) or &lt;em&gt;locally&lt;/em&gt; for a test
+&nbsp; * class via the {@link TestMethodOrder @TestMethodOrder} annotation.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Built-in Implementations&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;JUnit Jupiter provides the following built-in {@code MethodOrderer}
+&nbsp; * implementations.
+&nbsp; *
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;{@link MethodName}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link OrderAnnotation}&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@link Random}&lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; *
+&nbsp; * @since 5.4
+&nbsp; * @see TestMethodOrder
+&nbsp; * @see MethodOrdererContext
+&nbsp; * @see #orderMethods(MethodOrdererContext)
+&nbsp; * @see ClassOrderer
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface MethodOrderer {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Property name used to set the default method orderer class name: {@value}
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Supported Values&lt;/h4&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Supported values include fully qualified class names for types that
+&nbsp;	 * implement {@link org.junit.jupiter.api.MethodOrderer}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If not specified, test methods will be ordered using an algorithm that
+&nbsp;	 * is deterministic but intentionally non-obvious.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.9&quot;)
+&nbsp;	String DEFAULT_ORDER_PROPERTY_NAME = &quot;junit.jupiter.testmethod.order.default&quot;;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Order the methods encapsulated in the supplied {@link MethodOrdererContext}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The methods to order or sort are made indirectly available via
+&nbsp;	 * {@link MethodOrdererContext#getMethodDescriptors()}. Since this method
+&nbsp;	 * has a {@code void} return type, the list of method descriptors must be
+&nbsp;	 * modified directly.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;For example, a simplified implementation of the {@link Random}
+&nbsp;	 * {@code MethodOrderer} might look like the following.
+&nbsp;	 *
+&nbsp;	 * &lt;pre class=&quot;code&quot;&gt;
+&nbsp;	 * public void orderMethods(MethodOrdererContext context) {
+&nbsp;	 *     Collections.shuffle(context.getMethodDescriptors());
+&nbsp;	 * }
+&nbsp;	 * &lt;/pre&gt;
+&nbsp;	 *
+&nbsp;	 * @param context the {@code MethodOrdererContext} containing the
+&nbsp;	 * {@linkplain MethodDescriptor method descriptors} to order; never {@code null}
+&nbsp;	 * @see #getDefaultExecutionMode()
+&nbsp;	 */
+&nbsp;	void orderMethods(MethodOrdererContext context);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the &lt;em&gt;default&lt;/em&gt; {@link ExecutionMode} for the test class
+&nbsp;	 * configured with this {@link MethodOrderer}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method is guaranteed to be invoked after
+&nbsp;	 * {@link #orderMethods(MethodOrdererContext)} which allows implementations
+&nbsp;	 * of this method to determine the appropriate return value programmatically,
+&nbsp;	 * potentially based on actions that were taken in {@code orderMethods()}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Defaults to {@link ExecutionMode#SAME_THREAD SAME_THREAD}, since
+&nbsp;	 * ordered methods are typically sorted in a fashion that would conflict
+&nbsp;	 * with concurrent execution.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In case the ordering does not conflict with concurrent execution,
+&nbsp;	 * implementations should return an empty {@link Optional} to signal that
+&nbsp;	 * the engine should decide which execution mode to use.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Can be overridden via an explicit
+&nbsp;	 * {@link org.junit.jupiter.api.parallel.Execution @Execution} declaration
+&nbsp;	 * on the test class or in concrete implementations of the
+&nbsp;	 * {@code MethodOrderer} API.
+&nbsp;	 *
+&nbsp;	 * @return the default {@code ExecutionMode}; never {@code null} but
+&nbsp;	 * potentially empty
+&nbsp;	 * @see #orderMethods(MethodOrdererContext)
+&nbsp;	 */
+&nbsp;	default Optional&lt;ExecutionMode&gt; getDefaultExecutionMode() {
+<b class="nc">&nbsp;		return Optional.of(ExecutionMode.SAME_THREAD);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code MethodOrderer} that sorts methods alphanumerically based on their
+&nbsp;	 * names using {@link String#compareTo(String)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If two methods have the same name, {@code String} representations of
+&nbsp;	 * their formal parameter lists will be used as a fallback for comparing the
+&nbsp;	 * methods.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 * @deprecated as of JUnit Jupiter 5.7 in favor of {@link MethodOrderer.MethodName};
+&nbsp;	 * to be removed in 6.0
+&nbsp;	 */
+&nbsp;	@API(status = DEPRECATED, since = &quot;5.7&quot;)
+&nbsp;	@Deprecated
+&nbsp;	class Alphanumeric extends MethodName {
+&nbsp;
+&nbsp;		public Alphanumeric() {
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code MethodOrderer} that sorts methods alphanumerically based on their
+&nbsp;	 * names using {@link String#compareTo(String)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If two methods have the same name, {@code String} representations of
+&nbsp;	 * their formal parameter lists will be used as a fallback for comparing the
+&nbsp;	 * methods.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.7&quot;)
+&nbsp;	class MethodName implements MethodOrderer {
+&nbsp;
+&nbsp;		public MethodName() {
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Sort the methods encapsulated in the supplied
+&nbsp;		 * {@link MethodOrdererContext} alphanumerically based on their names
+&nbsp;		 * and formal parameter lists.
+&nbsp;		 */
+&nbsp;		@Override
+&nbsp;		public void orderMethods(MethodOrdererContext context) {
+&nbsp;			context.getMethodDescriptors().sort(comparator);
+&nbsp;		}
+&nbsp;
+&nbsp;		private static final Comparator&lt;MethodDescriptor&gt; comparator = Comparator.&lt;MethodDescriptor, String&gt; //
+&nbsp;				comparing(descriptor -&gt; descriptor.getMethod().getName())//
+&nbsp;				.thenComparing(descriptor -&gt; parameterList(descriptor.getMethod()));
+&nbsp;
+&nbsp;		private static String parameterList(Method method) {
+&nbsp;			return ClassUtils.nullSafeToString(method.getParameterTypes());
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code MethodOrderer} that sorts methods alphanumerically based on their
+&nbsp;	 * display names using {@link String#compareTo(String)}
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.7&quot;)
+&nbsp;	class DisplayName implements MethodOrderer {
+&nbsp;
+&nbsp;		public DisplayName() {
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Sort the methods encapsulated in the supplied
+&nbsp;		 * {@link MethodOrdererContext} alphanumerically based on their display
+&nbsp;		 * names.
+&nbsp;		 */
+&nbsp;		@Override
+&nbsp;		public void orderMethods(MethodOrdererContext context) {
+&nbsp;			context.getMethodDescriptors().sort(comparator);
+&nbsp;		}
+&nbsp;
+&nbsp;		private static final Comparator&lt;MethodDescriptor&gt; comparator = Comparator.comparing(
+&nbsp;			MethodDescriptor::getDisplayName);
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code MethodOrderer} that sorts methods based on the {@link Order @Order}
+&nbsp;	 * annotation.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Any methods that are assigned the same order value will be sorted
+&nbsp;	 * arbitrarily adjacent to each other.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Any methods not annotated with {@code @Order} will be assigned the
+&nbsp;	 * {@linkplain Order#DEFAULT default order} value which will effectively cause them
+&nbsp;	 * to appear at the end of the sorted list, unless certain methods are assigned
+&nbsp;	 * an explicit order value greater than the default order value. Any methods
+&nbsp;	 * assigned an explicit order value greater than the default order value will
+&nbsp;	 * appear after non-annotated methods in the sorted list.
+&nbsp;	 */
+&nbsp;	class OrderAnnotation implements MethodOrderer {
+&nbsp;
+&nbsp;		public OrderAnnotation() {
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Sort the methods encapsulated in the supplied
+&nbsp;		 * {@link MethodOrdererContext} based on the {@link Order @Order}
+&nbsp;		 * annotation.
+&nbsp;		 */
+&nbsp;		@Override
+&nbsp;		public void orderMethods(MethodOrdererContext context) {
+&nbsp;			context.getMethodDescriptors().sort(comparingInt(OrderAnnotation::getOrder));
+&nbsp;		}
+&nbsp;
+&nbsp;		private static int getOrder(MethodDescriptor descriptor) {
+&nbsp;			return descriptor.findAnnotation(Order.class).map(Order::value).orElse(Order.DEFAULT);
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * {@code MethodOrderer} that orders methods pseudo-randomly.
+&nbsp;	 *
+&nbsp;	 * &lt;h2&gt;Custom Seed&lt;/h2&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;By default, the random &lt;em&gt;seed&lt;/em&gt; used for ordering methods is the
+&nbsp;	 * value returned by {@link System#nanoTime()} during static initialization
+&nbsp;	 * of this class. In order to support repeatable builds, the value of the
+&nbsp;	 * default random seed is logged at {@code CONFIG} level. In addition, a
+&nbsp;	 * custom seed (potentially the default seed from the previous test plan
+&nbsp;	 * execution) may be specified via the {@value ClassOrderer.Random#RANDOM_SEED_PROPERTY_NAME}
+&nbsp;	 * &lt;em&gt;configuration parameter&lt;/em&gt; which can be supplied via the {@code Launcher}
+&nbsp;	 * API, build tools (e.g., Gradle and Maven), a JVM system property, or the JUnit
+&nbsp;	 * Platform configuration file (i.e., a file named {@code junit-platform.properties}
+&nbsp;	 * in the root of the class path). Consult the User Guide for further information.
+&nbsp;	 *
+&nbsp;	 * @see Random#RANDOM_SEED_PROPERTY_NAME
+&nbsp;	 * @see java.util.Random
+&nbsp;	 */
+&nbsp;	class Random implements MethodOrderer {
+&nbsp;
+&nbsp;		private static final Logger logger = LoggerFactory.getLogger(Random.class);
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Default seed, which is generated during initialization of this class
+&nbsp;		 * via {@link System#nanoTime()} for reproducibility of tests.
+&nbsp;		 */
+&nbsp;		private static final long DEFAULT_SEED;
+&nbsp;
+&nbsp;		static {
+&nbsp;			DEFAULT_SEED = System.nanoTime();
+&nbsp;			logger.config(() -&gt; &quot;MethodOrderer.Random default seed: &quot; + DEFAULT_SEED);
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Property name used to set the random seed used by this
+&nbsp;		 * {@code MethodOrderer}: {@value}
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;The same property is used by {@link ClassOrderer.Random} for
+&nbsp;		 * consistency between the two random orderers.
+&nbsp;		 *
+&nbsp;		 * &lt;h4&gt;Supported Values&lt;/h4&gt;
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;Supported values include any string that can be converted to a
+&nbsp;		 * {@link Long} via {@link Long#valueOf(String)}.
+&nbsp;		 *
+&nbsp;		 * &lt;p&gt;If not specified or if the specified value cannot be converted to
+&nbsp;		 * a {@link Long}, the default random seed will be used (see the
+&nbsp;		 * {@linkplain Random class-level Javadoc} for details).
+&nbsp;		 *
+&nbsp;		 * @see ClassOrderer.Random
+&nbsp;		 */
+&nbsp;		public static final String RANDOM_SEED_PROPERTY_NAME = &quot;junit.jupiter.execution.order.random.seed&quot;;
+&nbsp;
+&nbsp;		public Random() {
+&nbsp;		}
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Order the methods encapsulated in the supplied
+&nbsp;		 * {@link MethodOrdererContext} pseudo-randomly.
+&nbsp;		 */
+&nbsp;		@Override
+&nbsp;		public void orderMethods(MethodOrdererContext context) {
+&nbsp;			Collections.shuffle(context.getMethodDescriptors(),
+&nbsp;				new java.util.Random(getCustomSeed(context).orElse(DEFAULT_SEED)));
+&nbsp;		}
+&nbsp;
+&nbsp;		private Optional&lt;Long&gt; getCustomSeed(MethodOrdererContext context) {
+&nbsp;			return context.getConfigurationParameter(RANDOM_SEED_PROPERTY_NAME).map(configurationParameter -&gt; {
+&nbsp;				Long seed = null;
+&nbsp;				try {
+&nbsp;					seed = Long.valueOf(configurationParameter);
+&nbsp;					logger.config(
+&nbsp;						() -&gt; String.format(&quot;Using custom seed for configuration parameter [%s] with value [%s].&quot;,
+&nbsp;							RANDOM_SEED_PROPERTY_NAME, configurationParameter));
+&nbsp;				}
+&nbsp;				catch (NumberFormatException ex) {
+&nbsp;					logger.warn(ex,
+&nbsp;						() -&gt; String.format(
+&nbsp;							&quot;Failed to convert configuration parameter [%s] with value [%s] to a long. &quot;
+&nbsp;									+ &quot;Using default seed [%s] as fallback.&quot;,
+&nbsp;							RANDOM_SEED_PROPERTY_NAME, configurationParameter, DEFAULT_SEED));
+&nbsp;				}
+&nbsp;				return seed;
+&nbsp;			});
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

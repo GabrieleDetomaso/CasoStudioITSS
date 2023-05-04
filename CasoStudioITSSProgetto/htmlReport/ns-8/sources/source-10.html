@@ -1,0 +1,143 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestInstanceFactory</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TestInstanceFactory (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">TestInstanceFactory</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code TestInstanceFactory} defines the API for {@link Extension
+&nbsp; * Extensions} that wish to {@linkplain #createTestInstance create} test instances.
+&nbsp; *
+&nbsp; * &lt;p&gt;Common use cases include creating test instances with special construction
+&nbsp; * requirements or acquiring the test instance from a dependency injection
+&nbsp; * framework.
+&nbsp; *
+&nbsp; * &lt;p&gt;Extensions that implement {@code TestInstanceFactory} must be registered
+&nbsp; * at the class level.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Warning&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Only one {@code TestInstanceFactory} is allowed to be registered for any
+&nbsp; * given test class. Registering multiple factories for any single test class
+&nbsp; * will result in an exception being thrown for all tests in that class, in any
+&nbsp; * subclass, and in any nested class. Note that any {@code TestInstanceFactory}
+&nbsp; * registered in a {@linkplain Class#getSuperclass() superclass} or
+&nbsp; * {@linkplain Class#getEnclosingClass() enclosing} class (i.e., in the case of
+&nbsp; * a {@code @Nested} test class) is &lt;em&gt;inherited&lt;/em&gt;. It is therefore the
+&nbsp; * user&#39;s responsibility to ensure that only a single {@code TestInstanceFactory}
+&nbsp; * is registered for any specific test class.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Constructor Requirements&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Consult the documentation in {@link Extension} for details on
+&nbsp; * constructor requirements.
+&nbsp; *
+&nbsp; * @since 5.3
+&nbsp; * @see #createTestInstance(TestInstanceFactoryContext, ExtensionContext)
+&nbsp; * @see TestInstanceFactoryContext
+&nbsp; * @see TestInstancePostProcessor
+&nbsp; * @see TestInstancePreDestroyCallback
+&nbsp; * @see ParameterResolver
+&nbsp; */
+&nbsp;@FunctionalInterface
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface TestInstanceFactory extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Callback for creating a test instance for the supplied context.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: the {@code ExtensionContext} supplied to a
+&nbsp;	 * {@code TestInstanceFactory} will always return an empty
+&nbsp;	 * {@link java.util.Optional} value from
+&nbsp;	 * {@link ExtensionContext#getTestInstance() getTestInstance()} since the
+&nbsp;	 * test instance cannot exist before it has been created by a
+&nbsp;	 * {@code TestInstanceFactory} or the framework itself.
+&nbsp;	 *
+&nbsp;	 * @param factoryContext the context for the test class to be instantiated;
+&nbsp;	 * never {@code null}
+&nbsp;	 * @param extensionContext the current extension context; never {@code null}
+&nbsp;	 * @return the test instance; never {@code null}
+&nbsp;	 * @throws TestInstantiationException if an error occurs while creating the
+&nbsp;	 * test instance
+&nbsp;	 */
+&nbsp;	Object createTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext extensionContext)
+&nbsp;			throws TestInstantiationException;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

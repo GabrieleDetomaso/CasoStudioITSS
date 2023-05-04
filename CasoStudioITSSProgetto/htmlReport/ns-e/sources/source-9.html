@@ -1,0 +1,437 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodSelectorResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.discovery</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodSelectorResolver (org.junit.jupiter.engine.discovery)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodSelectorResolver</td>
+<td class="coverageStat">
+  <span class="percent">
+    46,2%
+  </span>
+  <span class="absValue">
+    (6/13)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    41,2%
+  </span>
+  <span class="absValue">
+    (21/51)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MethodSelectorResolver$MethodType</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (6/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    53,3%
+  </span>
+  <span class="absValue">
+    (16/30)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MethodSelectorResolver$MethodType$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MethodSelectorResolver$MethodType$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">MethodSelectorResolver$MethodType$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    60,7%
+  </span>
+  <span class="absValue">
+    (17/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    48,3%
+  </span>
+  <span class="absValue">
+    (42/87)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.discovery;
+&nbsp;
+&nbsp;import static java.util.Collections.emptyList;
+&nbsp;import static java.util.Collections.emptySet;
+&nbsp;import static java.util.stream.Collectors.toList;
+&nbsp;import static java.util.stream.Collectors.toSet;
+&nbsp;import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
+&nbsp;import static org.junit.platform.engine.support.discovery.SelectorResolver.Resolution.matches;
+&nbsp;import static org.junit.platform.engine.support.discovery.SelectorResolver.Resolution.unresolved;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.BiFunction;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor;
+&nbsp;import org.junit.jupiter.engine.descriptor.Filterable;
+&nbsp;import org.junit.jupiter.engine.descriptor.TestFactoryTestDescriptor;
+&nbsp;import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
+&nbsp;import org.junit.jupiter.engine.descriptor.TestTemplateInvocationTestDescriptor;
+&nbsp;import org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor;
+&nbsp;import org.junit.jupiter.engine.discovery.predicates.IsNestedTestClass;
+&nbsp;import org.junit.jupiter.engine.discovery.predicates.IsTestClassWithTests;
+&nbsp;import org.junit.jupiter.engine.discovery.predicates.IsTestFactoryMethod;
+&nbsp;import org.junit.jupiter.engine.discovery.predicates.IsTestMethod;
+&nbsp;import org.junit.jupiter.engine.discovery.predicates.IsTestTemplateMethod;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.ClassUtils;
+&nbsp;import org.junit.platform.engine.DiscoverySelector;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import org.junit.platform.engine.discovery.DiscoverySelectors;
+&nbsp;import org.junit.platform.engine.discovery.IterationSelector;
+&nbsp;import org.junit.platform.engine.discovery.MethodSelector;
+&nbsp;import org.junit.platform.engine.discovery.NestedMethodSelector;
+&nbsp;import org.junit.platform.engine.discovery.UniqueIdSelector;
+&nbsp;import org.junit.platform.engine.support.discovery.SelectorResolver;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.5
+&nbsp; */
+<b class="nc">&nbsp;class MethodSelectorResolver implements SelectorResolver {</b>
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(MethodSelectorResolver.class);</b>
+<b class="fc">&nbsp;	private static final MethodFinder methodFinder = new MethodFinder();</b>
+<b class="fc">&nbsp;	private static final Predicate&lt;Class&lt;?&gt;&gt; testClassPredicate = new IsTestClassWithTests().or(</b>
+&nbsp;		new IsNestedTestClass());
+&nbsp;
+&nbsp;	protected final JupiterConfiguration configuration;
+&nbsp;
+<b class="fc">&nbsp;	MethodSelectorResolver(JupiterConfiguration configuration) {</b>
+<b class="fc">&nbsp;		this.configuration = configuration;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Resolution resolve(MethodSelector selector, Context context) {
+<b class="fc">&nbsp;		return resolve(context, emptyList(), selector.getJavaClass(), selector::getJavaMethod, Match::exact);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Resolution resolve(NestedMethodSelector selector, Context context) {
+<b class="nc">&nbsp;		return resolve(context, selector.getEnclosingClasses(), selector.getNestedClass(), selector::getMethod,</b>
+&nbsp;			Match::exact);
+&nbsp;	}
+&nbsp;
+&nbsp;	private Resolution resolve(Context context, List&lt;Class&lt;?&gt;&gt; enclosingClasses, Class&lt;?&gt; testClass,
+&nbsp;			Supplier&lt;Method&gt; methodSupplier,
+&nbsp;			BiFunction&lt;TestDescriptor, Supplier&lt;Set&lt;? extends DiscoverySelector&gt;&gt;, Match&gt; matchFactory) {
+<b class="fc">&nbsp;		if (!testClassPredicate.test(testClass)) {</b>
+<b class="nc">&nbsp;			return unresolved();</b>
+&nbsp;		}
+<b class="fc">&nbsp;		Method method = methodSupplier.get();</b>
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		Set&lt;Match&gt; matches = Arrays.stream(MethodType.values())</b>
+<b class="fc">&nbsp;				.map(methodType -&gt; methodType.resolve(enclosingClasses, testClass, method, context, configuration))</b>
+<b class="fc">&nbsp;				.filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;				.map(Optional::get)</b>
+<b class="fc">&nbsp;				.map(testDescriptor -&gt; matchFactory.apply(testDescriptor, expansionCallback(testDescriptor)))</b>
+<b class="fc">&nbsp;				.collect(toSet());</b>
+&nbsp;		// @formatter:on
+<b class="fc">&nbsp;		if (matches.size() &gt; 1) {</b>
+<b class="nc">&nbsp;			logger.warn(() -&gt; {</b>
+<b class="nc">&nbsp;				Stream&lt;TestDescriptor&gt; testDescriptors = matches.stream().map(Match::getTestDescriptor);</b>
+<b class="nc">&nbsp;				return String.format(</b>
+&nbsp;					&quot;Possible configuration error: method [%s] resulted in multiple TestDescriptors %s. &quot;
+&nbsp;							+ &quot;This is typically the result of annotating a method with multiple competing annotations &quot;
+&nbsp;							+ &quot;such as @Test, @RepeatedTest, @ParameterizedTest, @TestFactory, etc.&quot;,
+<b class="nc">&nbsp;					method.toGenericString(), testDescriptors.map(d -&gt; d.getClass().getName()).collect(toList()));</b>
+&nbsp;			});
+&nbsp;		}
+<b class="fc">&nbsp;		return matches.isEmpty() ? unresolved() : matches(matches);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Resolution resolve(UniqueIdSelector selector, Context context) {
+<b class="nc">&nbsp;		UniqueId uniqueId = selector.getUniqueId();</b>
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return Arrays.stream(MethodType.values())</b>
+<b class="nc">&nbsp;				.map(methodType -&gt; methodType.resolveUniqueIdIntoTestDescriptor(uniqueId, context, configuration))</b>
+<b class="nc">&nbsp;				.filter(Optional::isPresent)</b>
+<b class="nc">&nbsp;				.map(Optional::get)</b>
+<b class="nc">&nbsp;				.map(testDescriptor -&gt; {</b>
+<b class="nc">&nbsp;					boolean exactMatch = uniqueId.equals(testDescriptor.getUniqueId());</b>
+<b class="nc">&nbsp;					if (testDescriptor instanceof Filterable) {</b>
+<b class="nc">&nbsp;						Filterable filterable = (Filterable) testDescriptor;</b>
+<b class="nc">&nbsp;						if (exactMatch) {</b>
+<b class="nc">&nbsp;							filterable.getDynamicDescendantFilter().allowAll();</b>
+&nbsp;						}
+&nbsp;						else {
+<b class="nc">&nbsp;							filterable.getDynamicDescendantFilter().allowUniqueIdPrefix(uniqueId);</b>
+&nbsp;						}
+&nbsp;					}
+<b class="nc">&nbsp;					return Resolution.match(exactMatch ? Match.exact(testDescriptor) : Match.partial(testDescriptor, expansionCallback(testDescriptor)));</b>
+&nbsp;				})
+<b class="nc">&nbsp;				.findFirst()</b>
+<b class="nc">&nbsp;				.orElse(unresolved());</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Resolution resolve(IterationSelector selector, Context context) {
+<b class="nc">&nbsp;		if (selector.getParentSelector() instanceof MethodSelector) {</b>
+<b class="nc">&nbsp;			MethodSelector methodSelector = (MethodSelector) selector.getParentSelector();</b>
+<b class="nc">&nbsp;			return resolve(context, emptyList(), methodSelector.getJavaClass(), methodSelector::getJavaMethod,</b>
+&nbsp;				(testDescriptor, childSelectorsSupplier) -&gt; {
+<b class="nc">&nbsp;					if (testDescriptor instanceof Filterable) {</b>
+<b class="nc">&nbsp;						Filterable filterable = (Filterable) testDescriptor;</b>
+<b class="nc">&nbsp;						filterable.getDynamicDescendantFilter().allowIndex(selector.getIterationIndices());</b>
+&nbsp;					}
+<b class="nc">&nbsp;					return Match.partial(testDescriptor, childSelectorsSupplier);</b>
+&nbsp;				});
+&nbsp;		}
+<b class="nc">&nbsp;		return unresolved();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Supplier&lt;Set&lt;? extends DiscoverySelector&gt;&gt; expansionCallback(TestDescriptor testDescriptor) {
+<b class="fc">&nbsp;		return () -&gt; {</b>
+<b class="fc">&nbsp;			if (testDescriptor instanceof Filterable) {</b>
+<b class="fc">&nbsp;				Filterable filterable = (Filterable) testDescriptor;</b>
+<b class="fc">&nbsp;				filterable.getDynamicDescendantFilter().allowAll();</b>
+&nbsp;			}
+<b class="fc">&nbsp;			return emptySet();</b>
+&nbsp;		};
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private enum MethodType {</b>
+&nbsp;
+<b class="fc">&nbsp;		TEST(new IsTestMethod(), TestMethodTestDescriptor.SEGMENT_TYPE) {</b>
+&nbsp;			@Override
+&nbsp;			protected TestDescriptor createTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method method,
+&nbsp;					JupiterConfiguration configuration) {
+<b class="fc">&nbsp;				return new TestMethodTestDescriptor(uniqueId, testClass, method, configuration);</b>
+&nbsp;			}
+&nbsp;		},
+&nbsp;
+<b class="fc">&nbsp;		TEST_FACTORY(new IsTestFactoryMethod(), TestFactoryTestDescriptor.SEGMENT_TYPE,</b>
+&nbsp;				TestFactoryTestDescriptor.DYNAMIC_CONTAINER_SEGMENT_TYPE,
+&nbsp;				TestFactoryTestDescriptor.DYNAMIC_TEST_SEGMENT_TYPE) {
+&nbsp;			@Override
+&nbsp;			protected TestDescriptor createTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method method,
+&nbsp;					JupiterConfiguration configuration) {
+<b class="nc">&nbsp;				return new TestFactoryTestDescriptor(uniqueId, testClass, method, configuration);</b>
+&nbsp;			}
+&nbsp;		},
+&nbsp;
+<b class="fc">&nbsp;		TEST_TEMPLATE(new IsTestTemplateMethod(), TestTemplateTestDescriptor.SEGMENT_TYPE,</b>
+&nbsp;				TestTemplateInvocationTestDescriptor.SEGMENT_TYPE) {
+&nbsp;			@Override
+&nbsp;			protected TestDescriptor createTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method method,
+&nbsp;					JupiterConfiguration configuration) {
+<b class="fc">&nbsp;				return new TestTemplateTestDescriptor(uniqueId, testClass, method, configuration);</b>
+&nbsp;			}
+&nbsp;		};
+&nbsp;
+&nbsp;		private final Predicate&lt;Method&gt; methodPredicate;
+&nbsp;		private final String segmentType;
+&nbsp;		private final Set&lt;String&gt; dynamicDescendantSegmentTypes;
+&nbsp;
+<b class="fc">&nbsp;		MethodType(Predicate&lt;Method&gt; methodPredicate, String segmentType, String... dynamicDescendantSegmentTypes) {</b>
+<b class="fc">&nbsp;			this.methodPredicate = methodPredicate;</b>
+<b class="fc">&nbsp;			this.segmentType = segmentType;</b>
+<b class="fc">&nbsp;			this.dynamicDescendantSegmentTypes = new LinkedHashSet&lt;&gt;(Arrays.asList(dynamicDescendantSegmentTypes));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private Optional&lt;TestDescriptor&gt; resolve(List&lt;Class&lt;?&gt;&gt; enclosingClasses, Class&lt;?&gt; testClass, Method method,
+&nbsp;				Context context, JupiterConfiguration configuration) {
+<b class="fc">&nbsp;			if (!methodPredicate.test(method)) {</b>
+<b class="fc">&nbsp;				return Optional.empty();</b>
+&nbsp;			}
+<b class="fc">&nbsp;			return context.addToParent(() -&gt; selectClass(enclosingClasses, testClass), //</b>
+<b class="fc">&nbsp;				parent -&gt; Optional.of(</b>
+<b class="fc">&nbsp;					createTestDescriptor(createUniqueId(method, parent), testClass, method, configuration)));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private DiscoverySelector selectClass(List&lt;Class&lt;?&gt;&gt; enclosingClasses, Class&lt;?&gt; testClass) {
+<b class="nc">&nbsp;			if (enclosingClasses.isEmpty()) {</b>
+<b class="nc">&nbsp;				return DiscoverySelectors.selectClass(testClass);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return DiscoverySelectors.selectNestedClass(enclosingClasses, testClass);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private Optional&lt;TestDescriptor&gt; resolveUniqueIdIntoTestDescriptor(UniqueId uniqueId, Context context,
+&nbsp;				JupiterConfiguration configuration) {
+<b class="nc">&nbsp;			UniqueId.Segment lastSegment = uniqueId.getLastSegment();</b>
+<b class="nc">&nbsp;			if (segmentType.equals(lastSegment.getType())) {</b>
+<b class="nc">&nbsp;				return context.addToParent(() -&gt; selectUniqueId(uniqueId.removeLastSegment()), parent -&gt; {</b>
+<b class="nc">&nbsp;					String methodSpecPart = lastSegment.getValue();</b>
+<b class="nc">&nbsp;					Class&lt;?&gt; testClass = ((ClassBasedTestDescriptor) parent).getTestClass();</b>
+&nbsp;					// @formatter:off
+<b class="nc">&nbsp;					return methodFinder.findMethod(methodSpecPart, testClass)</b>
+<b class="nc">&nbsp;							.filter(methodPredicate)</b>
+<b class="nc">&nbsp;							.map(method -&gt; createTestDescriptor(createUniqueId(method, parent), testClass, method, configuration));</b>
+&nbsp;					// @formatter:on
+&nbsp;				});
+&nbsp;			}
+<b class="nc">&nbsp;			if (dynamicDescendantSegmentTypes.contains(lastSegment.getType())) {</b>
+<b class="nc">&nbsp;				return resolveUniqueIdIntoTestDescriptor(uniqueId.removeLastSegment(), context, configuration);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return Optional.empty();</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		private UniqueId createUniqueId(Method method, TestDescriptor parent) {
+<b class="fc">&nbsp;			String methodId = String.format(&quot;%s(%s)&quot;, method.getName(),</b>
+<b class="fc">&nbsp;				ClassUtils.nullSafeToString(method.getParameterTypes()));</b>
+<b class="fc">&nbsp;			return parent.getUniqueId().append(segmentType, methodId);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		protected abstract TestDescriptor createTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method method,
+&nbsp;				JupiterConfiguration configuration);
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

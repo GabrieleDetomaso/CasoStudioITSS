@@ -1,0 +1,392 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > EngineDiscoveryRequestResolution</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.discovery</a>
+</div>
+
+<h1>Coverage Summary for Class: EngineDiscoveryRequestResolution (org.junit.platform.engine.support.discovery)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EngineDiscoveryRequestResolution</td>
+<td class="coverageStat">
+  <span class="percent">
+    91,7%
+  </span>
+  <span class="absValue">
+    (11/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    67,1%
+  </span>
+  <span class="absValue">
+    (55/82)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">EngineDiscoveryRequestResolution$DefaultContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    44,4%
+  </span>
+  <span class="absValue">
+    (12/27)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (15/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61,5%
+  </span>
+  <span class="absValue">
+    (67/109)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.discovery;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.joining;
+&nbsp;import static org.junit.platform.commons.util.CollectionUtils.getOnlyElement;
+&nbsp;import static org.junit.platform.engine.SelectorResolutionResult.failed;
+&nbsp;import static org.junit.platform.engine.SelectorResolutionResult.resolved;
+&nbsp;import static org.junit.platform.engine.SelectorResolutionResult.unresolved;
+&nbsp;
+&nbsp;import java.util.ArrayDeque;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.LinkedHashMap;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Queue;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.function.Supplier;
+&nbsp;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.DiscoverySelector;
+&nbsp;import org.junit.platform.engine.EngineDiscoveryListener;
+&nbsp;import org.junit.platform.engine.EngineDiscoveryRequest;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import org.junit.platform.engine.discovery.ClassSelector;
+&nbsp;import org.junit.platform.engine.discovery.ClasspathResourceSelector;
+&nbsp;import org.junit.platform.engine.discovery.ClasspathRootSelector;
+&nbsp;import org.junit.platform.engine.discovery.DirectorySelector;
+&nbsp;import org.junit.platform.engine.discovery.FileSelector;
+&nbsp;import org.junit.platform.engine.discovery.IterationSelector;
+&nbsp;import org.junit.platform.engine.discovery.MethodSelector;
+&nbsp;import org.junit.platform.engine.discovery.ModuleSelector;
+&nbsp;import org.junit.platform.engine.discovery.NestedClassSelector;
+&nbsp;import org.junit.platform.engine.discovery.NestedMethodSelector;
+&nbsp;import org.junit.platform.engine.discovery.PackageSelector;
+&nbsp;import org.junit.platform.engine.discovery.UniqueIdSelector;
+&nbsp;import org.junit.platform.engine.discovery.UriSelector;
+&nbsp;import org.junit.platform.engine.support.discovery.SelectorResolver.Context;
+&nbsp;import org.junit.platform.engine.support.discovery.SelectorResolver.Match;
+&nbsp;import org.junit.platform.engine.support.discovery.SelectorResolver.Resolution;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 1.5
+&nbsp; */
+<b class="fc">&nbsp;class EngineDiscoveryRequestResolution {</b>
+&nbsp;
+&nbsp;	private final EngineDiscoveryRequest request;
+&nbsp;	private final Context defaultContext;
+&nbsp;	private final List&lt;SelectorResolver&gt; resolvers;
+&nbsp;	private final List&lt;TestDescriptor.Visitor&gt; visitors;
+&nbsp;	private final TestDescriptor engineDescriptor;
+<b class="fc">&nbsp;	private final Map&lt;DiscoverySelector, Resolution&gt; resolvedSelectors = new LinkedHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private final Map&lt;UniqueId, Match&gt; resolvedUniqueIds = new LinkedHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private final Queue&lt;DiscoverySelector&gt; remainingSelectors = new ArrayDeque&lt;&gt;();</b>
+<b class="fc">&nbsp;	private final Map&lt;DiscoverySelector, Context&gt; contextBySelector = new HashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;	EngineDiscoveryRequestResolution(EngineDiscoveryRequest request, TestDescriptor engineDescriptor,
+<b class="fc">&nbsp;			List&lt;SelectorResolver&gt; resolvers, List&lt;TestDescriptor.Visitor&gt; visitors) {</b>
+<b class="fc">&nbsp;		this.request = request;</b>
+<b class="fc">&nbsp;		this.engineDescriptor = engineDescriptor;</b>
+<b class="fc">&nbsp;		this.resolvers = resolvers;</b>
+<b class="fc">&nbsp;		this.visitors = visitors;</b>
+<b class="fc">&nbsp;		this.defaultContext = new DefaultContext(null);</b>
+<b class="fc">&nbsp;		this.resolvedUniqueIds.put(engineDescriptor.getUniqueId(), Match.exact(engineDescriptor));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	void run() {
+<b class="fc">&nbsp;		remainingSelectors.addAll(request.getSelectorsByType(DiscoverySelector.class));</b>
+<b class="fc">&nbsp;		while (!remainingSelectors.isEmpty()) {</b>
+<b class="fc">&nbsp;			resolveCompletely(remainingSelectors.poll());</b>
+&nbsp;		}
+<b class="fc">&nbsp;		visitors.forEach(engineDescriptor::accept);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void resolveCompletely(DiscoverySelector selector) {
+<b class="fc">&nbsp;		EngineDiscoveryListener discoveryListener = request.getDiscoveryListener();</b>
+<b class="fc">&nbsp;		UniqueId engineId = engineDescriptor.getUniqueId();</b>
+&nbsp;		try {
+<b class="fc">&nbsp;			Optional&lt;Resolution&gt; result = resolve(selector);</b>
+<b class="fc">&nbsp;			if (result.isPresent()) {</b>
+<b class="fc">&nbsp;				discoveryListener.selectorProcessed(engineId, selector, resolved());</b>
+<b class="fc">&nbsp;				enqueueAdditionalSelectors(result.get());</b>
+&nbsp;			}
+&nbsp;			else {
+<b class="nc">&nbsp;				discoveryListener.selectorProcessed(engineId, selector, unresolved());</b>
+&nbsp;			}
+&nbsp;		}
+<b class="nc">&nbsp;		catch (Throwable t) {</b>
+<b class="nc">&nbsp;			UnrecoverableExceptions.rethrowIfUnrecoverable(t);</b>
+<b class="nc">&nbsp;			discoveryListener.selectorProcessed(engineId, selector, failed(t));</b>
+<b class="fc">&nbsp;		}</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void enqueueAdditionalSelectors(Resolution resolution) {
+<b class="fc">&nbsp;		remainingSelectors.addAll(resolution.getSelectors());</b>
+<b class="fc">&nbsp;		resolution.getMatches().stream().filter(Match::isExact).forEach(match -&gt; {</b>
+<b class="fc">&nbsp;			Set&lt;? extends DiscoverySelector&gt; childSelectors = match.expand();</b>
+<b class="fc">&nbsp;			if (!childSelectors.isEmpty()) {</b>
+<b class="fc">&nbsp;				remainingSelectors.addAll(childSelectors);</b>
+<b class="fc">&nbsp;				DefaultContext context = new DefaultContext(match.getTestDescriptor());</b>
+<b class="fc">&nbsp;				childSelectors.forEach(selector -&gt; contextBySelector.put(selector, context));</b>
+&nbsp;			}
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;Resolution&gt; resolve(DiscoverySelector selector) {
+<b class="fc">&nbsp;		if (resolvedSelectors.containsKey(selector)) {</b>
+<b class="nc">&nbsp;			return Optional.of(resolvedSelectors.get(selector));</b>
+&nbsp;		}
+<b class="fc">&nbsp;		if (selector instanceof UniqueIdSelector) {</b>
+<b class="nc">&nbsp;			return resolveUniqueId((UniqueIdSelector) selector);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return resolve(selector, resolver -&gt; {</b>
+<b class="fc">&nbsp;			Context context = getContext(selector);</b>
+<b class="fc">&nbsp;			if (selector instanceof ClasspathResourceSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((ClasspathResourceSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof ClasspathRootSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((ClasspathRootSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof ClassSelector) {</b>
+<b class="fc">&nbsp;				return resolver.resolve((ClassSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof IterationSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((IterationSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof NestedClassSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((NestedClassSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof DirectorySelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((DirectorySelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof FileSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((FileSelector) selector, context);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			if (selector instanceof MethodSelector) {</b>
+<b class="fc">&nbsp;				return resolver.resolve((MethodSelector) selector, context);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (selector instanceof NestedMethodSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((NestedMethodSelector) selector, context);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (selector instanceof ModuleSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((ModuleSelector) selector, context);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (selector instanceof PackageSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((PackageSelector) selector, context);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			if (selector instanceof UriSelector) {</b>
+<b class="nc">&nbsp;				return resolver.resolve((UriSelector) selector, context);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return resolver.resolve(selector, context);</b>
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;Resolution&gt; resolveUniqueId(UniqueIdSelector selector) {
+<b class="nc">&nbsp;		UniqueId uniqueId = selector.getUniqueId();</b>
+<b class="nc">&nbsp;		if (resolvedUniqueIds.containsKey(uniqueId)) {</b>
+<b class="nc">&nbsp;			return Optional.of(Resolution.match(resolvedUniqueIds.get(uniqueId)));</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (!uniqueId.hasPrefix(engineDescriptor.getUniqueId())) {</b>
+<b class="nc">&nbsp;			return Optional.empty();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		return resolve(selector, resolver -&gt; resolver.resolve(selector, getContext(selector)));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Context getContext(DiscoverySelector selector) {
+<b class="fc">&nbsp;		return contextBySelector.getOrDefault(selector, defaultContext);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;Resolution&gt; resolve(DiscoverySelector selector,
+&nbsp;			Function&lt;SelectorResolver, Resolution&gt; resolutionFunction) {
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		return resolvers.stream()</b>
+<b class="fc">&nbsp;				.map(resolutionFunction)</b>
+<b class="fc">&nbsp;				.filter(Resolution::isResolved)</b>
+<b class="fc">&nbsp;				.findFirst()</b>
+<b class="fc">&nbsp;				.map(resolution -&gt; {</b>
+<b class="fc">&nbsp;					contextBySelector.remove(selector);</b>
+<b class="fc">&nbsp;					resolvedSelectors.put(selector, resolution);</b>
+<b class="fc">&nbsp;					resolution.getMatches()</b>
+<b class="fc">&nbsp;							.forEach(match -&gt; resolvedUniqueIds.put(match.getTestDescriptor().getUniqueId(), match));</b>
+<b class="fc">&nbsp;					return resolution;</b>
+&nbsp;				});
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private class DefaultContext implements Context {
+&nbsp;
+&nbsp;		private final TestDescriptor parent;
+&nbsp;
+<b class="fc">&nbsp;		DefaultContext(TestDescriptor parent) {</b>
+<b class="fc">&nbsp;			this.parent = parent;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;T extends TestDescriptor&gt; Optional&lt;T&gt; addToParent(Function&lt;TestDescriptor, Optional&lt;T&gt;&gt; creator) {
+<b class="fc">&nbsp;			if (parent != null) {</b>
+<b class="nc">&nbsp;				return createAndAdd(parent, creator);</b>
+&nbsp;			}
+<b class="fc">&nbsp;			return createAndAdd(engineDescriptor, creator);</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public &lt;T extends TestDescriptor&gt; Optional&lt;T&gt; addToParent(Supplier&lt;DiscoverySelector&gt; parentSelectorSupplier,
+&nbsp;				Function&lt;TestDescriptor, Optional&lt;T&gt;&gt; creator) {
+<b class="fc">&nbsp;			if (parent != null) {</b>
+<b class="fc">&nbsp;				return createAndAdd(parent, creator);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			return resolve(parentSelectorSupplier.get()).flatMap(parent -&gt; createAndAdd(parent, creator));</b>
+&nbsp;		}
+&nbsp;
+&nbsp;		@Override
+&nbsp;		public Optional&lt;TestDescriptor&gt; resolve(DiscoverySelector selector) {
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			return EngineDiscoveryRequestResolution.this.resolve(selector)</b>
+<b class="nc">&nbsp;					.map(Resolution::getMatches)</b>
+<b class="nc">&nbsp;					.flatMap(matches -&gt; {</b>
+<b class="nc">&nbsp;						if (matches.size() &gt; 1) {</b>
+<b class="nc">&nbsp;							String stringRepresentation = matches.stream()</b>
+<b class="nc">&nbsp;									.map(Match::getTestDescriptor)</b>
+<b class="nc">&nbsp;									.map(Objects::toString)</b>
+<b class="nc">&nbsp;									.collect(joining(&quot;, &quot;));</b>
+<b class="nc">&nbsp;							throw new JUnitException(</b>
+&nbsp;								&quot;Selector &quot; + selector + &quot; did not yield unique test descriptor: &quot; + stringRepresentation);
+&nbsp;						}
+<b class="nc">&nbsp;						if (matches.size() == 1) {</b>
+<b class="nc">&nbsp;							return Optional.of(getOnlyElement(matches).getTestDescriptor());</b>
+&nbsp;						}
+<b class="nc">&nbsp;						return Optional.empty();</b>
+&nbsp;					});
+&nbsp;			// @formatter:on
+&nbsp;		}
+&nbsp;
+&nbsp;		@SuppressWarnings(&quot;unchecked&quot;)
+&nbsp;		private &lt;T extends TestDescriptor&gt; Optional&lt;T&gt; createAndAdd(TestDescriptor parent,
+&nbsp;				Function&lt;TestDescriptor, Optional&lt;T&gt;&gt; creator) {
+<b class="fc">&nbsp;			Optional&lt;T&gt; child = creator.apply(parent);</b>
+<b class="fc">&nbsp;			if (child.isPresent()) {</b>
+<b class="fc">&nbsp;				UniqueId uniqueId = child.get().getUniqueId();</b>
+<b class="fc">&nbsp;				if (resolvedUniqueIds.containsKey(uniqueId)) {</b>
+<b class="nc">&nbsp;					return Optional.of((T) resolvedUniqueIds.get(uniqueId).getTestDescriptor());</b>
+&nbsp;				}
+<b class="fc">&nbsp;				parent.addChild(child.get());</b>
+&nbsp;			}
+<b class="fc">&nbsp;			return child;</b>
+&nbsp;		}
+&nbsp;
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

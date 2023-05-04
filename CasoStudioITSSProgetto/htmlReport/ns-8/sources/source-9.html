@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TestInstancePreDestroyCallback</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TestInstancePreDestroyCallback (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TestInstancePreDestroyCallback</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.function.Consumer;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.Nested;
+&nbsp;import org.junit.jupiter.api.TestInstance.Lifecycle;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code TestInstancePreDestroyCallback} defines the API for {@link Extension
+&nbsp; * Extensions} that wish to process test instances &lt;em&gt;after&lt;/em&gt; they have been
+&nbsp; * used in tests but &lt;em&gt;before&lt;/em&gt; they are destroyed.
+&nbsp; *
+&nbsp; * &lt;p&gt;Common use cases include releasing resources that have been created for
+&nbsp; * the test instance, invoking custom clean-up methods on the test instance, etc.
+&nbsp; *
+&nbsp; * &lt;p&gt;Extensions that implement {@code TestInstancePreDestroyCallback} must be
+&nbsp; * registered at the class level if the test class is configured with
+&nbsp; * {@link Lifecycle @TestInstance(Lifecycle.PER_CLASS)}
+&nbsp; * semantics. If the test class is configured with
+&nbsp; * {@link Lifecycle @TestInstance(Lifecycle.PER_METHOD)}
+&nbsp; * semantics, {@code TestInstancePreDestroyCallback} extensions may be registered
+&nbsp; * at the class level or at the method level. In the latter case, the
+&nbsp; * {@code TestInstancePreDestroyCallback} extension will only be applied to the
+&nbsp; * test method for which it is registered.
+&nbsp; *
+&nbsp; * &lt;p&gt;A symmetric {@link TestInstancePreConstructCallback} extension defines a callback
+&nbsp; * hook that is invoked prior to any test class instances being constructed.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Constructor Requirements&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Consult the documentation in {@link Extension} for details on constructor
+&nbsp; * requirements.
+&nbsp; *
+&nbsp; * @since 5.6
+&nbsp; * @see #preDestroyTestInstance(ExtensionContext)
+&nbsp; * @see TestInstancePostProcessor
+&nbsp; * @see TestInstancePreConstructCallback
+&nbsp; * @see TestInstanceFactory
+&nbsp; * @see ParameterResolver
+&nbsp; */
+&nbsp;@FunctionalInterface
+&nbsp;@API(status = STABLE, since = &quot;5.7&quot;)
+&nbsp;public interface TestInstancePreDestroyCallback extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Callback for processing test instances before they are destroyed.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Contrary to {@link TestInstancePostProcessor#postProcessTestInstance}
+&nbsp;	 * this method is only called once for each {@link ExtensionContext} even if
+&nbsp;	 * there are multiple test instances about to be destroyed in case of
+&nbsp;	 * {@link Nested @Nested} tests. Please use the provided
+&nbsp;	 * {@link #preDestroyTestInstances(ExtensionContext, Consumer)} utility
+&nbsp;	 * method to ensure that all test instances are handled.
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @see ExtensionContext#getTestInstance()
+&nbsp;	 * @see ExtensionContext#getRequiredTestInstance()
+&nbsp;	 * @see ExtensionContext#getTestInstances()
+&nbsp;	 * @see ExtensionContext#getRequiredTestInstances()
+&nbsp;	 * @see #preDestroyTestInstances(ExtensionContext, Consumer)
+&nbsp;	 */
+&nbsp;	void preDestroyTestInstance(ExtensionContext context) throws Exception;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Utility method for processing &lt;em&gt;all&lt;/em&gt; test instances of an
+&nbsp;	 * {@link ExtensionContext} that are not present in any of its parent
+&nbsp;	 * contexts.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method should be called in order to implement this interface
+&nbsp;	 * correctly since it ensures that the right test instances are processed
+&nbsp;	 * regardless of the used {@linkplain Lifecycle lifecycle}. The supplied
+&nbsp;	 * callback is called once per test instance that is about to be destroyed
+&nbsp;	 * starting with the innermost one.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method is intended to be called from an implementation of
+&nbsp;	 * {@link #preDestroyTestInstance(ExtensionContext)} like this:
+&nbsp;	 *
+&nbsp;	 * &lt;pre&gt;{@code class MyExtension implements TestInstancePreDestroyCallback {
+&nbsp;	 *    @Override
+&nbsp;	 *    public void preDestroyTestInstance(ExtensionContext context) {
+&nbsp;	 *        TestInstancePreDestroyCallback.preDestroyTestInstances(context, testInstance -&gt; {
+&nbsp;	 *            // custom logic that processes testInstance
+&nbsp;	 *        });
+&nbsp;	 *    }
+&nbsp;	 *}}&lt;/pre&gt;
+&nbsp;	 *
+&nbsp;	 * @param context the current extension context; never {@code null}
+&nbsp;	 * @param callback the callback to be invoked for every test instance of the
+&nbsp;	 * current extension context that is about to be destroyed; never
+&nbsp;	 * {@code null}
+&nbsp;	 * @since 5.7.1
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.7.1&quot;)
+&nbsp;	static void preDestroyTestInstances(ExtensionContext context, Consumer&lt;Object&gt; callback) {
+<b class="nc">&nbsp;		List&lt;Object&gt; destroyedInstances = new ArrayList&lt;&gt;(context.getRequiredTestInstances().getAllInstances());</b>
+<b class="nc">&nbsp;		for (Optional&lt;ExtensionContext&gt; current = context.getParent(); current.isPresent(); current = current.get().getParent()) {</b>
+<b class="nc">&nbsp;			current.get().getTestInstances().map(TestInstances::getAllInstances).ifPresent(</b>
+<b class="nc">&nbsp;				destroyedInstances::removeAll);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		Collections.reverse(destroyedInstances);</b>
+<b class="nc">&nbsp;		destroyedInstances.forEach(callback);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

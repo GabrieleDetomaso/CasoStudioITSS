@@ -1,0 +1,233 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > FileSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: FileSource (org.junit.platform.engine.support.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.descriptor;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.io.File;
+&nbsp;import java.io.IOException;
+&nbsp;import java.net.URI;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;
+&nbsp;/**
+&nbsp; * File based {@link org.junit.platform.engine.TestSource} with an optional
+&nbsp; * {@linkplain FilePosition position}.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.engine.discovery.FileSelector
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public class FileSource implements FileSystemSource {
+&nbsp;
+&nbsp;	private static final long serialVersionUID = 1L;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code FileSource} using the supplied {@link File file}.
+&nbsp;	 *
+&nbsp;	 * @param file the source file; must not be {@code null}
+&nbsp;	 */
+&nbsp;	public static FileSource from(File file) {
+<b class="nc">&nbsp;		return new FileSource(file);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code FileSource} using the supplied {@link File file} and
+&nbsp;	 * {@link FilePosition filePosition}.
+&nbsp;	 *
+&nbsp;	 * @param file the source file; must not be {@code null}
+&nbsp;	 * @param filePosition the position in the source file; may be {@code null}
+&nbsp;	 */
+&nbsp;	public static FileSource from(File file, FilePosition filePosition) {
+<b class="nc">&nbsp;		return new FileSource(file, filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private final File file;
+&nbsp;	private final FilePosition filePosition;
+&nbsp;
+&nbsp;	private FileSource(File file) {
+<b class="nc">&nbsp;		this(file, null);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	private FileSource(File file, FilePosition filePosition) {</b>
+<b class="nc">&nbsp;		Preconditions.notNull(file, &quot;file must not be null&quot;);</b>
+&nbsp;		try {
+<b class="nc">&nbsp;			this.file = file.getCanonicalFile();</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch (IOException ex) {</b>
+<b class="nc">&nbsp;			throw new JUnitException(&quot;Failed to retrieve canonical path for file: &quot; + file, ex);</b>
+<b class="nc">&nbsp;		}</b>
+<b class="nc">&nbsp;		this.filePosition = filePosition;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link URI} for the source {@linkplain #getFile file}.
+&nbsp;	 *
+&nbsp;	 * @return the source {@code URI}; never {@code null}
+&nbsp;	 */
+&nbsp;	@Override
+&nbsp;	public final URI getUri() {
+<b class="nc">&nbsp;		return getFile().toURI();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the source {@linkplain File file}.
+&nbsp;	 *
+&nbsp;	 * @return the source file; never {@code null}
+&nbsp;	 */
+&nbsp;	@Override
+&nbsp;	public final File getFile() {
+<b class="nc">&nbsp;		return this.file;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@link FilePosition}, if available.
+&nbsp;	 */
+&nbsp;	public final Optional&lt;FilePosition&gt; getPosition() {
+<b class="nc">&nbsp;		return Optional.ofNullable(this.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		FileSource that = (FileSource) o;</b>
+<b class="nc">&nbsp;		return Objects.equals(this.file, that.file) &amp;&amp; Objects.equals(this.filePosition, that.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="nc">&nbsp;		return Objects.hash(this.file, this.filePosition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return new ToStringBuilder(this)</b>
+<b class="nc">&nbsp;				.append(&quot;file&quot;, this.file)</b>
+<b class="nc">&nbsp;				.append(&quot;filePosition&quot;, this.filePosition)</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

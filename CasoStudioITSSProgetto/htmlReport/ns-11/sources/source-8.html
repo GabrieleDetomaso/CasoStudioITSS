@@ -1,0 +1,249 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > TimeoutConfiguration</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: TimeoutConfiguration (org.junit.jupiter.engine.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TimeoutConfiguration</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    65%
+  </span>
+  <span class="absValue">
+    (13/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46,2%
+  </span>
+  <span class="absValue">
+    (18/39)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.extension;
+&nbsp;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_AFTER_ALL_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_AFTER_EACH_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_BEFORE_ALL_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_BEFORE_EACH_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_LIFECYCLE_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TESTABLE_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TEST_FACTORY_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TEST_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TEST_TEMPLATE_METHOD_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TIMEOUT_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.DEFAULT_TIMEOUT_THREAD_MODE_PROPERTY_NAME;
+&nbsp;import static org.junit.jupiter.api.Timeout.ThreadMode.SAME_THREAD;
+&nbsp;import static org.junit.jupiter.api.Timeout.ThreadMode.SEPARATE_THREAD;
+&nbsp;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;import java.util.concurrent.atomic.AtomicReference;
+&nbsp;import java.util.function.Supplier;
+&nbsp;
+&nbsp;import org.junit.jupiter.api.Timeout.ThreadMode;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.5
+&nbsp; */
+&nbsp;class TimeoutConfiguration {
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(TimeoutConfiguration.class);</b>
+&nbsp;
+<b class="fc">&nbsp;	private final TimeoutDurationParser parser = new TimeoutDurationParser();</b>
+<b class="fc">&nbsp;	private final Map&lt;String, Optional&lt;TimeoutDuration&gt;&gt; cache = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private final AtomicReference&lt;Optional&lt;ThreadMode&gt;&gt; threadMode = new AtomicReference&lt;&gt;();</b>
+&nbsp;	private final ExtensionContext extensionContext;
+&nbsp;
+<b class="fc">&nbsp;	TimeoutConfiguration(ExtensionContext extensionContext) {</b>
+<b class="fc">&nbsp;		this.extensionContext = extensionContext;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultTestMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_TEST_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultTestableMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultTestTemplateMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_TEST_TEMPLATE_METHOD_TIMEOUT_PROPERTY_NAME,</b>
+&nbsp;			this::getDefaultTestableMethodTimeout);
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultTestFactoryMethodTimeout() {
+<b class="nc">&nbsp;		return parseOrDefault(DEFAULT_TEST_FACTORY_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultTestableMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultBeforeAllMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_BEFORE_ALL_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultLifecycleMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultBeforeEachMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_BEFORE_EACH_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultLifecycleMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultAfterEachMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_AFTER_EACH_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultLifecycleMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;TimeoutDuration&gt; getDefaultAfterAllMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_AFTER_ALL_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultLifecycleMethodTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TimeoutDuration&gt; getDefaultTestableMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_TESTABLE_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TimeoutDuration&gt; getDefaultLifecycleMethodTimeout() {
+<b class="fc">&nbsp;		return parseOrDefault(DEFAULT_LIFECYCLE_METHOD_TIMEOUT_PROPERTY_NAME, this::getDefaultTimeout);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TimeoutDuration&gt; getDefaultTimeout() {
+<b class="fc">&nbsp;		return parseTimeoutDuration(DEFAULT_TIMEOUT_PROPERTY_NAME);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TimeoutDuration&gt; parseOrDefault(String propertyName,
+&nbsp;			Supplier&lt;Optional&lt;TimeoutDuration&gt;&gt; defaultSupplier) {
+<b class="fc">&nbsp;		Optional&lt;TimeoutDuration&gt; timeoutConfiguration = parseTimeoutDuration(propertyName);</b>
+<b class="fc">&nbsp;		return timeoutConfiguration.isPresent() ? timeoutConfiguration : defaultSupplier.get();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;TimeoutDuration&gt; parseTimeoutDuration(String propertyName) {
+<b class="fc">&nbsp;		return cache.computeIfAbsent(propertyName, key -&gt; extensionContext.getConfigurationParameter(key).map(value -&gt; {</b>
+&nbsp;			try {
+<b class="nc">&nbsp;				return parser.parse(value);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Exception e) {</b>
+<b class="nc">&nbsp;				logger.warn(e,</b>
+<b class="nc">&nbsp;					() -&gt; String.format(&quot;Ignored invalid timeout &#39;%s&#39; set via the &#39;%s&#39; configuration parameter.&quot;, value,</b>
+&nbsp;						key));
+<b class="nc">&nbsp;				return null;</b>
+&nbsp;			}
+&nbsp;		}));
+&nbsp;	}
+&nbsp;
+&nbsp;	Optional&lt;ThreadMode&gt; getDefaultTimeoutThreadMode() {
+<b class="nc">&nbsp;		if (threadMode.get() != null) {</b>
+<b class="nc">&nbsp;			return threadMode.get();</b>
+&nbsp;		}
+&nbsp;		else {
+<b class="nc">&nbsp;			Optional&lt;ThreadMode&gt; configuredThreadMode = parseTimeoutThreadModeConfiguration();</b>
+<b class="nc">&nbsp;			threadMode.set(configuredThreadMode);</b>
+<b class="nc">&nbsp;			return configuredThreadMode;</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private Optional&lt;ThreadMode&gt; parseTimeoutThreadModeConfiguration() {
+<b class="nc">&nbsp;		return extensionContext.getConfigurationParameter(DEFAULT_TIMEOUT_THREAD_MODE_PROPERTY_NAME).map(value -&gt; {</b>
+&nbsp;			try {
+<b class="nc">&nbsp;				ThreadMode threadMode = ThreadMode.valueOf(value.toUpperCase());</b>
+<b class="nc">&nbsp;				if (threadMode == ThreadMode.INFERRED) {</b>
+<b class="nc">&nbsp;					logger.warn(() -&gt; String.format(</b>
+&nbsp;						&quot;Invalid timeout thread mode &#39;%s&#39;, only %s and %s can be used as configuration parameter for %s.&quot;,
+&nbsp;						value, SAME_THREAD, SEPARATE_THREAD, DEFAULT_TIMEOUT_THREAD_MODE_PROPERTY_NAME));
+<b class="nc">&nbsp;					return null;</b>
+&nbsp;				}
+<b class="nc">&nbsp;				return threadMode;</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Exception e) {</b>
+<b class="nc">&nbsp;				logger.warn(e,</b>
+<b class="nc">&nbsp;					() -&gt; String.format(&quot;Invalid timeout thread mode &#39;%s&#39; set via the &#39;%s&#39; configuration parameter.&quot;,</b>
+&nbsp;						value, DEFAULT_TIMEOUT_THREAD_MODE_PROPERTY_NAME));
+<b class="nc">&nbsp;				return null;</b>
+&nbsp;			}
+&nbsp;		});
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

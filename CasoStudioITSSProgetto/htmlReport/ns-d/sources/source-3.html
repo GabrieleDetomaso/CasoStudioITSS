@@ -1,0 +1,208 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClassExtensionContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassExtensionContext (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassExtensionContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54,5%
+  </span>
+  <span class="absValue">
+    (6/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61,5%
+  </span>
+  <span class="absValue">
+    (8/13)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import java.lang.reflect.AnnotatedElement;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.junit.jupiter.api.TestInstance.Lifecycle;
+&nbsp;import org.junit.jupiter.api.extension.ExecutableInvoker;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.extension.TestInstances;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.platform.engine.EngineExecutionListener;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node;
+&nbsp;import org.junit.platform.engine.support.hierarchical.ThrowableCollector;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;final class ClassExtensionContext extends AbstractExtensionContext&lt;ClassBasedTestDescriptor&gt; {
+&nbsp;
+&nbsp;	private final Lifecycle lifecycle;
+&nbsp;
+&nbsp;	private final ThrowableCollector throwableCollector;
+&nbsp;
+&nbsp;	private TestInstances testInstances;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code ClassExtensionContext} with {@link Lifecycle#PER_METHOD}.
+&nbsp;	 *
+&nbsp;	 * @see #ClassExtensionContext(ExtensionContext, EngineExecutionListener, ClassBasedTestDescriptor,
+&nbsp;	 * Lifecycle, JupiterConfiguration, ThrowableCollector, ExecutableInvoker)
+&nbsp;	 */
+&nbsp;	ClassExtensionContext(ExtensionContext parent, EngineExecutionListener engineExecutionListener,
+&nbsp;			ClassBasedTestDescriptor testDescriptor, JupiterConfiguration configuration,
+&nbsp;			ThrowableCollector throwableCollector, ExecutableInvoker executableInvoker) {
+&nbsp;
+<b class="nc">&nbsp;		this(parent, engineExecutionListener, testDescriptor, Lifecycle.PER_METHOD, configuration, throwableCollector,</b>
+&nbsp;			executableInvoker);
+&nbsp;	}
+&nbsp;
+&nbsp;	ClassExtensionContext(ExtensionContext parent, EngineExecutionListener engineExecutionListener,
+&nbsp;			ClassBasedTestDescriptor testDescriptor, Lifecycle lifecycle, JupiterConfiguration configuration,
+&nbsp;			ThrowableCollector throwableCollector, ExecutableInvoker executableInvoker) {
+&nbsp;
+<b class="fc">&nbsp;		super(parent, engineExecutionListener, testDescriptor, configuration, executableInvoker);</b>
+&nbsp;
+<b class="fc">&nbsp;		this.lifecycle = lifecycle;</b>
+<b class="fc">&nbsp;		this.throwableCollector = throwableCollector;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;AnnotatedElement&gt; getElement() {
+<b class="fc">&nbsp;		return Optional.of(getTestDescriptor().getTestClass());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Class&lt;?&gt;&gt; getTestClass() {
+<b class="fc">&nbsp;		return Optional.of(getTestDescriptor().getTestClass());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Lifecycle&gt; getTestInstanceLifecycle() {
+<b class="fc">&nbsp;		return Optional.of(this.lifecycle);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Object&gt; getTestInstance() {
+<b class="fc">&nbsp;		return getTestInstances().map(TestInstances::getInnermostInstance);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;TestInstances&gt; getTestInstances() {
+<b class="fc">&nbsp;		return Optional.ofNullable(testInstances);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	void setTestInstances(TestInstances testInstances) {
+<b class="nc">&nbsp;		this.testInstances = testInstances;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Method&gt; getTestMethod() {
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;Throwable&gt; getExecutionException() {
+<b class="nc">&nbsp;		return Optional.ofNullable(this.throwableCollector.getThrowable());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	protected Node.ExecutionMode getPlatformExecutionMode() {
+<b class="nc">&nbsp;		return getTestDescriptor().getExecutionMode();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

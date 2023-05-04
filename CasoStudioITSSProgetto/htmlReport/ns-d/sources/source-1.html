@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AbstractExtensionContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: AbstractExtensionContext (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AbstractExtensionContext</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68,8%
+  </span>
+  <span class="absValue">
+    (11/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    77,8%
+  </span>
+  <span class="absValue">
+    (28/36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.collectingAndThen;
+&nbsp;import static java.util.stream.Collectors.toCollection;
+&nbsp;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Function;
+&nbsp;
+&nbsp;import org.junit.jupiter.api.extension.ExecutableInvoker;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.parallel.ExecutionMode;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.jupiter.engine.execution.ExtensionValuesStore;
+&nbsp;import org.junit.jupiter.engine.execution.NamespaceAwareStore;
+&nbsp;import org.junit.platform.commons.JUnitException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.engine.EngineExecutionListener;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestTag;
+&nbsp;import org.junit.platform.engine.reporting.ReportEntry;
+&nbsp;import org.junit.platform.engine.support.hierarchical.Node;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;abstract class AbstractExtensionContext&lt;T extends TestDescriptor&gt; implements ExtensionContext, AutoCloseable {
+&nbsp;
+&nbsp;	private final ExtensionContext parent;
+&nbsp;	private final EngineExecutionListener engineExecutionListener;
+&nbsp;	private final T testDescriptor;
+&nbsp;	private final Set&lt;String&gt; tags;
+&nbsp;	private final JupiterConfiguration configuration;
+&nbsp;	private final ExtensionValuesStore valuesStore;
+&nbsp;	private final ExecutableInvoker executableInvoker;
+&nbsp;
+&nbsp;	AbstractExtensionContext(ExtensionContext parent, EngineExecutionListener engineExecutionListener, T testDescriptor,
+<b class="fc">&nbsp;			JupiterConfiguration configuration, ExecutableInvoker executableInvoker) {</b>
+<b class="fc">&nbsp;		this.executableInvoker = executableInvoker;</b>
+&nbsp;
+<b class="fc">&nbsp;		Preconditions.notNull(testDescriptor, &quot;TestDescriptor must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(configuration, &quot;JupiterConfiguration must not be null&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;		this.parent = parent;</b>
+<b class="fc">&nbsp;		this.engineExecutionListener = engineExecutionListener;</b>
+<b class="fc">&nbsp;		this.testDescriptor = testDescriptor;</b>
+<b class="fc">&nbsp;		this.configuration = configuration;</b>
+<b class="fc">&nbsp;		this.valuesStore = createStore(parent);</b>
+&nbsp;
+&nbsp;		// @formatter:off
+<b class="fc">&nbsp;		this.tags = testDescriptor.getTags().stream()</b>
+<b class="fc">&nbsp;				.map(TestTag::getName)</b>
+<b class="fc">&nbsp;				.collect(collectingAndThen(toCollection(LinkedHashSet::new), Collections::unmodifiableSet));</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;	private ExtensionValuesStore createStore(ExtensionContext parent) {
+<b class="fc">&nbsp;		ExtensionValuesStore parentStore = null;</b>
+<b class="fc">&nbsp;		if (parent != null) {</b>
+<b class="fc">&nbsp;			parentStore = ((AbstractExtensionContext&lt;?&gt;) parent).valuesStore;</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return new ExtensionValuesStore(parentStore);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public void close() {
+<b class="fc">&nbsp;		this.valuesStore.closeAllStoredCloseableValues();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String getUniqueId() {
+<b class="nc">&nbsp;		return getTestDescriptor().getUniqueId().toString();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String getDisplayName() {
+<b class="fc">&nbsp;		return getTestDescriptor().getDisplayName();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public void publishReportEntry(Map&lt;String, String&gt; values) {
+<b class="nc">&nbsp;		this.engineExecutionListener.reportingEntryPublished(this.testDescriptor, ReportEntry.from(values));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;ExtensionContext&gt; getParent() {
+<b class="fc">&nbsp;		return Optional.ofNullable(this.parent);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ExtensionContext getRoot() {
+<b class="fc">&nbsp;		if (this.parent != null) {</b>
+<b class="fc">&nbsp;			return this.parent.getRoot();</b>
+&nbsp;		}
+<b class="fc">&nbsp;		return this;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	protected T getTestDescriptor() {
+<b class="fc">&nbsp;		return this.testDescriptor;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Store getStore(Namespace namespace) {
+<b class="fc">&nbsp;		Preconditions.notNull(namespace, &quot;Namespace must not be null&quot;);</b>
+<b class="fc">&nbsp;		return new NamespaceAwareStore(this.valuesStore, namespace);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Set&lt;String&gt; getTags() {
+&nbsp;		// return modifiable copy
+<b class="nc">&nbsp;		return new LinkedHashSet&lt;&gt;(this.tags);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Optional&lt;String&gt; getConfigurationParameter(String key) {
+<b class="fc">&nbsp;		return this.configuration.getRawConfigurationParameter(key);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;V&gt; Optional&lt;V&gt; getConfigurationParameter(String key, Function&lt;String, V&gt; transformer) {
+<b class="fc">&nbsp;		return this.configuration.getRawConfigurationParameter(key, transformer);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ExecutionMode getExecutionMode() {
+<b class="nc">&nbsp;		return toJupiterExecutionMode(getPlatformExecutionMode());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ExecutableInvoker getExecutableInvoker() {
+<b class="fc">&nbsp;		return executableInvoker;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	protected abstract Node.ExecutionMode getPlatformExecutionMode();
+&nbsp;
+&nbsp;	private ExecutionMode toJupiterExecutionMode(Node.ExecutionMode mode) {
+<b class="nc">&nbsp;		switch (mode) {</b>
+&nbsp;			case CONCURRENT:
+<b class="nc">&nbsp;				return ExecutionMode.CONCURRENT;</b>
+&nbsp;			case SAME_THREAD:
+<b class="nc">&nbsp;				return ExecutionMode.SAME_THREAD;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		throw new JUnitException(&quot;Unknown ExecutionMode: &quot; + mode);</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

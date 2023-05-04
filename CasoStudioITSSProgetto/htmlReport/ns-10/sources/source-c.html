@@ -1,0 +1,186 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > NamespaceAwareStore</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.execution</a>
+</div>
+
+<h1>Coverage Summary for Class: NamespaceAwareStore (org.junit.jupiter.engine.execution)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">NamespaceAwareStore</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (4/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    54,5%
+  </span>
+  <span class="absValue">
+    (12/22)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.execution;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;
+&nbsp;import java.util.function.Function;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext.Store;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;
+&nbsp;/**
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;5.0&quot;)
+&nbsp;public class NamespaceAwareStore implements Store {
+&nbsp;
+&nbsp;	private final ExtensionValuesStore valuesStore;
+&nbsp;	private final Namespace namespace;
+&nbsp;
+<b class="fc">&nbsp;	public NamespaceAwareStore(ExtensionValuesStore valuesStore, Namespace namespace) {</b>
+<b class="fc">&nbsp;		this.valuesStore = valuesStore;</b>
+<b class="fc">&nbsp;		this.namespace = namespace;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Object get(Object key) {
+<b class="nc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="nc">&nbsp;		return this.valuesStore.get(this.namespace, key);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;T&gt; T get(Object key, Class&lt;T&gt; requiredType) {
+<b class="fc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(requiredType, &quot;requiredType must not be null&quot;);</b>
+<b class="fc">&nbsp;		return this.valuesStore.get(this.namespace, key, requiredType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;K, V&gt; Object getOrComputeIfAbsent(K key, Function&lt;K, V&gt; defaultCreator) {
+<b class="nc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(defaultCreator, &quot;defaultCreator function must not be null&quot;);</b>
+<b class="nc">&nbsp;		return this.valuesStore.getOrComputeIfAbsent(this.namespace, key, defaultCreator);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;K, V&gt; V getOrComputeIfAbsent(K key, Function&lt;K, V&gt; defaultCreator, Class&lt;V&gt; requiredType) {
+<b class="fc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(defaultCreator, &quot;defaultCreator function must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(requiredType, &quot;requiredType must not be null&quot;);</b>
+<b class="fc">&nbsp;		return this.valuesStore.getOrComputeIfAbsent(this.namespace, key, defaultCreator, requiredType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public void put(Object key, Object value) {
+<b class="fc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="fc">&nbsp;		this.valuesStore.put(this.namespace, key, value);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Object remove(Object key) {
+<b class="nc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="nc">&nbsp;		return this.valuesStore.remove(this.namespace, key);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;T&gt; T remove(Object key, Class&lt;T&gt; requiredType) {
+<b class="nc">&nbsp;		Preconditions.notNull(key, &quot;key must not be null&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notNull(requiredType, &quot;requiredType must not be null&quot;);</b>
+<b class="nc">&nbsp;		return this.valuesStore.remove(this.namespace, key, requiredType);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

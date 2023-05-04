@@ -1,0 +1,160 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ParameterResolver</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: ParameterResolver (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ParameterResolver</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.reflect.Parameter;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code ParameterResolver} defines the API for {@link Extension Extensions}
+&nbsp; * that wish to dynamically resolve arguments for {@linkplain Parameter parameters}
+&nbsp; * at runtime.
+&nbsp; *
+&nbsp; * &lt;p&gt;If a constructor for a test class or a
+&nbsp; * {@link org.junit.jupiter.api.Test @Test},
+&nbsp; * {@link org.junit.jupiter.api.BeforeEach @BeforeEach},
+&nbsp; * {@link org.junit.jupiter.api.AfterEach @AfterEach},
+&nbsp; * {@link org.junit.jupiter.api.BeforeAll @BeforeAll}, or
+&nbsp; * {@link org.junit.jupiter.api.AfterAll @AfterAll} method declares a parameter,
+&nbsp; * an argument for the parameter must be resolved at runtime by a
+&nbsp; * {@code ParameterResolver}.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Constructor Requirements&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Consult the documentation in {@link Extension} for details on
+&nbsp; * constructor requirements.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see #supportsParameter(ParameterContext, ExtensionContext)
+&nbsp; * @see #resolveParameter(ParameterContext, ExtensionContext)
+&nbsp; * @see ParameterContext
+&nbsp; * @see TestInstanceFactory
+&nbsp; * @see TestInstancePostProcessor
+&nbsp; * @see TestInstancePreDestroyCallback
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;public interface ParameterResolver extends Extension {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Determine if this resolver supports resolution of an argument for the
+&nbsp;	 * {@link Parameter} in the supplied {@link ParameterContext} for the supplied
+&nbsp;	 * {@link ExtensionContext}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The {@link java.lang.reflect.Method} or {@link java.lang.reflect.Constructor}
+&nbsp;	 * in which the parameter is declared can be retrieved via
+&nbsp;	 * {@link ParameterContext#getDeclaringExecutable()}.
+&nbsp;	 *
+&nbsp;	 * @param parameterContext the context for the parameter for which an argument should
+&nbsp;	 * be resolved; never {@code null}
+&nbsp;	 * @param extensionContext the extension context for the {@code Executable}
+&nbsp;	 * about to be invoked; never {@code null}
+&nbsp;	 * @return {@code true} if this resolver can resolve an argument for the parameter
+&nbsp;	 * @see #resolveParameter
+&nbsp;	 * @see ParameterContext
+&nbsp;	 */
+&nbsp;	boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+&nbsp;			throws ParameterResolutionException;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Resolve an argument for the {@link Parameter} in the supplied {@link ParameterContext}
+&nbsp;	 * for the supplied {@link ExtensionContext}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method is only called by the framework if {@link #supportsParameter}
+&nbsp;	 * previously returned {@code true} for the same {@link ParameterContext}
+&nbsp;	 * and {@link ExtensionContext}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The {@link java.lang.reflect.Method} or {@link java.lang.reflect.Constructor}
+&nbsp;	 * in which the parameter is declared can be retrieved via
+&nbsp;	 * {@link ParameterContext#getDeclaringExecutable()}.
+&nbsp;	 *
+&nbsp;	 * @param parameterContext the context for the parameter for which an argument should
+&nbsp;	 * be resolved; never {@code null}
+&nbsp;	 * @param extensionContext the extension context for the {@code Executable}
+&nbsp;	 * about to be invoked; never {@code null}
+&nbsp;	 * @return the resolved argument for the parameter; may only be {@code null} if the
+&nbsp;	 * parameter type is not a primitive
+&nbsp;	 * @see #supportsParameter
+&nbsp;	 * @see ParameterContext
+&nbsp;	 */
+&nbsp;	Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+&nbsp;			throws ParameterResolutionException;
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

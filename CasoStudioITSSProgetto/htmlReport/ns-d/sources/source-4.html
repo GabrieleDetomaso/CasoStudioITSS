@@ -1,0 +1,185 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ClassTestDescriptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: ClassTestDescriptor (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClassTestDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (4/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import static java.util.Collections.emptyList;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;import static org.junit.jupiter.engine.descriptor.DisplayNameUtils.createDisplayNameSupplierForClass;
+&nbsp;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.extension.TestInstances;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.jupiter.engine.execution.JupiterEngineExecutionContext;
+&nbsp;import org.junit.jupiter.engine.extension.ExtensionRegistrar;
+&nbsp;import org.junit.jupiter.engine.extension.ExtensionRegistry;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestTag;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import org.junit.platform.engine.support.hierarchical.ThrowableCollector;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@link TestDescriptor} for tests based on Java classes.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Default Display Names&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;The default display name for a top-level or nested static test class is
+&nbsp; * the fully qualified name of the class with the package name and leading dot
+&nbsp; * (&quot;.&quot;) removed.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;5.0&quot;)
+&nbsp;public class ClassTestDescriptor extends ClassBasedTestDescriptor {
+&nbsp;
+&nbsp;	public static final String SEGMENT_TYPE = &quot;class&quot;;
+&nbsp;
+&nbsp;	public ClassTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, JupiterConfiguration configuration) {
+<b class="fc">&nbsp;		super(uniqueId, testClass, createDisplayNameSupplierForClass(testClass, configuration), configuration);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- TestDescriptor ------------------------------------------------------
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Set&lt;TestTag&gt; getTags() {
+&nbsp;		// return modifiable copy
+<b class="fc">&nbsp;		return new LinkedHashSet&lt;&gt;(this.tags);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public List&lt;Class&lt;?&gt;&gt; getEnclosingTestClasses() {
+<b class="fc">&nbsp;		return emptyList();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- Node ----------------------------------------------------------------
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public ExecutionMode getExecutionMode() {
+<b class="nc">&nbsp;		return getExplicitExecutionMode().orElseGet(</b>
+<b class="nc">&nbsp;			() -&gt; JupiterTestDescriptor.toExecutionMode(configuration.getDefaultClassesExecutionMode()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	protected TestInstances instantiateTestClass(JupiterEngineExecutionContext parentExecutionContext,
+&nbsp;			ExtensionRegistry registry, ExtensionRegistrar registrar, ExtensionContext extensionContext,
+&nbsp;			ThrowableCollector throwableCollector) {
+<b class="fc">&nbsp;		return instantiateTestClass(Optional.empty(), registry, extensionContext);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

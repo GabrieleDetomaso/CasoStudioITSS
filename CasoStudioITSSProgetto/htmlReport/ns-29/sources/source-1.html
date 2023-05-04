@@ -1,0 +1,148 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Testable</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.commons.annotation</a>
+</div>
+
+<h1>Coverage Summary for Class: Testable (org.junit.platform.commons.annotation)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Testable</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.commons.annotation;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.annotation.Documented;
+&nbsp;import java.lang.annotation.Inherited;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @Testable} is used to signal to IDEs and tooling vendors that the
+&nbsp; * annotated or meta-annotated element is &lt;em&gt;testable&lt;/em&gt;.
+&nbsp; *
+&nbsp; * &lt;p&gt;In this context, the term &quot;testable&quot; means that the annotated element
+&nbsp; * (typically a method, field, or class) can be executed by a {@code TestEngine}
+&nbsp; * as a test or test container on the JUnit Platform.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Motivation for {@code @Testable}&lt;/h2&gt;
+&nbsp; * &lt;p&gt;Some clients of the JUnit Platform, notably IDEs such as IntelliJ IDEA,
+&nbsp; * operate only on sources for test discovery. Thus, they cannot use the full
+&nbsp; * runtime discovery mechanism of the JUnit Platform since it relies on compiled
+&nbsp; * classes. {@code @Testable} therefore serves as an alternative mechanism for
+&nbsp; * IDEs to discover potential tests by analyzing the source code only.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Common Use Cases&lt;/h2&gt;
+&nbsp; * &lt;p&gt;{@code @Testable} will typically be used as a meta-annotation in order to
+&nbsp; * create a custom &lt;em&gt;composed annotation&lt;/em&gt; that inherits the semantics
+&nbsp; * of {@code @Testable}. For example, the {@code @Test} and {@code @TestFactory}
+&nbsp; * annotations in JUnit Jupiter are meta-annotated with {@code @Testable}.
+&nbsp; * &lt;p&gt;For test programming models that do not rely on annotations, test classes,
+&nbsp; * test methods, or test fields may be directly annotated with {@code @Testable}.
+&nbsp; * Alternatively, if concrete test classes extend from a base class, the base class
+&nbsp; * can be annotated with {@code @Testable}. Note that {@code @Testable} is an
+&nbsp; * {@link Inherited @Inherited} annotation.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Requirements for IDEs and Tooling Vendors&lt;/h2&gt;
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;If a top-level class, static nested class, or inner class is not
+&nbsp; * annotated or meta-annotated with {@code @Testable} but contains a method or field
+&nbsp; * that is annotated or meta-annotated with {@code @Testable}, the class must
+&nbsp; * be considered to be a &lt;em&gt;testable&lt;/em&gt; class.&lt;/li&gt;
+&nbsp; * &lt;li&gt;If annotation hierarchies containing {@code @Testable} are present on
+&nbsp; * classes, methods, or fields in compiled byte code (e.g., in JARs in the user&#39;s
+&nbsp; * classpath), IDEs and tooling vendors must also take such annotation
+&nbsp; * hierarchies into consideration when performing annotation processing for
+&nbsp; * source code.&lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; *
+&nbsp; * &lt;h2&gt;Restrictions for TestEngine Implementations&lt;/h2&gt;
+&nbsp; * &lt;p&gt;A {@code TestEngine} must &lt;strong&gt;not&lt;/strong&gt; in any way perform
+&nbsp; * &lt;em&gt;discovery&lt;/em&gt; based on the presence of {@code @Testable}. In terms of
+&nbsp; * discovery, the presence of {@code @Testable} should only be meaningful to
+&nbsp; * clients such as IDEs and tooling vendors. A {@code TestEngine} implementation
+&nbsp; * is therefore required to discover tests based on information specific to
+&nbsp; * that test engine (e.g., annotations specific to that test engine).
+&nbsp; *
+&nbsp; * &lt;h2&gt;Supported Target Elements&lt;/h2&gt;
+&nbsp; * &lt;p&gt;Since JUnit Platform version 1.7, {@code @Testable} may target any
+&nbsp; * declaration {@linkplain java.lang.annotation.ElementType element type}. This
+&nbsp; * includes the aforementioned method, field, and class elements.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Inherited
+&nbsp;@Documented
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public @interface Testable {
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

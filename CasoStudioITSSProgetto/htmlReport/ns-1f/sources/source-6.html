@@ -1,0 +1,357 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodSource</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.platform.engine.support.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodSource (org.junit.platform.engine.support.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodSource</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22,7%
+  </span>
+  <span class="absValue">
+    (5/22)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21,4%
+  </span>
+  <span class="absValue">
+    (12/56)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.platform.engine.support.descriptor;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;import static org.junit.platform.commons.util.ClassUtils.nullSafeToString;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.Objects;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.platform.commons.PreconditionViolationException;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.StringUtils;
+&nbsp;import org.junit.platform.commons.util.ToStringBuilder;
+&nbsp;import org.junit.platform.engine.TestSource;
+&nbsp;
+&nbsp;/**
+&nbsp; * Method based {@link org.junit.platform.engine.TestSource TestSource}.
+&nbsp; *
+&nbsp; * &lt;p&gt;This class stores the method name along with the names of its parameter
+&nbsp; * types because {@link Method} does not implement {@link java.io.Serializable}.
+&nbsp; *
+&nbsp; * @since 1.0
+&nbsp; * @see org.junit.platform.engine.discovery.MethodSelector
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;1.0&quot;)
+&nbsp;public class MethodSource implements TestSource {
+&nbsp;
+&nbsp;	private static final long serialVersionUID = 1L;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code MethodSource} using the supplied class name and
+&nbsp;	 * method name.
+&nbsp;	 *
+&nbsp;	 * @param className the class name; must not be {@code null} or blank
+&nbsp;	 * @param methodName the method name; must not be {@code null} or blank
+&nbsp;	 */
+&nbsp;	public static MethodSource from(String className, String methodName) {
+<b class="nc">&nbsp;		return new MethodSource(className, methodName);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code MethodSource} using the supplied class name, method
+&nbsp;	 * name, and method parameter types.
+&nbsp;	 *
+&nbsp;	 * @param className the class name; must not be {@code null} or blank
+&nbsp;	 * @param methodName the method name; must not be {@code null} or blank
+&nbsp;	 * @param methodParameterTypes a comma-separated list of fully qualified
+&nbsp;	 * class names representing the method parameter types
+&nbsp;	 */
+&nbsp;	public static MethodSource from(String className, String methodName, String methodParameterTypes) {
+<b class="nc">&nbsp;		return new MethodSource(className, methodName, methodParameterTypes);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code MethodSource} using the supplied class name, method
+&nbsp;	 * name, and method parameter types.
+&nbsp;	 *
+&nbsp;	 * @param className the class name; must not be {@code null} or blank
+&nbsp;	 * @param methodName the method name; must not be {@code null} or blank
+&nbsp;	 * @param methodParameterTypes a varargs array of classes representing the
+&nbsp;	 * method parameter types
+&nbsp;	 * @since 1.5
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.5&quot;)
+&nbsp;	public static MethodSource from(String className, String methodName, Class&lt;?&gt;... methodParameterTypes) {
+<b class="nc">&nbsp;		return new MethodSource(className, methodName, nullSafeToString(methodParameterTypes));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code MethodSource} using the supplied {@link Method method}.
+&nbsp;	 *
+&nbsp;	 * @param testMethod the Java method; must not be {@code null}
+&nbsp;	 * @see #from(Class, Method)
+&nbsp;	 */
+&nbsp;	public static MethodSource from(Method testMethod) {
+<b class="nc">&nbsp;		return new MethodSource(testMethod);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Create a new {@code MethodSource} using the supplied
+&nbsp;	 * {@link Class class} and {@link Method method}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method should be used in favor of {@link #from(Method)} if the
+&nbsp;	 * test method is inherited from a superclass or present as an interface
+&nbsp;	 * {@code default} method.
+&nbsp;	 *
+&nbsp;	 * @param testClass the Java class; must not be {@code null}
+&nbsp;	 * @param testMethod the Java method; must not be {@code null}
+&nbsp;	 * @since 1.3
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.3&quot;)
+&nbsp;	public static MethodSource from(Class&lt;?&gt; testClass, Method testMethod) {
+<b class="fc">&nbsp;		return new MethodSource(testClass, testMethod);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private final String className;
+&nbsp;	private final String methodName;
+&nbsp;	private final String methodParameterTypes;
+&nbsp;	private Class&lt;?&gt; javaClass;
+&nbsp;	private transient Method javaMethod;
+&nbsp;
+&nbsp;	private MethodSource(String className, String methodName) {
+<b class="nc">&nbsp;		this(className, methodName, null);</b>
+&nbsp;	}
+&nbsp;
+<b class="nc">&nbsp;	private MethodSource(String className, String methodName, String methodParameterTypes) {</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(className, &quot;Class name must not be null or blank&quot;);</b>
+<b class="nc">&nbsp;		Preconditions.notBlank(methodName, &quot;Method name must not be null or blank&quot;);</b>
+<b class="nc">&nbsp;		this.className = className;</b>
+<b class="nc">&nbsp;		this.methodName = methodName;</b>
+<b class="nc">&nbsp;		this.methodParameterTypes = methodParameterTypes;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private MethodSource(Method testMethod) {
+<b class="nc">&nbsp;		this(Preconditions.notNull(testMethod, &quot;Method must not be null&quot;).getDeclaringClass(), testMethod);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 1.3
+&nbsp;	 */
+<b class="fc">&nbsp;	private MethodSource(Class&lt;?&gt; testClass, Method testMethod) {</b>
+<b class="fc">&nbsp;		Preconditions.notNull(testClass, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		Preconditions.notNull(testMethod, &quot;Method must not be null&quot;);</b>
+<b class="fc">&nbsp;		this.className = testClass.getName();</b>
+<b class="fc">&nbsp;		this.methodName = testMethod.getName();</b>
+<b class="fc">&nbsp;		this.methodParameterTypes = nullSafeToString(testMethod.getParameterTypes());</b>
+<b class="fc">&nbsp;		this.javaClass = testClass;</b>
+<b class="fc">&nbsp;		this.javaMethod = testMethod;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the class name of this source.
+&nbsp;	 */
+&nbsp;	public String getClassName() {
+<b class="fc">&nbsp;		return this.className;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the method name of this source.
+&nbsp;	 */
+&nbsp;	public final String getMethodName() {
+<b class="fc">&nbsp;		return this.methodName;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the method parameter types of this source.
+&nbsp;	 */
+&nbsp;	public final String getMethodParameterTypes() {
+<b class="fc">&nbsp;		return this.methodParameterTypes;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@linkplain Class Java class} of this source.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Class} was not provided, but only the name, this method
+&nbsp;	 * attempts to lazily load the {@link Class} based on its name and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the class cannot be loaded.
+&nbsp;	 *
+&nbsp;	 * @since 1.7
+&nbsp;	 * @see #getClassName()
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.7&quot;)
+&nbsp;	public final Class&lt;?&gt; getJavaClass() {
+<b class="nc">&nbsp;		lazyLoadJavaClass();</b>
+<b class="nc">&nbsp;		return this.javaClass;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the {@linkplain Method Java method} of this source.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the {@link Method} was not provided, but only the name, this method
+&nbsp;	 * attempts to lazily load the {@code Method} based on its name and throws a
+&nbsp;	 * {@link PreconditionViolationException} if the method cannot be loaded.
+&nbsp;	 *
+&nbsp;	 * @since 1.7
+&nbsp;	 * @see #getMethodName()
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;1.7&quot;)
+&nbsp;	public final Method getJavaMethod() {
+<b class="nc">&nbsp;		lazyLoadJavaMethod();</b>
+<b class="nc">&nbsp;		return this.javaMethod;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private void lazyLoadJavaClass() {
+<b class="nc">&nbsp;		if (this.javaClass == null) {</b>
+&nbsp;			// @formatter:off
+<b class="nc">&nbsp;			this.javaClass = ReflectionUtils.tryToLoadClass(this.className).getOrThrow(</b>
+<b class="nc">&nbsp;				cause -&gt; new PreconditionViolationException(&quot;Could not load class with name: &quot; + this.className, cause));</b>
+&nbsp;			// @formatter:on
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	private void lazyLoadJavaMethod() {
+<b class="nc">&nbsp;		lazyLoadJavaClass();</b>
+&nbsp;
+<b class="nc">&nbsp;		if (this.javaMethod == null) {</b>
+<b class="nc">&nbsp;			if (StringUtils.isNotBlank(this.methodParameterTypes)) {</b>
+<b class="nc">&nbsp;				this.javaMethod = ReflectionUtils.findMethod(this.javaClass, this.methodName,</b>
+<b class="nc">&nbsp;					this.methodParameterTypes).orElseThrow(</b>
+<b class="nc">&nbsp;						() -&gt; new PreconditionViolationException(String.format(</b>
+&nbsp;							&quot;Could not find method with name [%s] and parameter types [%s] in class [%s].&quot;,
+<b class="nc">&nbsp;							this.methodName, this.methodParameterTypes, this.javaClass.getName())));</b>
+&nbsp;			}
+&nbsp;			else {
+<b class="nc">&nbsp;				this.javaMethod = ReflectionUtils.findMethod(this.javaClass, this.methodName).orElseThrow(</b>
+<b class="nc">&nbsp;					() -&gt; new PreconditionViolationException(</b>
+<b class="nc">&nbsp;						String.format(&quot;Could not find method with name [%s] in class [%s].&quot;, this.methodName,</b>
+<b class="nc">&nbsp;							this.javaClass.getName())));</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public boolean equals(Object o) {
+<b class="nc">&nbsp;		if (this == o) {</b>
+<b class="nc">&nbsp;			return true;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		if (o == null || getClass() != o.getClass()) {</b>
+<b class="nc">&nbsp;			return false;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		MethodSource that = (MethodSource) o;</b>
+<b class="nc">&nbsp;		return Objects.equals(this.className, that.className)//</b>
+<b class="nc">&nbsp;				&amp;&amp; Objects.equals(this.methodName, that.methodName)//</b>
+<b class="nc">&nbsp;				&amp;&amp; Objects.equals(this.methodParameterTypes, that.methodParameterTypes);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public int hashCode() {
+<b class="nc">&nbsp;		return Objects.hash(this.className, this.methodName, this.methodParameterTypes);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String toString() {
+&nbsp;		// @formatter:off
+<b class="nc">&nbsp;		return new ToStringBuilder(this)</b>
+<b class="nc">&nbsp;				.append(&quot;className&quot;, this.className)</b>
+<b class="nc">&nbsp;				.append(&quot;methodName&quot;, this.methodName)</b>
+<b class="nc">&nbsp;				.append(&quot;methodParameterTypes&quot;, this.methodParameterTypes)</b>
+<b class="nc">&nbsp;				.toString();</b>
+&nbsp;		// @formatter:on
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

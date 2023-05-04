@@ -1,0 +1,141 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ReflectiveInvocationContext</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: ReflectiveInvocationContext (org.junit.jupiter.api.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ReflectiveInvocationContext</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api.extension;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;
+&nbsp;import java.lang.reflect.Executable;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code ReflectiveInvocationContext} encapsulates the &lt;em&gt;context&lt;/em&gt; of
+&nbsp; * a reflective invocation of an executable (method or constructor).
+&nbsp; *
+&nbsp; * &lt;p&gt;This interface is not intended to be implemented by clients.
+&nbsp; *
+&nbsp; * @since 5.5
+&nbsp; */
+&nbsp;@API(status = EXPERIMENTAL, since = &quot;5.5&quot;)
+&nbsp;public interface ReflectiveInvocationContext&lt;T extends Executable&gt; {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the target class of this invocation context.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If this invocation context represents an instance method, this
+&nbsp;	 * method returns the class of the object the method will be invoked on,
+&nbsp;	 * not the class it is declared in. Otherwise, if this invocation
+&nbsp;	 * represents a static method or constructor, this method returns the
+&nbsp;	 * class the method or constructor is declared in.
+&nbsp;	 *
+&nbsp;	 * @return the target class of this invocation context; never
+&nbsp;	 * {@code null}
+&nbsp;	 */
+&nbsp;	Class&lt;?&gt; getTargetClass();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the method or constructor of this invocation context.
+&nbsp;	 *
+&nbsp;	 * @return the executable of this invocation context; never {@code null}
+&nbsp;	 */
+&nbsp;	T getExecutable();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the arguments of the executable in this invocation context.
+&nbsp;	 *
+&nbsp;	 * @return the arguments of the executable in this invocation context;
+&nbsp;	 * immutable and never {@code null}
+&nbsp;	 */
+&nbsp;	List&lt;Object&gt; getArguments();
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get the target object of this invocation context, if available.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If this invocation context represents an instance method, this
+&nbsp;	 * method returns the object the method will be invoked on. Otherwise,
+&nbsp;	 * if this invocation context represents a static method or
+&nbsp;	 * constructor, this method returns {@link Optional#empty() empty()}.
+&nbsp;	 *
+&nbsp;	 * @return the target of the executable of this invocation context; never
+&nbsp;	 * {@code null} but potentially empty
+&nbsp;	 */
+&nbsp;	Optional&lt;Object&gt; getTarget();
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

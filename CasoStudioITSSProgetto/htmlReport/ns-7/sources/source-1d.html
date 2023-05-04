@@ -1,0 +1,142 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Tag</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: Tag (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">Tag</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.lang.annotation.Documented;
+&nbsp;import java.lang.annotation.ElementType;
+&nbsp;import java.lang.annotation.Inherited;
+&nbsp;import java.lang.annotation.Repeatable;
+&nbsp;import java.lang.annotation.Retention;
+&nbsp;import java.lang.annotation.RetentionPolicy;
+&nbsp;import java.lang.annotation.Target;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code @Tag} is a {@linkplain Repeatable repeatable} annotation that is
+&nbsp; * used to declare a &lt;em&gt;tag&lt;/em&gt; for the annotated test class or test method.
+&nbsp; *
+&nbsp; * &lt;p&gt;Tags are used to filter which tests are executed for a given test
+&nbsp; * plan. For example, a development team may tag tests with values such as
+&nbsp; * {@code &quot;fast&quot;}, {@code &quot;slow&quot;}, {@code &quot;ci-server&quot;}, etc. and then supply a
+&nbsp; * list of tags to be included in or excluded from the current test plan,
+&nbsp; * potentially dependent on the current environment.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Syntax Rules for Tags&lt;/h2&gt;
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;A tag must not be blank.&lt;/li&gt;
+&nbsp; * &lt;li&gt;A &lt;em&gt;trimmed&lt;/em&gt; tag must not contain whitespace.&lt;/li&gt;
+&nbsp; * &lt;li&gt;A &lt;em&gt;trimmed&lt;/em&gt; tag must not contain ISO control characters.&lt;/li&gt;
+&nbsp; * &lt;li&gt;A &lt;em&gt;trimmed&lt;/em&gt; tag must not contain any of the following
+&nbsp; * &lt;em&gt;reserved characters&lt;/em&gt;.
+&nbsp; * &lt;ul&gt;
+&nbsp; * &lt;li&gt;{@code ,}: &lt;em&gt;comma&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@code (}: &lt;em&gt;left parenthesis&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@code )}: &lt;em&gt;right parenthesis&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@code &amp;}: &lt;em&gt;ampersand&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@code |}: &lt;em&gt;vertical bar&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;li&gt;{@code !}: &lt;em&gt;exclamation point&lt;/em&gt;&lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; * &lt;/li&gt;
+&nbsp; * &lt;/ul&gt;
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see Tags
+&nbsp; * @see Test
+&nbsp; */
+&nbsp;@Target({ ElementType.TYPE, ElementType.METHOD })
+&nbsp;@Retention(RetentionPolicy.RUNTIME)
+&nbsp;@Documented
+&nbsp;@Inherited
+&nbsp;@Repeatable(Tags.class)
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;public @interface Tag {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * The &lt;em&gt;tag&lt;/em&gt;.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the tag will first be {@linkplain String#trim() trimmed}. If the
+&nbsp;	 * supplied tag is syntactically invalid after trimming, the error will be
+&nbsp;	 * logged as a warning, and the invalid tag will be effectively ignored. See
+&nbsp;	 * {@linkplain Tag Syntax Rules for Tags}.
+&nbsp;	 */
+&nbsp;	String value();
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

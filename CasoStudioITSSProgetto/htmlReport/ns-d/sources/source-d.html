@@ -1,0 +1,252 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > MethodBasedTestDescriptor</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.descriptor</a>
+</div>
+
+<h1>Coverage Summary for Class: MethodBasedTestDescriptor (org.junit.jupiter.engine.descriptor)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MethodBasedTestDescriptor</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64,3%
+  </span>
+  <span class="absValue">
+    (9/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    52,9%
+  </span>
+  <span class="absValue">
+    (18/34)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.descriptor;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;import static org.junit.jupiter.engine.descriptor.DisplayNameUtils.determineDisplayNameForMethod;
+&nbsp;
+&nbsp;import java.lang.reflect.Method;
+&nbsp;import java.util.LinkedHashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.Set;
+&nbsp;import java.util.function.Consumer;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.ExtensionContext;
+&nbsp;import org.junit.jupiter.api.extension.TestWatcher;
+&nbsp;import org.junit.jupiter.engine.config.JupiterConfiguration;
+&nbsp;import org.junit.jupiter.engine.execution.JupiterEngineExecutionContext;
+&nbsp;import org.junit.jupiter.engine.extension.ExtensionRegistry;
+&nbsp;import org.junit.platform.commons.logging.Logger;
+&nbsp;import org.junit.platform.commons.logging.LoggerFactory;
+&nbsp;import org.junit.platform.commons.util.ClassUtils;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;import org.junit.platform.commons.util.ReflectionUtils;
+&nbsp;import org.junit.platform.commons.util.UnrecoverableExceptions;
+&nbsp;import org.junit.platform.engine.TestDescriptor;
+&nbsp;import org.junit.platform.engine.TestTag;
+&nbsp;import org.junit.platform.engine.UniqueId;
+&nbsp;import org.junit.platform.engine.support.descriptor.MethodSource;
+&nbsp;import org.junit.platform.engine.support.hierarchical.ExclusiveResource;
+&nbsp;
+&nbsp;/**
+&nbsp; * Base class for {@link TestDescriptor TestDescriptors} based on Java methods.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;5.0&quot;)
+&nbsp;public abstract class MethodBasedTestDescriptor extends JupiterTestDescriptor {
+&nbsp;
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(MethodBasedTestDescriptor.class);</b>
+&nbsp;
+&nbsp;	private final Class&lt;?&gt; testClass;
+&nbsp;	private final Method testMethod;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Set of method-level tags; does not contain tags from parent.
+&nbsp;	 */
+&nbsp;	private final Set&lt;TestTag&gt; tags;
+&nbsp;
+&nbsp;	MethodBasedTestDescriptor(UniqueId uniqueId, Class&lt;?&gt; testClass, Method testMethod,
+&nbsp;			JupiterConfiguration configuration) {
+<b class="fc">&nbsp;		this(uniqueId, determineDisplayNameForMethod(testClass, testMethod, configuration), testClass, testMethod,</b>
+&nbsp;			configuration);
+&nbsp;	}
+&nbsp;
+&nbsp;	MethodBasedTestDescriptor(UniqueId uniqueId, String displayName, Class&lt;?&gt; testClass, Method testMethod,
+&nbsp;			JupiterConfiguration configuration) {
+<b class="fc">&nbsp;		super(uniqueId, displayName, MethodSource.from(testClass, testMethod), configuration);</b>
+&nbsp;
+<b class="fc">&nbsp;		this.testClass = Preconditions.notNull(testClass, &quot;Class must not be null&quot;);</b>
+<b class="fc">&nbsp;		this.testMethod = testMethod;</b>
+<b class="fc">&nbsp;		this.tags = getTags(testMethod);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public final Set&lt;TestTag&gt; getTags() {
+&nbsp;		// return modifiable copy
+<b class="fc">&nbsp;		Set&lt;TestTag&gt; allTags = new LinkedHashSet&lt;&gt;(this.tags);</b>
+<b class="fc">&nbsp;		getParent().ifPresent(parentDescriptor -&gt; allTags.addAll(parentDescriptor.getTags()));</b>
+<b class="fc">&nbsp;		return allTags;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Set&lt;ExclusiveResource&gt; getExclusiveResources() {
+<b class="fc">&nbsp;		return getExclusiveResourcesFromAnnotation(getTestMethod());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	protected Optional&lt;ExecutionMode&gt; getExplicitExecutionMode() {
+<b class="nc">&nbsp;		return getExecutionModeFromAnnotation(getTestMethod());</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public final Class&lt;?&gt; getTestClass() {
+<b class="fc">&nbsp;		return this.testClass;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public final Method getTestMethod() {
+<b class="fc">&nbsp;		return this.testMethod;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public String getLegacyReportingName() {
+<b class="fc">&nbsp;		return String.format(&quot;%s(%s)&quot;, testMethod.getName(),</b>
+<b class="fc">&nbsp;			ClassUtils.nullSafeToString(Class::getSimpleName, testMethod.getParameterTypes()));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Invoke {@link TestWatcher#testDisabled(ExtensionContext, Optional)} on each
+&nbsp;	 * registered {@link TestWatcher}, in registration order.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@Override
+&nbsp;	public void nodeSkipped(JupiterEngineExecutionContext context, TestDescriptor descriptor, SkipResult result) {
+<b class="nc">&nbsp;		if (context != null) {</b>
+<b class="nc">&nbsp;			invokeTestWatchers(context, false,</b>
+<b class="nc">&nbsp;				watcher -&gt; watcher.testDisabled(context.getExtensionContext(), result.getReason()));</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	protected void invokeTestWatchers(JupiterEngineExecutionContext context, boolean reverseOrder,
+&nbsp;			Consumer&lt;TestWatcher&gt; callback) {
+&nbsp;
+<b class="fc">&nbsp;		ExtensionRegistry registry = context.getExtensionRegistry();</b>
+&nbsp;
+<b class="fc">&nbsp;		List&lt;TestWatcher&gt; watchers = reverseOrder //</b>
+<b class="fc">&nbsp;				? registry.getReversedExtensions(TestWatcher.class)</b>
+<b class="nc">&nbsp;				: registry.getExtensions(TestWatcher.class);</b>
+&nbsp;
+<b class="fc">&nbsp;		watchers.forEach(watcher -&gt; {</b>
+&nbsp;			try {
+<b class="nc">&nbsp;				callback.accept(watcher);</b>
+&nbsp;			}
+<b class="nc">&nbsp;			catch (Throwable throwable) {</b>
+<b class="nc">&nbsp;				UnrecoverableExceptions.rethrowIfUnrecoverable(throwable);</b>
+<b class="nc">&nbsp;				ExtensionContext extensionContext = context.getExtensionContext();</b>
+<b class="nc">&nbsp;				logger.warn(throwable,</b>
+<b class="nc">&nbsp;					() -&gt; String.format(&quot;Failed to invoke TestWatcher [%s] for method [%s] with display name [%s]&quot;,</b>
+<b class="nc">&nbsp;						watcher.getClass().getName(),</b>
+<b class="nc">&nbsp;						ReflectionUtils.getFullyQualifiedMethodName(extensionContext.getRequiredTestClass(),</b>
+<b class="nc">&nbsp;							extensionContext.getRequiredTestMethod()),</b>
+<b class="nc">&nbsp;						getDisplayName()));</b>
+<b class="nc">&nbsp;			}</b>
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

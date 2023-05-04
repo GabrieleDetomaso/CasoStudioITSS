@@ -1,0 +1,3728 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Assertions</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.api</a>
+</div>
+
+<h1>Coverage Summary for Class: Assertions (org.junit.jupiter.api)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Assertions</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2,1%
+  </span>
+  <span class="absValue">
+    (6/292)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    2%
+  </span>
+  <span class="absValue">
+    (6/297)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.api;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.EXPERIMENTAL;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;import static org.apiguardian.api.API.Status.STABLE;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.Arrays;
+&nbsp;import java.util.Collection;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.function.BooleanSupplier;
+&nbsp;import java.util.function.Supplier;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.function.Executable;
+&nbsp;import org.junit.jupiter.api.function.ThrowingSupplier;
+&nbsp;import org.opentest4j.MultipleFailuresError;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code Assertions} is a collection of utility methods that support asserting
+&nbsp; * conditions in tests.
+&nbsp; *
+&nbsp; * &lt;p&gt;Unless otherwise noted, a &lt;em&gt;failed&lt;/em&gt; assertion will throw an
+&nbsp; * {@link org.opentest4j.AssertionFailedError} or a subclass thereof.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Object Equality&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Assertion methods comparing two objects for &lt;em&gt;equality&lt;/em&gt;, such as the
+&nbsp; * {@code assertEquals(expected, actual)} and {@code assertNotEquals(unexpected, actual)}
+&nbsp; * variants, are &lt;em&gt;only&lt;/em&gt; intended to test equality for an (un-)expected value
+&nbsp; * and an actual value. They are not designed for testing whether a class correctly
+&nbsp; * implements {@link Object#equals(Object)}. For example, {@code assertEquals()}
+&nbsp; * might immediately return {@code true} when provided the same object for the
+&nbsp; * expected and actual values, without calling {@code equals(Object)} at all.
+&nbsp; * Tests that aim to verify the {@code equals(Object)} implementation should instead
+&nbsp; * be written to explicitly verify the {@link Object#equals(Object)} contract by
+&nbsp; * using {@link #assertTrue(boolean) assertTrue()} or {@link #assertFalse(boolean)
+&nbsp; * assertFalse()} &amp;mdash; for example, {@code assertTrue(expected.equals(actual))},
+&nbsp; * {@code assertTrue(actual.equals(expected))}, {@code assertFalse(expected.equals(null))},
+&nbsp; * etc.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Kotlin Support&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Additional &lt;a href=&quot;https://kotlinlang.org/&quot;&gt;Kotlin&lt;/a&gt; assertions can be
+&nbsp; * found as &lt;em&gt;top-level functions&lt;/em&gt; in the {@link org.junit.jupiter.api}
+&nbsp; * package.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Preemptive Timeouts&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;The various {@code assertTimeoutPreemptively()} methods in this class
+&nbsp; * execute the provided {@code executable} or {@code supplier} in a different
+&nbsp; * thread than that of the calling code. This behavior can lead to undesirable
+&nbsp; * side effects if the code that is executed within the {@code executable} or
+&nbsp; * {@code supplier} relies on {@link ThreadLocal} storage.
+&nbsp; *
+&nbsp; * &lt;p&gt;One common example of this is the transactional testing support in the Spring
+&nbsp; * Framework. Specifically, Spring&#39;s testing support binds transaction state to
+&nbsp; * the current thread (via a {@code ThreadLocal}) before a test method is invoked.
+&nbsp; * Consequently, if an {@code executable} or {@code supplier} provided to
+&nbsp; * {@code assertTimeoutPreemptively()} invokes Spring-managed components that
+&nbsp; * participate in transactions, any actions taken by those components will not be
+&nbsp; * rolled back with the test-managed transaction. On the contrary, such actions
+&nbsp; * will be committed to the persistent store (e.g., relational database) even
+&nbsp; * though the test-managed transaction is rolled back.
+&nbsp; *
+&nbsp; * &lt;p&gt;Similar side effects may be encountered with other frameworks that rely on
+&nbsp; * {@code ThreadLocal} storage.
+&nbsp; *
+&nbsp; * &lt;h2&gt;Extensibility&lt;/h2&gt;
+&nbsp; *
+&nbsp; * &lt;p&gt;Although it is technically possible to extend this class, extension is
+&nbsp; * strongly discouraged. The JUnit Team highly recommends that the methods
+&nbsp; * defined in this class be used via &lt;em&gt;static imports&lt;/em&gt;.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; * @see org.opentest4j.AssertionFailedError
+&nbsp; * @see Assumptions
+&nbsp; */
+&nbsp;@API(status = STABLE, since = &quot;5.0&quot;)
+&nbsp;public class Assertions {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Protected constructor allowing subclassing but not direct instantiation.
+&nbsp;	 *
+&nbsp;	 * @since 5.3
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.3&quot;)
+<b class="nc">&nbsp;	protected Assertions() {</b>
+&nbsp;		/* no-op */
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- fail ----------------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Fail&lt;/em&gt; the test &lt;em&gt;without&lt;/em&gt; a failure message.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Although failing &lt;em&gt;with&lt;/em&gt; an explicit failure message is recommended,
+&nbsp;	 * this method may be useful when maintaining legacy code.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #fail(String)} for an explanation of this method&#39;s
+&nbsp;	 * generic return type {@code V}.
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; V fail() {
+<b class="nc">&nbsp;		AssertionUtils.fail();</b>
+<b class="nc">&nbsp;		return null; // appeasing the compiler: this line will never be executed.</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Fail&lt;/em&gt; the test with the given failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The generic return type {@code V} allows this method to be used
+&nbsp;	 * directly as a single-statement lambda expression, thereby avoiding the
+&nbsp;	 * need to implement a code block with an explicit return value. Since this
+&nbsp;	 * method throws an {@link org.opentest4j.AssertionFailedError} before its
+&nbsp;	 * return statement, this method never actually returns a value to its caller.
+&nbsp;	 * The following example demonstrates how this may be used in practice.
+&nbsp;	 *
+&nbsp;	 * &lt;pre&gt;{@code
+&nbsp;	 * Stream.of().map(entry -&gt; fail(&quot;should not be called&quot;));
+&nbsp;	 * }&lt;/pre&gt;
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; V fail(String message) {
+<b class="nc">&nbsp;		AssertionUtils.fail(message);</b>
+<b class="nc">&nbsp;		return null; // appeasing the compiler: this line will never be executed.</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Fail&lt;/em&gt; the test with the given failure {@code message} as well
+&nbsp;	 * as the underlying {@code cause}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #fail(String)} for an explanation of this method&#39;s
+&nbsp;	 * generic return type {@code V}.
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; V fail(String message, Throwable cause) {
+<b class="nc">&nbsp;		AssertionUtils.fail(message, cause);</b>
+<b class="nc">&nbsp;		return null; // appeasing the compiler: this line will never be executed.</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Fail&lt;/em&gt; the test with the given underlying {@code cause}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #fail(String)} for an explanation of this method&#39;s
+&nbsp;	 * generic return type {@code V}.
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; V fail(Throwable cause) {
+<b class="nc">&nbsp;		AssertionUtils.fail(cause);</b>
+<b class="nc">&nbsp;		return null; // appeasing the compiler: this line will never be executed.</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Fail&lt;/em&gt; the test with the failure message retrieved from the
+&nbsp;	 * given {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #fail(String)} for an explanation of this method&#39;s
+&nbsp;	 * generic return type {@code V}.
+&nbsp;	 */
+&nbsp;	public static &lt;V&gt; V fail(Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertionUtils.fail(messageSupplier);</b>
+<b class="nc">&nbsp;		return null; // appeasing the compiler: this line will never be executed.</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertTrue ----------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code true}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(boolean condition) {
+<b class="fc">&nbsp;		AssertTrue.assertTrue(condition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code true}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(boolean condition, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertTrue.assertTrue(condition, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code true}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(BooleanSupplier booleanSupplier) {
+<b class="nc">&nbsp;		AssertTrue.assertTrue(booleanSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code true}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(BooleanSupplier booleanSupplier, String message) {
+<b class="nc">&nbsp;		AssertTrue.assertTrue(booleanSupplier, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code true}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(boolean condition, String message) {
+<b class="nc">&nbsp;		AssertTrue.assertTrue(condition, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code true}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertTrue(BooleanSupplier booleanSupplier, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertTrue.assertTrue(booleanSupplier, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertFalse ---------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code false}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(boolean condition) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(condition);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code false}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(boolean condition, String message) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(condition, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code condition} is {@code false}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(boolean condition, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(condition, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code false}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(BooleanSupplier booleanSupplier) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(booleanSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code false}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(BooleanSupplier booleanSupplier, String message) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(booleanSupplier, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the boolean condition supplied by {@code booleanSupplier} is {@code false}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertFalse(BooleanSupplier booleanSupplier, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertFalse.assertFalse(booleanSupplier, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertNull ----------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is {@code null}.
+&nbsp;	 */
+&nbsp;	public static void assertNull(Object actual) {
+<b class="fc">&nbsp;		AssertNull.assertNull(actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is {@code null}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertNull(Object actual, String message) {
+<b class="nc">&nbsp;		AssertNull.assertNull(actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is {@code null}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertNull(Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNull.assertNull(actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertNotNull -------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is not {@code null}.
+&nbsp;	 */
+&nbsp;	public static void assertNotNull(Object actual) {
+<b class="nc">&nbsp;		AssertNotNull.assertNotNull(actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is not {@code null}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertNotNull(Object actual, String message) {
+<b class="nc">&nbsp;		AssertNotNull.assertNotNull(actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code actual} is not {@code null}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertNotNull(Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotNull.assertNotNull(actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertEquals --------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, short actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, Short actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Short) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Short expected, short actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Short) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Short expected, Short actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, short actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, Short actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Short) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Short expected, short actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Short) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Short expected, Short actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(short expected, Short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Short) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Short expected, short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Short) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Short expected, Short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, byte actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, Byte actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Byte) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Byte expected, byte actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Byte) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Byte expected, Byte actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, byte actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, Byte actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Byte) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Byte expected, byte actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Byte) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Byte expected, Byte actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(byte expected, Byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Byte) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Byte expected, byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Byte) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Byte expected, Byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, int actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, Integer actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Integer) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Integer expected, int actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Integer) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Integer expected, Integer actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, int actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, Integer actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Integer) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Integer expected, int actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Integer) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Integer expected, Integer actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, int actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(int expected, Integer actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Integer) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Integer expected, int actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Integer) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Integer expected, Integer actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, long actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, Long actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Long) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Long expected, long actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Long) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Long expected, Long actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, long actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, Long actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Long) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Long expected, long actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Long) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Long expected, Long actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(long expected, Long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Long) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Long expected, long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Long) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Long expected, Long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, Float actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Float) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Float expected, float actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Float) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Float expected, Float actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, Float actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Float) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Float expected, float actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Float) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Float expected, Float actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, Float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Float) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Float expected, float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Float) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Float expected, Float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual, float delta) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual, float delta, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(float expected, float actual, float delta, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, Double actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Double) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Double expected, double actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Double) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Double expected, Double actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, Double actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Double) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Double expected, double actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Double) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Double expected, Double actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, Double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Double) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Double expected, double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Double) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Double expected, Double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual, double delta) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual, double delta, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(double expected, double actual, double delta, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, char actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, Character actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Character) expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Character expected, char actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Character) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Character expected, Character actual) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, char actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, Character actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Character) expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Character expected, char actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Character) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Character expected, Character actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, char actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(char expected, Character actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals((Character) expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Character expected, char actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, (Character) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertEquals(Character expected, Character actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Object expected, Object actual) {
+<b class="fc">&nbsp;		AssertEquals.assertEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Object expected, Object actual, String message) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertEquals(Object expected, Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertEquals.assertEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertArrayEquals ---------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} boolean arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(boolean[] expected, boolean[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} boolean arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(boolean[] expected, boolean[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} boolean arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(boolean[] expected, boolean[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} char arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(char[] expected, char[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} char arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(char[] expected, char[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} char arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(char[] expected, char[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} byte arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(byte[] expected, byte[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} byte arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(byte[] expected, byte[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} byte arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(byte[] expected, byte[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} short arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(short[] expected, short[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} short arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(short[] expected, short[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} short arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(short[] expected, short[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} int arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(int[] expected, int[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} int arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(int[] expected, int[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} int arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(int[] expected, int[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} long arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(long[] expected, long[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} long arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(long[] expected, long[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} long arrays are equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(long[] expected, long[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual, float delta) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual, float delta, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} float arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Float#equals(Object)} and
+&nbsp;	 * {@link Float#compare(float, float)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(float[] expected, float[] actual, float delta,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual, double delta) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual, double delta, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} double arrays are equal within the given non-negative {@code delta}.
+&nbsp;	 * &lt;p&gt;Equality imposed by this method is consistent with {@link Double#equals(Object)} and
+&nbsp;	 * {@link Double#compare(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(double[] expected, double[] actual, double delta,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} object arrays are deeply equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Nested float arrays are checked as in {@link #assertEquals(float, float)}.
+&nbsp;	 * &lt;p&gt;Nested double arrays are checked as in {@link #assertEquals(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(Object[] expected, Object[] actual) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} object arrays are deeply equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Nested float arrays are checked as in {@link #assertEquals(float, float)}.
+&nbsp;	 * &lt;p&gt;Nested double arrays are checked as in {@link #assertEquals(double, double)}.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(Object[] expected, Object[] actual, String message) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} object arrays are deeply equal.
+&nbsp;	 * &lt;p&gt;If both are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Nested float arrays are checked as in {@link #assertEquals(float, float)}.
+&nbsp;	 * &lt;p&gt;Nested double arrays are checked as in {@link #assertEquals(double, double)}.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 */
+&nbsp;	public static void assertArrayEquals(Object[] expected, Object[] actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertArrayEquals.assertArrayEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertIterableEquals --------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} iterables are deeply equal.
+&nbsp;	 * &lt;p&gt;Similarly to the check for deep equality in {@link #assertArrayEquals(Object[], Object[])},
+&nbsp;	 * if two iterables are encountered (including {@code expected} and {@code actual}) then their
+&nbsp;	 * iterators must return equal elements in the same order as each other. &lt;strong&gt;Note:&lt;/strong&gt;
+&nbsp;	 * this means that the iterables &lt;em&gt;do not&lt;/em&gt; need to be of the same type. Example: &lt;pre&gt;{@code
+&nbsp;	 * import static java.util.Arrays.asList;
+&nbsp;	 *  . . .
+&nbsp;	 * Iterable&lt;Integer&gt; i0 = new ArrayList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * Iterable&lt;Integer&gt; i1 = new LinkedList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * assertIterableEquals(i0, i1); // Passes
+&nbsp;	 * }&lt;/pre&gt;
+&nbsp;	 * &lt;p&gt;If both {@code expected} and {@code actual} are {@code null}, they are considered equal.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 * @see #assertArrayEquals(Object[], Object[])
+&nbsp;	 */
+&nbsp;	public static void assertIterableEquals(Iterable&lt;?&gt; expected, Iterable&lt;?&gt; actual) {
+<b class="nc">&nbsp;		AssertIterableEquals.assertIterableEquals(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} iterables are deeply equal.
+&nbsp;	 * &lt;p&gt;Similarly to the check for deep equality in
+&nbsp;	 * {@link #assertArrayEquals(Object[], Object[], String)}, if two iterables are encountered
+&nbsp;	 * (including {@code expected} and {@code actual}) then their iterators must return equal
+&nbsp;	 * elements in the same order as each other. &lt;strong&gt;Note:&lt;/strong&gt; this means that the iterables
+&nbsp;	 * &lt;em&gt;do not&lt;/em&gt; need to be of the same type. Example: &lt;pre&gt;{@code
+&nbsp;	 * import static java.util.Arrays.asList;
+&nbsp;	 *  . . .
+&nbsp;	 * Iterable&lt;Integer&gt; i0 = new ArrayList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * Iterable&lt;Integer&gt; i1 = new LinkedList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * assertIterableEquals(i0, i1); // Passes
+&nbsp;	 * }&lt;/pre&gt;
+&nbsp;	 * &lt;p&gt;If both {@code expected} and {@code actual} are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 * @see #assertArrayEquals(Object[], Object[], String)
+&nbsp;	 */
+&nbsp;	public static void assertIterableEquals(Iterable&lt;?&gt; expected, Iterable&lt;?&gt; actual, String message) {
+<b class="nc">&nbsp;		AssertIterableEquals.assertIterableEquals(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} iterables are deeply equal.
+&nbsp;	 * &lt;p&gt;Similarly to the check for deep equality in
+&nbsp;	 * {@link #assertArrayEquals(Object[], Object[], Supplier)}, if two iterables are encountered
+&nbsp;	 * (including {@code expected} and {@code actual}) then their iterators must return equal
+&nbsp;	 * elements in the same order as each other. &lt;strong&gt;Note:&lt;/strong&gt; this means that the iterables
+&nbsp;	 * &lt;em&gt;do not&lt;/em&gt; need to be of the same type. Example: &lt;pre&gt;{@code
+&nbsp;	 * import static java.util.Arrays.asList;
+&nbsp;	 *  . . .
+&nbsp;	 * Iterable&lt;Integer&gt; i0 = new ArrayList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * Iterable&lt;Integer&gt; i1 = new LinkedList&lt;&gt;(asList(1, 2, 3));
+&nbsp;	 * assertIterableEquals(i0, i1); // Passes
+&nbsp;	 * }&lt;/pre&gt;
+&nbsp;	 * &lt;p&gt;If both {@code expected} and {@code actual} are {@code null}, they are considered equal.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see Objects#equals(Object, Object)
+&nbsp;	 * @see Arrays#deepEquals(Object[], Object[])
+&nbsp;	 * @see #assertArrayEquals(Object[], Object[], Supplier)
+&nbsp;	 */
+&nbsp;	public static void assertIterableEquals(Iterable&lt;?&gt; expected, Iterable&lt;?&gt; actual,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertIterableEquals.assertIterableEquals(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertLinesMatch ----------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} list of {@linkplain String}s matches {@code actual}
+&nbsp;	 * list.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;This method differs from other assertions that effectively only check {@link String#equals(Object)},
+&nbsp;	 * in that it uses the following staged matching algorithm:
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;For each pair of expected and actual lines do
+&nbsp;	 * &lt;ol&gt;
+&nbsp;	 *   &lt;li&gt;check if {@code expected.equals(actual)} - if yes, continue with next pair&lt;/li&gt;
+&nbsp;	 *   &lt;li&gt;otherwise treat {@code expected} as a regular expression and check via
+&nbsp;	 *   {@link String#matches(String)} - if yes, continue with next pair&lt;/li&gt;
+&nbsp;	 *   &lt;li&gt;otherwise check if {@code expected} line is a fast-forward marker, if yes apply
+&nbsp;	 *   fast-forward actual lines accordingly (see below) and goto 1.&lt;/li&gt;
+&nbsp;	 * &lt;/ol&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;A valid fast-forward marker is an expected line that starts and ends with the literal
+&nbsp;	 * {@code &gt;&gt;} and contains at least 4 characters. Examples:
+&nbsp;	 * &lt;ul&gt;
+&nbsp;	 *   &lt;li&gt;{@code &gt;&gt;&gt;&gt;}&lt;br&gt;{@code &gt;&gt; stacktrace &gt;&gt;}&lt;br&gt;{@code &gt;&gt; single line, non Integer.parse()-able comment &gt;&gt;}
+&nbsp;	 *   &lt;br&gt;Skip arbitrary number of actual lines, until first matching subsequent expected line is found. Any
+&nbsp;	 *   character between the fast-forward literals are discarded.&lt;/li&gt;
+&nbsp;	 *   &lt;li&gt;{@code &quot;&gt;&gt; 21 &gt;&gt;&quot;}
+&nbsp;	 *   &lt;br&gt;Skip strictly 21 lines. If they can&#39;t be skipped for any reason, an assertion error is raised.&lt;/li&gt;
+&nbsp;	 * &lt;/ul&gt;
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Here is an example showing all three kinds of expected line formats:
+&nbsp;	 * &lt;pre&gt;{@code
+&nbsp;	 * ls -la /
+&nbsp;	 * total [\d]+
+&nbsp;	 * drwxr-xr-x  0 root root   512 Jan  1  1970 .
+&nbsp;	 * drwxr-xr-x  0 root root   512 Jan  1  1970 ..
+&nbsp;	 * drwxr-xr-x  0 root root   512 Apr  5 07:45 bin
+&nbsp;	 * &gt;&gt; 4 &gt;&gt;
+&nbsp;	 * -rwxr-xr-x  1 root root [\d]+ Jan  1  1970 init
+&nbsp;	 * &gt;&gt; M A N Y  M O R E  E N T R I E S &gt;&gt;
+&nbsp;	 * drwxr-xr-x  0 root root   512 Sep 22  2017 var
+&nbsp;	 * }&lt;/pre&gt;
+&nbsp;	 * &lt;p&gt;Fails with a generated failure message describing the difference.
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(List&lt;String&gt; expectedLines, List&lt;String&gt; actualLines) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} list of {@linkplain String}s matches {@code actual}
+&nbsp;	 * list.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Find a detailed description of the matching algorithm in {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message} and the generated message.
+&nbsp;	 *
+&nbsp;	 * @see #assertLinesMatch(List, List)
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(List&lt;String&gt; expectedLines, List&lt;String&gt; actualLines, String message) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} list of {@linkplain String}s matches {@code actual}
+&nbsp;	 * list.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Find a detailed description of the matching algorithm in {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, a custom failure message will be retrieved lazily from the supplied
+&nbsp;	 * {@code messageSupplier}. Fails with the custom failure message prepended to
+&nbsp;	 * a generated failure message describing the difference.
+&nbsp;	 *
+&nbsp;	 * @see #assertLinesMatch(List, List)
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(List&lt;String&gt; expectedLines, List&lt;String&gt; actualLines,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} stream of {@linkplain String}s matches {@code actual}
+&nbsp;	 * stream.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Find a detailed description of the matching algorithm in {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: An implementation of this method may consume all lines of both streams eagerly and
+&nbsp;	 * delegate the evaluation to {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 * @see #assertLinesMatch(List, List)
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(Stream&lt;String&gt; expectedLines, Stream&lt;String&gt; actualLines) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} stream of {@linkplain String}s matches {@code actual}
+&nbsp;	 * stream.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Find a detailed description of the matching algorithm in {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message} and the generated message.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: An implementation of this method may consume all lines of both streams eagerly and
+&nbsp;	 * delegate the evaluation to {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 * @see #assertLinesMatch(List, List)
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(Stream&lt;String&gt; expectedLines, Stream&lt;String&gt; actualLines, String message) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} stream of {@linkplain String}s matches {@code actual}
+&nbsp;	 * stream.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Find a detailed description of the matching algorithm in {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, a custom failure message will be retrieved lazily from the supplied
+&nbsp;	 * {@code messageSupplier}. Fails with the custom failure message prepended to
+&nbsp;	 * a generated failure message describing the difference.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: An implementation of this method may consume all lines of both streams eagerly and
+&nbsp;	 * delegate the evaluation to {@link #assertLinesMatch(List, List)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.7
+&nbsp;	 * @see #assertLinesMatch(List, List)
+&nbsp;	 */
+&nbsp;	public static void assertLinesMatch(Stream&lt;String&gt; expectedLines, Stream&lt;String&gt; actualLines,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertLinesMatch.assertLinesMatch(expectedLines, actualLines, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertNotEquals -----------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, byte actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, Byte actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Byte) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, byte actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Byte) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, Byte actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, byte actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, Byte actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Byte) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, byte actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Byte) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, Byte actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(byte unexpected, Byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Byte) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Byte) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Byte unexpected, Byte actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, short actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, Short actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Short) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, short actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Short) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, Short actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, short actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, Short actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Short) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, short actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Short) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, Short actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(short unexpected, Short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Short) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Short) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Short unexpected, Short actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, int actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, Integer actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Integer) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, int actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Integer) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, Integer actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, int actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, Integer actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Integer) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, int actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Integer) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, Integer actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, int actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(int unexpected, Integer actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Integer) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, int actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Integer) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Integer unexpected, Integer actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, long actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, Long actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Long) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, long actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Long) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, Long actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, long actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, Long actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Long) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, long actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Long) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, Long actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(long unexpected, Long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Long) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Long) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Long unexpected, Long actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, Float actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Float) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, float actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Float) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, Float actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, Float actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Float) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, float actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Float) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, Float actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, Float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Float) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Float) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Float unexpected, Float actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual, float delta) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual, float delta, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Float#equals(Object)} and {@link Float#compare(float, float)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(float unexpected, float actual, float delta, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, Double actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Double) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, double actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Double) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, Double actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, Double actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Double) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, double actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Double) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, Double actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, Double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Double) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Double) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Double unexpected, Double actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual, double delta) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual, double delta, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal
+&nbsp;	 * within the given {@code delta}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Inequality imposed by this method is consistent with
+&nbsp;	 * {@link Double#equals(Object)} and {@link Double#compare(double, double)}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(double unexpected, double actual, double delta,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, delta, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, char actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, Character actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Character) unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, char actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Character) actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, Character actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, char actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, Character actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Character) unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, char actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Character) actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, Character actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, char actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(char unexpected, Character actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals((Character) unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, char actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, (Character) actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.4
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.4&quot;)
+&nbsp;	public static void assertNotEquals(Character unexpected, Character actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails if both are {@code null}.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertNotEquals(Object unexpected, Object actual) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails if both are {@code null}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertNotEquals(Object unexpected, Object actual, String message) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} are not equal.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails if both are {@code null}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see Object#equals(Object)
+&nbsp;	 */
+&nbsp;	public static void assertNotEquals(Object unexpected, Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotEquals.assertNotEquals(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertSame ----------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} refer to the same object.
+&nbsp;	 */
+&nbsp;	public static void assertSame(Object expected, Object actual) {
+<b class="nc">&nbsp;		AssertSame.assertSame(expected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} refer to the same object.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertSame(Object expected, Object actual, String message) {
+<b class="nc">&nbsp;		AssertSame.assertSame(expected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} refer to the same object.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertSame(Object expected, Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertSame.assertSame(expected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertNotSame -------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} do not refer to the same object.
+&nbsp;	 */
+&nbsp;	public static void assertNotSame(Object unexpected, Object actual) {
+<b class="nc">&nbsp;		AssertNotSame.assertNotSame(unexpected, actual);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} do not refer to the same object.
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static void assertNotSame(Object unexpected, Object actual, String message) {
+<b class="nc">&nbsp;		AssertNotSame.assertNotSame(unexpected, actual, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that {@code expected} and {@code actual} do not refer to the same object.
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the supplied {@code messageSupplier}.
+&nbsp;	 */
+&nbsp;	public static void assertNotSame(Object unexpected, Object actual, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertNotSame.assertNotSame(unexpected, actual, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertAll -----------------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #assertAll(String, Stream)} for an explanation of this
+&nbsp;	 * method&#39;s exception handling semantics.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(String, Executable...)
+&nbsp;	 * @see #assertAll(Collection)
+&nbsp;	 * @see #assertAll(String, Collection)
+&nbsp;	 * @see #assertAll(Stream)
+&nbsp;	 * @see #assertAll(String, Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(Executable... executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #assertAll(String, Stream)} for an explanation of this
+&nbsp;	 * method&#39;s exception handling semantics.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(Executable...)
+&nbsp;	 * @see #assertAll(Collection)
+&nbsp;	 * @see #assertAll(Stream)
+&nbsp;	 * @see #assertAll(String, Collection)
+&nbsp;	 * @see #assertAll(String, Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(String heading, Executable... executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(heading, executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #assertAll(String, Stream)} for an explanation of this
+&nbsp;	 * method&#39;s exception handling semantics.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(Executable...)
+&nbsp;	 * @see #assertAll(String, Executable...)
+&nbsp;	 * @see #assertAll(String, Collection)
+&nbsp;	 * @see #assertAll(Stream)
+&nbsp;	 * @see #assertAll(String, Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(Collection&lt;Executable&gt; executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #assertAll(String, Stream)} for an explanation of this
+&nbsp;	 * method&#39;s exception handling semantics.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(Executable...)
+&nbsp;	 * @see #assertAll(String, Executable...)
+&nbsp;	 * @see #assertAll(Collection)
+&nbsp;	 * @see #assertAll(Stream)
+&nbsp;	 * @see #assertAll(String, Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(String heading, Collection&lt;Executable&gt; executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(heading, executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;See Javadoc for {@link #assertAll(String, Stream)} for an explanation of this
+&nbsp;	 * method&#39;s exception handling semantics.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(Executable...)
+&nbsp;	 * @see #assertAll(String, Executable...)
+&nbsp;	 * @see #assertAll(Collection)
+&nbsp;	 * @see #assertAll(String, Collection)
+&nbsp;	 * @see #assertAll(String, Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(Stream&lt;Executable&gt; executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that &lt;em&gt;all&lt;/em&gt; supplied {@code executables} do not throw
+&nbsp;	 * exceptions.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If any supplied {@link Executable} throws an exception (i.e., a {@link Throwable}
+&nbsp;	 * or any subclass thereof), all remaining {@code executables} will still be executed,
+&nbsp;	 * and all exceptions will be aggregated and reported in a {@link MultipleFailuresError}.
+&nbsp;	 * In addition, all aggregated exceptions will be added as {@linkplain
+&nbsp;	 * Throwable#addSuppressed(Throwable) suppressed exceptions} to the
+&nbsp;	 * {@code MultipleFailuresError}. However, if an {@code executable} throws an
+&nbsp;	 * &lt;em&gt;unrecoverable&lt;/em&gt; exception &amp;mdash; for example, an {@link OutOfMemoryError}
+&nbsp;	 * &amp;mdash; execution will halt immediately, and the unrecoverable exception will be
+&nbsp;	 * rethrown &lt;em&gt;as is&lt;/em&gt; but &lt;em&gt;masked&lt;/em&gt; as an unchecked exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;The supplied {@code heading} will be included in the message string for the
+&nbsp;	 * {@code MultipleFailuresError}.
+&nbsp;	 *
+&nbsp;	 * @see #assertAll(Executable...)
+&nbsp;	 * @see #assertAll(String, Executable...)
+&nbsp;	 * @see #assertAll(Collection)
+&nbsp;	 * @see #assertAll(String, Collection)
+&nbsp;	 * @see #assertAll(Stream)
+&nbsp;	 */
+&nbsp;	public static void assertAll(String heading, Stream&lt;Executable&gt; executables) throws MultipleFailuresError {
+<b class="nc">&nbsp;		AssertAll.assertAll(heading, executables);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assert exceptions ---------------------------------------------------
+&nbsp;
+&nbsp;	// --- executable ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of exactly the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrowsExactly(Class&lt;T&gt; expectedType, Executable executable) {
+<b class="nc">&nbsp;		return AssertThrowsExactly.assertThrowsExactly(expectedType, executable);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of exactly the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrowsExactly(Class&lt;T&gt; expectedType, Executable executable,
+&nbsp;			String message) {
+<b class="nc">&nbsp;		return AssertThrowsExactly.assertThrowsExactly(expectedType, executable, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of exactly the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrowsExactly(Class&lt;T&gt; expectedType, Executable executable,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertThrowsExactly.assertThrowsExactly(expectedType, executable, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 */
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrows(Class&lt;T&gt; expectedType, Executable executable) {
+<b class="fc">&nbsp;		return AssertThrows.assertThrows(expectedType, executable);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 */
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrows(Class&lt;T&gt; expectedType, Executable executable, String message) {
+<b class="nc">&nbsp;		return AssertThrows.assertThrows(expectedType, executable, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} throws
+&nbsp;	 * an exception of the {@code expectedType} and return the exception.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If no exception is thrown, or if an exception of a different type is
+&nbsp;	 * thrown, this method will fail.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If you do not want to perform additional checks on the exception instance,
+&nbsp;	 * ignore the return value.
+&nbsp;	 */
+&nbsp;	public static &lt;T extends Throwable&gt; T assertThrows(Class&lt;T&gt; expectedType, Executable executable,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertThrows.assertThrows(expectedType, executable, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- executable ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static void assertDoesNotThrow(Executable executable) {
+<b class="fc">&nbsp;		AssertDoesNotThrow.assertDoesNotThrow(executable);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static void assertDoesNotThrow(Executable executable, String message) {
+<b class="nc">&nbsp;		AssertDoesNotThrow.assertDoesNotThrow(executable, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static void assertDoesNotThrow(Executable executable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertDoesNotThrow.assertDoesNotThrow(executable, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- supplier ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes, the {@code supplier}&#39;s result will be returned.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static &lt;T&gt; T assertDoesNotThrow(ThrowingSupplier&lt;T&gt; supplier) {
+<b class="nc">&nbsp;		return AssertDoesNotThrow.assertDoesNotThrow(supplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes, the {@code supplier}&#39;s result will be returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static &lt;T&gt; T assertDoesNotThrow(ThrowingSupplier&lt;T&gt; supplier, String message) {
+<b class="nc">&nbsp;		return AssertDoesNotThrow.assertDoesNotThrow(supplier, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier} does
+&nbsp;	 * &lt;em&gt;not&lt;/em&gt; throw any kind of {@linkplain Throwable exception}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes, the {@code supplier}&#39;s result will be returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * &lt;h4&gt;Usage Note&lt;/h4&gt;
+&nbsp;	 * &lt;p&gt;Although any exception thrown from a test method will cause the test
+&nbsp;	 * to &lt;em&gt;fail&lt;/em&gt;, there are certain use cases where it can be beneficial
+&nbsp;	 * to explicitly assert that an exception is not thrown for a given code
+&nbsp;	 * block within a test method.
+&nbsp;	 *
+&nbsp;	 * @since 5.2
+&nbsp;	 */
+&nbsp;	@API(status = STABLE, since = &quot;5.2&quot;)
+&nbsp;	public static &lt;T&gt; T assertDoesNotThrow(ThrowingSupplier&lt;T&gt; supplier, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertDoesNotThrow.assertDoesNotThrow(supplier, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertTimeout -------------------------------------------------------
+&nbsp;
+&nbsp;	// --- executable ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code executable} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 */
+&nbsp;	public static void assertTimeout(Duration timeout, Executable executable) {
+<b class="nc">&nbsp;		AssertTimeout.assertTimeout(timeout, executable);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code executable} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 */
+&nbsp;	public static void assertTimeout(Duration timeout, Executable executable, String message) {
+<b class="nc">&nbsp;		AssertTimeout.assertTimeout(timeout, executable, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code executable} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 */
+&nbsp;	public static void assertTimeout(Duration timeout, Executable executable, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertTimeout.assertTimeout(timeout, executable, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- supplier ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code supplier} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeout(Duration timeout, ThrowingSupplier&lt;T&gt; supplier) {
+<b class="nc">&nbsp;		return AssertTimeout.assertTimeout(timeout, supplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code supplier} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeout(Duration timeout, ThrowingSupplier&lt;T&gt; supplier, String message) {
+<b class="nc">&nbsp;		return AssertTimeout.assertTimeout(timeout, supplier, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in the same thread as that
+&nbsp;	 * of the calling code. Consequently, execution of the {@code supplier} will
+&nbsp;	 * not be preemptively aborted if the timeout is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeout(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeout(Duration timeout, ThrowingSupplier&lt;T&gt; supplier,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertTimeout.assertTimeout(timeout, supplier, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- executable - preemptively ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code executable} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 */
+&nbsp;	public static void assertTimeoutPreemptively(Duration timeout, Executable executable) {
+<b class="nc">&nbsp;		AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, executable);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code executable} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 */
+&nbsp;	public static void assertTimeoutPreemptively(Duration timeout, Executable executable, String message) {
+<b class="nc">&nbsp;		AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, executable, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code executable}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code executable} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code executable} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 */
+&nbsp;	public static void assertTimeoutPreemptively(Duration timeout, Executable executable,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, executable, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- supplier - preemptively ---
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code supplier} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, Executable)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier&lt;T&gt; supplier) {
+<b class="nc">&nbsp;		return AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, supplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code supplier} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, String)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier&lt;T&gt; supplier, String message) {
+<b class="nc">&nbsp;		return AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, supplier, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code supplier} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 */
+&nbsp;	public static &lt;T&gt; T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier&lt;T&gt; supplier,
+&nbsp;			Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, supplier, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that execution of the supplied {@code supplier}
+&nbsp;	 * completes before the given {@code timeout} is exceeded.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If the assertion passes then the {@code supplier}&#39;s result is returned.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;In the case the assertion does not pass, the supplied
+&nbsp;	 * {@link TimeoutFailureFactory} is invoked to create an exception which is
+&nbsp;	 * then thrown.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Note: the {@code supplier} will be executed in a different thread than
+&nbsp;	 * that of the calling code. Furthermore, execution of the {@code supplier} will
+&nbsp;	 * be preemptively aborted if the timeout is exceeded. See the
+&nbsp;	 * {@linkplain Assertions Preemptive Timeouts} section of the class-level
+&nbsp;	 * Javadoc for a discussion of possible undesirable side effects.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, String)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, Executable, Supplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier)
+&nbsp;	 * @see #assertTimeoutPreemptively(Duration, ThrowingSupplier, String)
+&nbsp;	 * @see #assertTimeout(Duration, Executable, Supplier)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;5.9.1&quot;)
+&nbsp;	public static &lt;T, E extends Throwable&gt; T assertTimeoutPreemptively(Duration timeout, ThrowingSupplier&lt;T&gt; supplier,
+&nbsp;			Supplier&lt;String&gt; messageSupplier, TimeoutFailureFactory&lt;E&gt; failureFactory) throws E {
+<b class="nc">&nbsp;		return AssertTimeoutPreemptively.assertTimeoutPreemptively(timeout, supplier, messageSupplier, failureFactory);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	// --- assertInstanceOf ----------------------------------------------------
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code actualValue} is an instance of the
+&nbsp;	 * {@code expectedType}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Like the {@code instanceof} operator a {@code null} value is not
+&nbsp;	 * considered to be of the {@code expectedType} and does not pass the assertion.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T&gt; T assertInstanceOf(Class&lt;T&gt; expectedType, Object actualValue) {
+<b class="fc">&nbsp;		return AssertInstanceOf.assertInstanceOf(expectedType, actualValue);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code actualValue} is an instance of the
+&nbsp;	 * {@code expectedType}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Like the {@code instanceof} operator a {@code null} value is not
+&nbsp;	 * considered to be of the {@code expectedType} and does not pass the assertion.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Fails with the supplied failure {@code message}.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T&gt; T assertInstanceOf(Class&lt;T&gt; expectedType, Object actualValue, String message) {
+<b class="nc">&nbsp;		return AssertInstanceOf.assertInstanceOf(expectedType, actualValue, message);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * &lt;em&gt;Assert&lt;/em&gt; that the supplied {@code actualValue} is an instance of the
+&nbsp;	 * {@code expectedType}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Like the {@code instanceof} operator a {@code null} value is not
+&nbsp;	 * considered to be of the {@code expectedType} and does not pass the assertion.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;If necessary, the failure message will be retrieved lazily from the
+&nbsp;	 * supplied {@code messageSupplier}.
+&nbsp;	 *
+&nbsp;	 * @since 5.8
+&nbsp;	 */
+&nbsp;	@API(status = EXPERIMENTAL, since = &quot;5.8&quot;)
+&nbsp;	public static &lt;T&gt; T assertInstanceOf(Class&lt;T&gt; expectedType, Object actualValue, Supplier&lt;String&gt; messageSupplier) {
+<b class="nc">&nbsp;		return AssertInstanceOf.assertInstanceOf(expectedType, actualValue, messageSupplier);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Factory for timeout failures.
+&nbsp;	 *
+&nbsp;	 * @param &lt;T&gt; The type of error or exception created
+&nbsp;	 * @since 5.9.1
+&nbsp;	 * @see Assertions#assertTimeoutPreemptively(Duration, ThrowingSupplier, Supplier, TimeoutFailureFactory)
+&nbsp;	 */
+&nbsp;	@API(status = INTERNAL, since = &quot;5.9.1&quot;)
+&nbsp;	public interface TimeoutFailureFactory&lt;T extends Throwable&gt; {
+&nbsp;
+&nbsp;		/**
+&nbsp;		 * Create a failure for the given timeout, message, and cause.
+&nbsp;		 *
+&nbsp;		 * @return timeout failure; never {@code null}
+&nbsp;		 */
+&nbsp;		T createTimeoutFailure(Duration timeout, Supplier&lt;String&gt; messageSupplier, Throwable cause);
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

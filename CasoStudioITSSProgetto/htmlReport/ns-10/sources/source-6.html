@@ -1,0 +1,175 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > DefaultTestInstances</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.execution</a>
+</div>
+
+<h1>Coverage Summary for Class: DefaultTestInstances (org.junit.jupiter.engine.execution)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DefaultTestInstances</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    71,4%
+  </span>
+  <span class="absValue">
+    (5/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    64,7%
+  </span>
+  <span class="absValue">
+    (11/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.execution;
+&nbsp;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.ListIterator;
+&nbsp;import java.util.Optional;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.TestInstances;
+&nbsp;import org.junit.platform.commons.util.Preconditions;
+&nbsp;
+&nbsp;@API(status = INTERNAL, since = &quot;5.4&quot;)
+&nbsp;public class DefaultTestInstances implements TestInstances {
+&nbsp;
+&nbsp;	public static DefaultTestInstances of(Object instance) {
+<b class="fc">&nbsp;		return new DefaultTestInstances(Collections.singletonList(instance));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static DefaultTestInstances of(TestInstances testInstances, Object instance) {
+<b class="nc">&nbsp;		List&lt;Object&gt; allInstances = new ArrayList&lt;&gt;(testInstances.getAllInstances());</b>
+<b class="nc">&nbsp;		allInstances.add(instance);</b>
+<b class="nc">&nbsp;		return new DefaultTestInstances(Collections.unmodifiableList(allInstances));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private final List&lt;Object&gt; instances;
+&nbsp;
+<b class="fc">&nbsp;	private DefaultTestInstances(List&lt;Object&gt; instances) {</b>
+<b class="fc">&nbsp;		this.instances = Preconditions.notEmpty(instances, &quot;instances must not be empty&quot;);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public Object getInnermostInstance() {
+<b class="fc">&nbsp;		return instances.get(instances.size() - 1);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public List&lt;Object&gt; getEnclosingInstances() {
+<b class="nc">&nbsp;		return instances.subList(0, instances.size() - 1);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public List&lt;Object&gt; getAllInstances() {
+<b class="fc">&nbsp;		return instances;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@Override
+&nbsp;	public &lt;T&gt; Optional&lt;T&gt; findInstance(Class&lt;T&gt; requiredType) {
+<b class="fc">&nbsp;		Preconditions.notNull(requiredType, &quot;requiredType must not be null&quot;);</b>
+<b class="fc">&nbsp;		ListIterator&lt;Object&gt; iterator = instances.listIterator(instances.size());</b>
+<b class="fc">&nbsp;		while (iterator.hasPrevious()) {</b>
+<b class="fc">&nbsp;			Object instance = iterator.previous();</b>
+<b class="fc">&nbsp;			if (requiredType.isInstance(instance)) {</b>
+<b class="fc">&nbsp;				return Optional.of(requiredType.cast(instance));</b>
+&nbsp;			}
+<b class="nc">&nbsp;		}</b>
+<b class="nc">&nbsp;		return Optional.empty();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

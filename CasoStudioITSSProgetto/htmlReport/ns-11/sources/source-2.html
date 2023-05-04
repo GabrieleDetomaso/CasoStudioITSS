@@ -1,0 +1,173 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ExtensionRegistry</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.junit.jupiter.engine.extension</a>
+</div>
+
+<h1>Coverage Summary for Class: ExtensionRegistry (org.junit.jupiter.engine.extension)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ExtensionRegistry</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2022 the original author or authors.
+&nbsp; *
+&nbsp; * All rights reserved. This program and the accompanying materials are
+&nbsp; * made available under the terms of the Eclipse Public License v2.0 which
+&nbsp; * accompanies this distribution and is available at
+&nbsp; *
+&nbsp; * https://www.eclipse.org/legal/epl-v20.html
+&nbsp; */
+&nbsp;
+&nbsp;package org.junit.jupiter.engine.extension;
+&nbsp;
+&nbsp;import static java.util.stream.Collectors.toCollection;
+&nbsp;import static org.apiguardian.api.API.Status.INTERNAL;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Stream;
+&nbsp;
+&nbsp;import org.apiguardian.api.API;
+&nbsp;import org.junit.jupiter.api.extension.Extension;
+&nbsp;
+&nbsp;/**
+&nbsp; * An {@code ExtensionRegistry} holds all registered extensions (i.e.
+&nbsp; * instances of {@link Extension}) for a given
+&nbsp; * {@link org.junit.platform.engine.support.hierarchical.Node}.
+&nbsp; *
+&nbsp; * @since 5.0
+&nbsp; */
+&nbsp;@API(status = INTERNAL, since = &quot;5.0&quot;)
+&nbsp;public interface ExtensionRegistry {
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Stream all {@code Extensions} of the specified type that are present
+&nbsp;	 * in this registry or one of its ancestors.
+&nbsp;	 *
+&nbsp;	 * @param extensionType the type of {@link Extension} to stream
+&nbsp;	 * @see #getReversedExtensions(Class)
+&nbsp;	 * @see #getExtensions(Class)
+&nbsp;	 */
+&nbsp;	&lt;E extends Extension&gt; Stream&lt;E&gt; stream(Class&lt;E&gt; extensionType);
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get all {@code Extensions} of the specified type that are present
+&nbsp;	 * in this registry or one of its ancestors.
+&nbsp;	 *
+&nbsp;	 * @param extensionType the type of {@link Extension} to get
+&nbsp;	 * @see #getReversedExtensions(Class)
+&nbsp;	 * @see #stream(Class)
+&nbsp;	 */
+&nbsp;	default &lt;E extends Extension&gt; List&lt;E&gt; getExtensions(Class&lt;E&gt; extensionType) {
+<b class="fc">&nbsp;		return stream(extensionType).collect(toCollection(ArrayList::new));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Get all {@code Extensions} of the specified type that are present
+&nbsp;	 * in this registry or one of its ancestors, in reverse order.
+&nbsp;	 *
+&nbsp;	 * @param extensionType the type of {@link Extension} to get
+&nbsp;	 * @see #getExtensions(Class)
+&nbsp;	 * @see #stream(Class)
+&nbsp;	 */
+&nbsp;	default &lt;E extends Extension&gt; List&lt;E&gt; getReversedExtensions(Class&lt;E&gt; extensionType) {
+<b class="fc">&nbsp;		List&lt;E&gt; extensions = getExtensions(extensionType);</b>
+<b class="fc">&nbsp;		Collections.reverse(extensions);</b>
+<b class="fc">&nbsp;		return extensions;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>

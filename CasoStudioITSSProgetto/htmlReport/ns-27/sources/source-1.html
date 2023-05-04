@@ -1,0 +1,261 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > AssertionFailedError</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.opentest4j</a>
+</div>
+
+<h1>Coverage Summary for Class: AssertionFailedError (org.opentest4j)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AssertionFailedError</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * Copyright 2015-2018 the original author or authors.
+&nbsp; *
+&nbsp; * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+&nbsp; * you may not use this file except in compliance with the License.
+&nbsp; * You may obtain a copy of the License at
+&nbsp; *
+&nbsp; *      http://www.apache.org/licenses/LICENSE-2.0
+&nbsp; *
+&nbsp; * Unless required by applicable law or agreed to in writing, software
+&nbsp; * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+&nbsp; * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+&nbsp; * See the License for the specific language governing permissions and
+&nbsp; * limitations under the License.
+&nbsp; */
+&nbsp;
+&nbsp;package org.opentest4j;
+&nbsp;
+&nbsp;/**
+&nbsp; * {@code AssertionFailedError} is a common base class for test-related
+&nbsp; * {@link AssertionError AssertionErrors}.
+&nbsp; *
+&nbsp; * &lt;p&gt;In addition to a message and a cause, this class stores the expected
+&nbsp; * and actual values of an assertion using the {@link ValueWrapper} type.
+&nbsp; *
+&nbsp; * @author Sam Brannen
+&nbsp; * @author Marc Philipp
+&nbsp; * @since 1.0
+&nbsp; */
+&nbsp;public class AssertionFailedError extends AssertionError {
+&nbsp;
+&nbsp;	private static final long serialVersionUID = 1L;
+&nbsp;
+&nbsp;	private final ValueWrapper expected;
+&nbsp;	private final ValueWrapper actual;
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Constructs an {@code AssertionFailedError} with an empty message, no
+&nbsp;	 * cause, and no expected/actual values.
+&nbsp;	 */
+&nbsp;	public AssertionFailedError() {
+<b class="nc">&nbsp;		this(null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Constructs an {@code AssertionFailedError} with a message, no cause,
+&nbsp;	 * and no expected/actual values.
+&nbsp;	 *
+&nbsp;	 * @param message the detail message; {@code null} or blank will be
+&nbsp;	 * converted to the empty {@code String}
+&nbsp;	 */
+&nbsp;	public AssertionFailedError(String message) {
+<b class="nc">&nbsp;		this(message, null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Constructs an {@code AssertionFailedError} with a message and
+&nbsp;	 * expected/actual values but without a cause.
+&nbsp;	 *
+&nbsp;	 * @param message the detail message; {@code null} or blank will be
+&nbsp;	 * converted to the empty {@code String}
+&nbsp;	 * @param expected the expected value; may be {@code null}
+&nbsp;	 * @param actual the actual value; may be {@code null}
+&nbsp;	 */
+&nbsp;	public AssertionFailedError(String message, Object expected, Object actual) {
+<b class="nc">&nbsp;		this(message, expected, actual, null);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Constructs an {@code AssertionFailedError} with a message and a cause
+&nbsp;	 * but without expected/actual values.
+&nbsp;	 *
+&nbsp;	 * @param message the detail message; {@code null} or blank will be
+&nbsp;	 * converted to the empty {@code String}
+&nbsp;	 * @param cause the cause of the failure
+&nbsp;	 */
+&nbsp;	public AssertionFailedError(String message, Throwable cause) {
+<b class="nc">&nbsp;		this(message, null, null, cause);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Constructs an {@code AssertionFailedError} with a message,
+&nbsp;	 * expected/actual values, and a cause.
+&nbsp;	 *
+&nbsp;	 * @param message the detail message; {@code null} or blank will be
+&nbsp;	 * converted to the empty {@code String}
+&nbsp;	 * @param expected the expected value; may be {@code null}
+&nbsp;	 * @param actual the actual value; may be {@code null}
+&nbsp;	 * @param cause the cause of the failure
+&nbsp;	 */
+&nbsp;	public AssertionFailedError(String message, Object expected, Object actual, Throwable cause) {
+<b class="nc">&nbsp;		this(message, ValueWrapper.create(expected), ValueWrapper.create(actual), cause);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	private AssertionFailedError(String message, ValueWrapper expected, ValueWrapper actual, Throwable cause) {
+<b class="nc">&nbsp;		super((message == null || message.trim().length() == 0) ? &quot;&quot; : message);</b>
+<b class="nc">&nbsp;		this.expected = expected;</b>
+<b class="nc">&nbsp;		this.actual = actual;</b>
+<b class="nc">&nbsp;		initCause(cause);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Returns {@code true} if an &lt;em&gt;expected value&lt;/em&gt; was supplied via an
+&nbsp;	 * appropriate constructor.
+&nbsp;	 *
+&nbsp;	 * @see #getExpected()
+&nbsp;	 */
+&nbsp;	public boolean isExpectedDefined() {
+<b class="nc">&nbsp;		return this.expected != null;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Returns {@code true} if an &lt;em&gt;actual value&lt;/em&gt; was supplied via an
+&nbsp;	 * appropriate constructor.
+&nbsp;	 *
+&nbsp;	 * @see #getActual()
+&nbsp;	 */
+&nbsp;	public boolean isActualDefined() {
+<b class="nc">&nbsp;		return this.actual != null;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Returns the wrapped expected value if it is defined; otherwise {@code null}.
+&nbsp;	 *
+&nbsp;	 * @see #isExpectedDefined()
+&nbsp;	 */
+&nbsp;	public ValueWrapper getExpected() {
+<b class="nc">&nbsp;		return this.expected;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Returns the wrapped actual value if it is defined; otherwise {@code null}.
+&nbsp;	 *
+&nbsp;	 * @see #isActualDefined()
+&nbsp;	 */
+&nbsp;	public ValueWrapper getActual() {
+<b class="nc">&nbsp;		return this.actual;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Returns a short description of this assertion error using the same format
+&nbsp;	 * as {@link Throwable#toString()}.
+&nbsp;	 *
+&nbsp;	 * &lt;p&gt;Since the constructors of this class convert supplied {@code null} or
+&nbsp;	 * blank messages to the empty {@code String}, this method only includes
+&nbsp;	 * non-empty messages in its return value.
+&nbsp;	 *
+&nbsp;	 * @return a string representation of this {@code AssertionFailedError}
+&nbsp;	 * @since 1.1.1
+&nbsp;	 */
+&nbsp;	@Override
+&nbsp;	public String toString() {
+<b class="nc">&nbsp;		String className = getClass().getName();</b>
+<b class="nc">&nbsp;		String message = getLocalizedMessage();</b>
+<b class="nc">&nbsp;		return (&quot;&quot;.equals(message) ? className : (className + &quot;: &quot; + message));</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-05-04 17:56</div>
+</div>
+</body>
+</html>
