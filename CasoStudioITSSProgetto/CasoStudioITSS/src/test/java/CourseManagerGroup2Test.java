@@ -21,10 +21,10 @@ import java.util.stream.Stream;
  * @author Giacomo Detomaso, Roberto Scorrano
  * */
 public class CourseManagerGroup2Test {
-    private static Student s1 = new Student("Gianni", "Verdi", "111111");
-    private static Student s2 = new Student("Marco", "Bari", "111112");
-    private static Student s3 = new Student("Angelo", "Valentino", "111113");
-    private static Student s4 = new Student("Oscar", "Bravo", "111114");
+    private static final Student s1 = new Student("Gianni", "Verdi", "111111");
+    private static final Student s2 = new Student("Marco", "Bari", "111112");
+    private static final Student s3 = new Student("Angelo", "Valentino", "111113");
+    private static final Student s4 = new Student("Oscar", "Bravo", "111114");
     private static CourseManager courseManager1; // usato per il metodo getSubscriptionByDate
     private static CourseManager courseManager2; // usato per il metodo getStudentWithHigherMark
     @BeforeAll
@@ -71,8 +71,10 @@ public class CourseManagerGroup2Test {
 
     public static Stream<Arguments> getInputMarkPairs() {
         return Stream.of(
-                Arguments.of(17, 31), // T1 e T4 di countMarksInInclusiveRange
-                Arguments.of(31, 17) // T2 e T3 di countMarksInInclusiveRange
+                Arguments.of(18, 17), // T1 di countMarksInInclusiveRange
+                Arguments.of(18, 31), // T2 di countMarksInInclusiveRange
+                Arguments.of(17, 18), // T3 di countMarksInInclusiveRange
+                Arguments.of(31, 17)// T4 di countMarksInInclusiveRange
         );
     }
 
@@ -323,7 +325,7 @@ public class CourseManagerGroup2Test {
     // CASI DI TEST PER IL METODO: countMarksInInclusiveRange
 
     @ParameterizedTest //Uniti test: T1, T2, T3 e T4
-    @DisplayName("From and to is less than 18 and greater than 30")
+    @DisplayName("Wrong mark input")
     @MethodSource("getInputMarkPairs")
     void wrongMarkInput(int from, int to) {
         Assertions.assertThrows(IllegalArgumentException.class, () -> courseManager1.countMarksInInclusiveRange(from, to));
