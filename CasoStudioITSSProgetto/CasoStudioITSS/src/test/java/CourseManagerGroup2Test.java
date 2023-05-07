@@ -137,14 +137,16 @@ public class CourseManagerGroup2Test {
     void fromDateGreaterThanToDate() {
         LocalDate fromDate = LocalDate.parse("2022-11-10");
         LocalDate toDate = LocalDate.parse("2022-11-03");
-        Assertions.assertThrows(RangeDateException.class, () -> courseManager1.getSubscriptionsByDate(fromDate, toDate, true));
+        Assertions.assertThrows(RangeDateException.class, () -> courseManager1
+                .getSubscriptionsByDate(fromDate, toDate, true));
     }
 
     @Test // T10
     @DisplayName("fromDate and toDate are the same with inclusive false")
     void fromDateEqualsToDateNotInclusive() {
         LocalDate date = LocalDate.parse("2022-11-10");
-        Assertions.assertThrows(RangeDateException.class, () -> courseManager1.getSubscriptionsByDate(date, date, false));
+        Assertions.assertThrows(RangeDateException.class, () -> courseManager1
+                .getSubscriptionsByDate(date, date, false));
     }
 
     @Test // T11
@@ -304,7 +306,7 @@ public class CourseManagerGroup2Test {
 
     @Test //T4 e T5
     @DisplayName("No Students with marks")
-    void noStudentsWithMarks() throws CourseEmptyException {
+    void noStudentsWithMarks() {
         Set<Student> studentSet1 = courseManager1.getStudentsWithHigherMark();
         Set<Student> studentSet2 = courseManager2.getStudentsWithHigherMark();
         Assertions.assertAll(
@@ -318,8 +320,7 @@ public class CourseManagerGroup2Test {
     void noStudentInCourse2() {
         courseManager1.deleteCourseStudents();
 
-        Assertions.assertThrows(CourseEmptyException.class,
-                () -> courseManager1.getStudentsWithHigherMark());
+        Assertions.assertEquals(0, courseManager1.getStudentsWithHigherMark().size());
     }
 
     // CASI DI TEST PER IL METODO: countMarksInInclusiveRange

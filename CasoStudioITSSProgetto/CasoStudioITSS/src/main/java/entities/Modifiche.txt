@@ -48,7 +48,8 @@ getSubscriptionsByDate
 
 getStudentsWithHigherMark
 1. Per T4 e T5: controllo per aggiungere il return di un insieme vuoto quando non vi sono voti assegnati
-2. Per T6: aggiunta eccezione CourseEmptyException
+2. Per T6: modificato il codice in fase di structural based testing per resituire un insieme vuoto quando non sono presenti
+            voti assegnati
 
 countMarksInInclusiveRange
 1. Per T7 e T8: aggiunta l'inclusività nel range all'interno del metodo
