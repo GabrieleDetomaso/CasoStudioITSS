@@ -35,7 +35,6 @@ public class CourseManager {
      * @return true if the attender is added to the course, false otherwise
      * */
     public boolean addNewCourseAttender(Student student, LocalDate subDate) throws NullStudentException {
-        //if (subDate.isAfter(endSubDate)  || !subDate.isAfter(LocalDate.now()))
         if (subDate.isAfter(endSubDate))
             throw new DateTimeException("The subscriptions are ended");
 

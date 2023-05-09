@@ -14,14 +14,6 @@ addNewCourseAttender
 	- Fallimento del test per mancanza di controllo sull'inserimento di uno studente con valore nullo
 	- Rilosuzione: aggiunta di un controllo e creazione della classe NullStudentException per gestire l'eccezione
 
-2. Per il test: dateWrong
-    - Fallimento di T6 per mancato lancio di un'eccezione sul controllo della data inserita
-    - Risoluzione: aggiunta di un controllo che permette di verificare se la data inserita è effettivamente quella odierna
-
-3. Per il test: realDateExpireRegistrationDateFalsed
-    - Fallimento di T8 per mancato lancio di un'eccezione sul controllo della data inserita
-    - Risoluzione: risoluzione del test T6
-
 
 
 GRUPPO 2

@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 /**
  * Classe di test per CourseManager
  *
- * @author Gabriele Detomaso, Giacomo Detomaso, Alessandra Pipoli, Roberto Scorrano
+ * @author Gabriele Detomaso, Alessandra Pipoli
  * */
 public class CourseManagerGroup1Test {
 
@@ -31,16 +31,12 @@ public class CourseManagerGroup1Test {
     private static CourseManager courseManager1;
     private static CourseManager courseManager3;
 
-    //GRUPPO 2
-    private static CourseManager courseManager2;
-
     // Metodi del ciclo di vita JUnit
 
     @BeforeAll
     static void setup() {
         courseManager1 = new CourseManager("Integrazione e test 1", LocalDate.now().plusDays(10));
         courseManager3 = new CourseManager("Integrazione e test 3", LocalDate.now().minusDays(1));
-        courseManager2 = new CourseManager("Integrazione e test 2", LocalDate.now());
     }
 
     @BeforeEach
@@ -48,26 +44,16 @@ public class CourseManagerGroup1Test {
         // Aggiunta studenti per courseManager1
         try {
             courseManager1.addNewCourseAttender(s1, LocalDate.now());
+            courseManager1.addNewCourseAttender(s2, LocalDate.now());
+            courseManager1.addNewCourseAttender(s3, LocalDate.now());
         } catch (Exception e) {
             System.out.println("Eccezione lanciata 1");
-        }
-
-        // Aggiunta studenti per courseManager2
-        try {
-            //courseManager2.addNewCourseAttender(s5, LocalDate.parse("2022-11-03"));
-            courseManager2.addNewCourseAttender(s1, LocalDate.parse("2022-11-04"));
-            courseManager2.addNewCourseAttender(s2, LocalDate.parse("2022-11-10"));
-            courseManager2.addNewCourseAttender(s3, LocalDate.parse("2022-11-11"));
-            courseManager2.addNewCourseAttender(s4, LocalDate.parse("2022-11-11"));
-        } catch (Exception e) {
-            System.out.println("Eccezione lanciata 2");
         }
     }
 
     @AfterEach
     void tearDown() {
         courseManager1.deleteCourseStudents();
-        courseManager2.deleteCourseStudents();
         courseManager3.deleteCourseStudents();
 
     }
@@ -75,7 +61,6 @@ public class CourseManagerGroup1Test {
     @AfterAll
     static void clear() {
         courseManager1 = null;
-        courseManager2 = null;
         courseManager3 = null;
     }
 
@@ -115,20 +100,14 @@ public class CourseManagerGroup1Test {
     @NullAndEmptySource
     @MethodSource("matsProvider")
     @DisplayName("Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti")
-    void registerWrong(String mat) {
+    void matWrong(String mat) {
 
         Assertions.assertThrows(Exception.class, () ->
                 courseManager1.assignMarkToStudent(28, mat));
     }
 
-    private static Stream<String> matsProvider() {
-        return Stream.of("11111",
-                "A2G27T",
-                "1234567",
-                s4.getMat(),
-                "999999"
-        );
-    }
+
+
 
 
     // metodo testato: addNewCourseAttender;
@@ -140,6 +119,7 @@ public class CourseManagerGroup1Test {
                 courseManager1.addNewCourseAttender(null, LocalDate.now())
         );
     }
+
 
     @ParameterizedTest // Uniti tet: T2 e T3
     @MethodSource("studentsProviderOfRegistrationStudent")
@@ -158,27 +138,28 @@ public class CourseManagerGroup1Test {
     }
 
 
-    @ParameterizedTest //Uniti test: T4 e T6
-    @NullSource
-    //@MethodSource("datesProviderOfDateWrong")
-    @DisplayName("Data nulla e data non scaduta ma non odierna")
-    //void dateWrong(LocalDate testDate) {
-    void dateWrong(LocalDate testDate) {
-        Assertions.assertThrows(Exception.class, () -> courseManager1.addNewCourseAttender(s4, testDate));
+    @Test //T4
+    @DisplayName("Data nulla")
+    void dateNull() {
+
+        Assertions.assertThrows(Exception.class, () -> courseManager1.addNewCourseAttender(s4, null));
     }
 
-    /*
-    private static Stream<LocalDate> datesProviderOfDateWrong() {
-        return Stream.of(LocalDate.now().plusDays(2));
-    }*/
 
+    @ParameterizedTest //Uniti test: T5 e T6
+    @MethodSource("datesProviderOfDateRight")
+    @DisplayName("Data antecedente e uguale alla data di chiusura iscrizione")
+    void dateRight(LocalDate testDate) throws NullStudentException {
 
-    @Test //T5
-    @DisplayName("Data corretta")
-    void dateRight() throws NullStudentException {
+        Assertions.assertTrue(courseManager1.addNewCourseAttender(new Student("a", "a", "111116")
+                , testDate));
+    }
 
-        Assertions.assertTrue(courseManager1.addNewCourseAttender(new Student("a", "a", "111112")
-                , LocalDate.now()));
+    private static Stream<LocalDate> datesProviderOfDateRight() {
+        return Stream.of(
+                LocalDate.now().plusDays(9),
+                LocalDate.now().plusDays(10)
+                );
     }
 
 
@@ -191,22 +172,15 @@ public class CourseManagerGroup1Test {
         );
     }
 
-    /*
-    @Test //T8
-    @DisplayName("Data reale scaduta data iscrizione falsata ")
-    void realDateExpiredRegistrationDateFalsed() {
-        Assertions.assertThrows(Exception.class, () ->
-                courseManager3.addNewCourseAttender(s4, LocalDate.now().minusDays(1))
-        );
-    }
-    */
+
+
 
 
     // metodo testato: getSpecificSubscription;
 
     @Test // T1
     @DisplayName("matricola nulla")
-    void RegisterNull() {
+    void matNull() {
         Assertions.assertThrows(Exception.class, () ->
                 courseManager1.getSpecificSubscription(null)
         );
@@ -224,9 +198,23 @@ public class CourseManagerGroup1Test {
 
     @Test // T5
     @DisplayName("Inserimento matricola di uno studente iscritto")
-    void registerCorrect(){
+    void matCorrect(){
 
         Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );
+        // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()) );
+        // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s2.getMat()) );
+    }
+
+    /*
+    *Il metodo viene richiamato in più test
+     */
+    private static Stream<String> matsProvider() {
+        return Stream.of("11111",
+                "A2G27T",
+                "1234567",
+                s4.getMat(),
+                "999999"
+        );
     }
 
 
