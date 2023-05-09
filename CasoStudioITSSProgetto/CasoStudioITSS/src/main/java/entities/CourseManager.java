@@ -135,12 +135,8 @@ public class CourseManager {
      *
      * @return the student with the higher mark
      * */
-    public Set<Student> getStudentsWithHigherMark() throws CourseEmptyException {
+    public Set<Student> getStudentsWithHigherMark() {
         LinkedHashSet<Student> higherMarkStudents = new LinkedHashSet<>();
-
-        if (subscriptions.size() == 0) {
-            throw new CourseEmptyException("The course is empty");
-        }
 
         TreeSet<CourseSubscription> orderedSet = new TreeSet<>(Comparator
                 .comparingInt(CourseSubscription::getMark)
@@ -149,16 +145,19 @@ public class CourseManager {
 
         orderedSet = (TreeSet<CourseSubscription>) orderedSet.descendingSet();
 
-        int higherMark = orderedSet.first().getMark();
+        int higherMark = -1; // inserimento di un valore a caso < 0
 
-        if (higherMark == -1) {
-            return higherMarkStudents;
+        if (orderedSet.size() > 0) {
+            higherMark = orderedSet.first().getMark();
+
+            if (higherMark == -1) {
+                return higherMarkStudents;
+            }
         }
 
         for (CourseSubscription courseSubscription : orderedSet) {
             if (courseSubscription.getMark() == higherMark) {
                 higherMarkStudents.add(courseSubscription.getStudent());
-                System.out.println(courseSubscription.getStudent().getMat());
             } else {
                 break;
             }
@@ -219,7 +218,6 @@ public class CourseManager {
         long toDateLong = toDate.getLong(ChronoField.EPOCH_DAY);
 
         // Check the dates
-
         if (fromDate.isAfter(toDate)) {
             throw new RangeDateException("fromDate is greater then to date");
         }
@@ -229,7 +227,6 @@ public class CourseManager {
         }
 
         // Check the course number
-
         if (subscriptions.isEmpty()) {
             throw new CourseEmptyException("The course is empty");
         }
