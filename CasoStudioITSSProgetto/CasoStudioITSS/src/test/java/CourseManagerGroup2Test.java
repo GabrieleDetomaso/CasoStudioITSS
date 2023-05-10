@@ -1,3 +1,4 @@
+import com.sun.source.tree.AssertTree;
 import entities.CourseManager;
 import entities.CourseSubscription;
 import entities.Student;
@@ -315,11 +316,10 @@ public class CourseManagerGroup2Test {
         );
     }
 
-    @Test //T6
+    @Test //T6: sviluppato in seguito ai white box test
     @DisplayName("No students in course 2")
     void noStudentInCourse2() {
         courseManager1.deleteCourseStudents();
-
         Assertions.assertEquals(0, courseManager1.getStudentsWithHigherMark().size());
     }
 
@@ -386,6 +386,31 @@ public class CourseManagerGroup2Test {
     void noMarksInCourse() throws CourseEmptyException {
         Assertions.assertEquals(0, courseManager1.countMarksInInclusiveRange(20, 25));
     }
+
+
+    // TASK 2 HOMEWORK 2
+    // CASI DI TEST PER IL METODO studentsAboveAverage()
+
+    @Test // T1
+    @DisplayName("Course is empty")
+    void courseEmpty() {
+        courseManager1.deleteCourseStudents();
+        Assertions.assertEquals(0, courseManager1.studentsAboveAverage(true));
+    }
+
+    @Test // T2 e T3
+    @DisplayName("Course is full with mark assigned")
+    void courseFullWithMarks() {
+        courseManager1.assignMarkToStudent(26, "111112");
+        courseManager1.assignMarkToStudent(27, "111113");
+        courseManager1.assignMarkToStudent(28, "111114");
+
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(2, courseManager1.studentsAboveAverage(true)),
+                () -> Assertions.assertEquals(1, courseManager1.studentsAboveAverage(false))
+        );
+    }
+
 }
 
 

@@ -73,14 +73,17 @@ public class CourseManager {
             }
         }
 
-        avg = sum / hasMark;
+        if (hasMark != 0) {
+            avg = sum / hasMark;
+        }
 
         for (CourseSubscription courseSubscription : subscriptions) {
             int mark = courseSubscription.getMark();
 
-            if ((mark >= avg && inclusive) || (mark > avg && !inclusive)) {
+            if ((inclusive && mark >= avg) || (!inclusive && mark > avg)) {
                 nStudent++;
             }
+
         }
 
         return nStudent;
