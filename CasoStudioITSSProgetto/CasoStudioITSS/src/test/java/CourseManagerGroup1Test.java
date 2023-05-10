@@ -201,7 +201,7 @@ public class CourseManagerGroup1Test {
     void matCorrect(){
 
         Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );
-        // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()) );
+        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()) );
         // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s2.getMat()) );
     }
 

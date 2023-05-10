@@ -17,8 +17,8 @@ public class CourseManager {
 
     /**
      * @param courseName the course name
-     * @param limitDate the date where subscriptions to the course ends
-     * */
+     * @param limitDate  the date where subscriptions to the course ends
+     */
     public CourseManager(String courseName, LocalDate limitDate) {
         this.courseName = courseName;
         this.endSubDate = limitDate;
@@ -31,9 +31,8 @@ public class CourseManager {
      *
      * @param student the student to be added
      * @param subDate the date of subscription
-     *
      * @return true if the attender is added to the course, false otherwise
-     * */
+     */
     public boolean addNewCourseAttender(Student student, LocalDate subDate) throws NullStudentException {
         if (subDate.isAfter(endSubDate))
             throw new DateTimeException("The subscriptions are ended");
@@ -48,8 +47,8 @@ public class CourseManager {
      * This method is used to assign a mark to a specific student
      *
      * @param mark the mark to assign
-     * @param mat the matriculation number of the student
-     * */
+     * @param mat  the matriculation number of the student
+     */
     public void assignMarkToStudent(int mark, String mat) {
         CourseSubscription courseSubscription = getSpecificSubscription(mat);
         courseSubscription.setMark(mark);
@@ -92,9 +91,8 @@ public class CourseManager {
      * given his matriculation number.
      *
      * @param mat the matriculation number
-     *
      * @return the student
-     * */
+     */
     public Student getSpecificStudent(String mat) {
         return getSpecificSubscription(mat).getStudent();
     }
@@ -104,7 +102,7 @@ public class CourseManager {
      * If the matriculation number does not exist null is returned.
      *
      * @param mat the matriculation number of the course to search
-     * */
+     */
     public CourseSubscription getSpecificSubscription(String mat) {
         TreeSet<CourseSubscription> orderedSetByMat = new TreeSet<>(subscriptions);
         List<CourseSubscription> allMat = new ArrayList<>(orderedSetByMat);
@@ -114,27 +112,37 @@ public class CourseManager {
         int high = allMat.size() - 1;
         int middle = (high + low) / 2;
 
+        boolean flag = false;
+
+        CourseSubscription courseSubscription = null;
+
         while (low <= high) {
             String currentMat = allMat.get(middle).getStudent().getMat();
             if (currentMat.equals(mat)) {
-                return allMat.get(middle);
-            } else if (currentMat.compareTo(mat) < 0) {
+                courseSubscription = allMat.get(middle);
+                flag = true;
+            }
+            if (currentMat.compareTo(mat) < 0) {
                 low = middle + 1;
-            } else if (currentMat.compareTo(mat) > 0) {
+            }
+            if (currentMat.compareTo(mat) > 0) {
                 high = middle - 1;
             }
+
+            if (flag)
+                break;
 
             middle = (low + high) / 2;
         }
 
-        return null;
+        return courseSubscription;
     }
 
     /**
      * Returns the students with the higher mark
      *
      * @return the student with the higher mark
-     * */
+     */
     public Set<Student> getStudentsWithHigherMark() {
         LinkedHashSet<Student> higherMarkStudents = new LinkedHashSet<>();
 
@@ -171,8 +179,7 @@ public class CourseManager {
      * and lower bound are included. Input parameter must be >= 18 and <= 30.
      *
      * @param from lower bound mark
-     * @param to upper bound mark
-     *
+     * @param to   upper bound mark
      * @return the number of marks inside the input range
      */
     public int countMarksInInclusiveRange(int from, int to) throws CourseEmptyException {
@@ -205,12 +212,11 @@ public class CourseManager {
      * match the lower or upper bound of the range are not excluded from the
      * output set.
      *
-     * @param fromDate the lower bound of the range
-     * @param toDate the upper bound of the range
+     * @param fromDate  the lower bound of the range
+     * @param toDate    the upper bound of the range
      * @param inclusive true if the upper and lower bound of the range are included, false otherwise
-     *
      * @return a set of CourseSubscription inside a specified date range
-     * */
+     */
     public Set<CourseSubscription> getSubscriptionsByDate(LocalDate fromDate, LocalDate toDate, boolean inclusive)
             throws RangeDateException, CourseEmptyException {
         Set<CourseSubscription> subsInRange = new LinkedHashSet<>();
