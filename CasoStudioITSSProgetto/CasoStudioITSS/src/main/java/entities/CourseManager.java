@@ -265,4 +265,8 @@ public class CourseManager {
     public void deleteCourseStudents() {
         subscriptions.clear();
     }
+
+    public int size() {
+        return subscriptions.size();
+    }
 }

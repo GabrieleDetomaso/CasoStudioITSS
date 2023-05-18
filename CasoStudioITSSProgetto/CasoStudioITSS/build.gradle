@@ -5,18 +5,26 @@ plugins {
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
+ext.jqwikVersion = '1.7.3'
 
 repositories {
     mavenCentral()
 }
 
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik'
+    }
+
+    include '**/*Properties.class'
+    include '**/*Test.class'
+    include '**/*Tests.class'
+}
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation ('org.apache.httpcomponents:httpclient:4.5.14')
+    testImplementation "net.jqwik:jqwik:${jqwikVersion}"
     implementation ('com.google.code.gson:gson:2.10.1')
-}
-
-test {
-    useJUnitPlatform()
+    compileOnly("org.jetbrains:annotations:23.0.0")
 }
