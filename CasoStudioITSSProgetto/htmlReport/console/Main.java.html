@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CourseManagerGroup1Test Coverage Results</a> &gt; <a href="index.source.html" class="el_package">console</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package console;
+
+import entities.CourseManager;
+import entities.Student;
+
+import java.time.LocalDate;
+
+// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
+// then press Enter. You can now see whitespace characters in your code.
+<span class="nc" id="L10">public class Main {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L12">        CourseManager courseManager = new CourseManager(&quot;ITSS&quot;, LocalDate.now());</span>
+/*
+        courseManager.addNewCourseAttender(
+                new Student(&quot;Giacomo&quot;, &quot;Detomaso&quot;, &quot;XYC&quot;),
+                LocalDate.parse(&quot;2023-04-02&quot;)
+        );
+
+        courseManager.addNewCourseAttender(
+                new Student(&quot;Marco&quot;, &quot;Bari&quot;, &quot;XYZ&quot;),
+                LocalDate.parse(&quot;2023-04-02&quot;)
+        );
+
+        courseManager.addNewCourseAttender(
+                new Student(&quot;Giulio&quot;, &quot;Bari&quot;, &quot;XYK&quot;),
+                LocalDate.parse(&quot;2023-04-02&quot;)
+        );
+
+        courseManager.addNewCourseAttender(
+                new Student(&quot;Novax&quot;, &quot;Djokovic&quot;, &quot;XYP&quot;),
+                LocalDate.parse(&quot;2023-04-02&quot;)
+        );
+
+        courseManager.addNewCourseAttender(
+                new Student(&quot;Angelo&quot;, &quot;Valentino&quot;, &quot;XYL&quot;),
+                LocalDate.parse(&quot;2023-04-02&quot;)
+        );
+
+
+ */
+
+<span class="nc" id="L42">        courseManager.assignMarkToStudent(30, &quot;XYC&quot;);</span>
+<span class="nc" id="L43">        courseManager.assignMarkToStudent(30, &quot;XYZ&quot;);</span>
+<span class="nc" id="L44">        courseManager.assignMarkToStudent(19, &quot;XYL&quot;);</span>
+<span class="nc" id="L45">        courseManager.assignMarkToStudent(22, &quot;XYK&quot;);</span>
+<span class="nc" id="L46">        courseManager.assignMarkToStudent(18, &quot;XYP&quot;);</span>
+
+        //courseManager.getStudentsWithHigherMark();
+<span class="nc" id="L49">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

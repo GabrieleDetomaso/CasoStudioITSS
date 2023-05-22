@@ -107,9 +107,6 @@ public class CourseManagerGroup1Test {
     }
 
 
-
-
-
     // metodo testato: addNewCourseAttender;
 
     @Test // T1
@@ -159,7 +156,7 @@ public class CourseManagerGroup1Test {
         return Stream.of(
                 LocalDate.now().plusDays(9),
                 LocalDate.now().plusDays(10)
-                );
+        );
     }
 
 
@@ -171,9 +168,6 @@ public class CourseManagerGroup1Test {
                 courseManager3.addNewCourseAttender(s4, LocalDate.now())
         );
     }
-
-
-
 
 
     // metodo testato: getSpecificSubscription;
@@ -191,22 +185,22 @@ public class CourseManagerGroup1Test {
     @EmptySource
     @MethodSource("matsProvider")
     @DisplayName("Inserimento di matricole di formato sbagliato o non iscritti/esistenti")
-    void subscriberSearchWrong( String mat) {
+    void subscriberSearchWrong(String mat) {
 
-        Assertions.assertNull( courseManager1.getSpecificSubscription(mat) );
+        Assertions.assertNull(courseManager1.getSpecificSubscription(mat));
     }
 
     @Test // T5
     @DisplayName("Inserimento matricola di uno studente iscritto")
-    void matCorrect(){
+    void matCorrect() {
 
-        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );
-        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()) );
+        Assertions.assertInstanceOf(CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()));
+        Assertions.assertInstanceOf(CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()));
         // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s2.getMat()) );
     }
 
     /*
-    *Il metodo viene richiamato in più test
+     *Il metodo viene richiamato in più test
      */
     private static Stream<String> matsProvider() {
         return Stream.of("11111",
@@ -214,6 +208,54 @@ public class CourseManagerGroup1Test {
                 "1234567",
                 s4.getMat(),
                 "999999"
+        );
+    }
+
+
+    // metodo testato: countMarksInInclusiveRange;
+    @ParameterizedTest
+    @MethodSource("intsProviderOfHomework2Task2_1")
+    @DisplayName("Eccezioni del metodo countMarksInInclusiveRange")
+    void homework2Task2_1(int from, int to) {
+        Assertions.assertThrows(Exception.class, ()
+                -> courseManager3.countMarksInInclusiveRange(from, to));
+    }
+
+    public static Stream<Arguments> intsProviderOfHomework2Task2_1() {
+        return Stream.of(
+                Arguments.of(17, 18),
+                Arguments.of(32, 18),
+                Arguments.of(18, 17),
+                Arguments.of(18, 32),
+                Arguments.of(25, 18),
+                Arguments.of(18, 25)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("intsProviderOfHomework2Task2_2")
+    @DisplayName("Confronto valore ritornato dal metodo countMarksInInclusiveRange")
+    void homework2Task2_2(int from, int to, int countExpeted){
+        try {
+            courseManager3.addNewCourseAttender(s1, LocalDate.now().minusDays(2));
+        } catch (Exception e) {
+            e.getMessage();
+        }
+        courseManager3.assignMarkToStudent(20, s1.getMat());
+
+        try{
+        Assertions.assertEquals(countExpeted, courseManager3.countMarksInInclusiveRange(from, to));
+        }catch (CourseEmptyException cee){
+            cee.getMessage();
+        }
+
+    }
+
+    public static Stream<Arguments> intsProviderOfHomework2Task2_2() {
+       return Stream.of(
+                Arguments.of(18, 25, 1),
+                Arguments.of(18, 19, 0),
+                Arguments.of(21, 25, 0)
         );
     }
 

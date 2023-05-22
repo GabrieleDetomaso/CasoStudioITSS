@@ -124,11 +124,9 @@ public class CourseManager {
             if (currentMat.equals(mat)) {
                 courseSubscription = allMat.get(middle);
                 flag = true;
-            }
-            if (currentMat.compareTo(mat) < 0) {
+            }   if (currentMat.compareTo(mat) < 0) {
                 low = middle + 1;
-            }
-            if (currentMat.compareTo(mat) > 0) {
+            }   if (currentMat.compareTo(mat) > 0) {
                 high = middle - 1;
             }
 
