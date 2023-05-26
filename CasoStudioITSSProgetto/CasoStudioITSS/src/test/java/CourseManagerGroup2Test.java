@@ -19,13 +19,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.math.RoundingMode;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -44,10 +40,7 @@ public class CourseManagerGroup2Test {
     private static final String FROM_MAX = "2023-02-10";
     private static final String TO_MIN = "2023-02-15";
     private static final String TO_MAX = "2023-02-25";
-    private static final Set<String> checkMatSet = new HashSet<>();
-
-    private static final int LIMIT_GENERATIONS = 1000; // Definisce il numero di iscrizioni da generare per i PB
-    private static int notInclusiveSubsCounter = 0; // Conta il numero di iscrizioni generate in un range non inclusivo
+    private static final int LIMIT_GENERATIONS = 500; // Definisce il numero di iscrizioni da generare per i PB
 
     // METODI PER JUNIT LIFECYCLE
 
@@ -100,60 +93,48 @@ public class CourseManagerGroup2Test {
                 Arguments.of(18, 17), // T1 di countMarksInInclusiveRange
                 Arguments.of(18, 31), // T2 di countMarksInInclusiveRange
                 Arguments.of(17, 18), // T3 di countMarksInInclusiveRange
-                Arguments.of(31, 17)// T4 di countMarksInInclusiveRange
+                Arguments.of(31, 17) // T4 di countMarksInInclusiveRange
         );
     }
 
     // METODI PROVIDERS PER I PROPERTY BASED TESTS
 
+    /**
+     * Questo metodo usato nel PBT success, genera una lista di iscrizioni
+     * arbitrarie uniche per un corso.
+     *
+     * @return un'arbitrary di una lista di iscrioni, in cui non sono
+     * presenti studenti con matricole duplicate
+     * */
     @Provide
     Arbitrary<List<Tuple2<Student, LocalDate>>> generateRandomSubscriptions() {
-        LocalDateArbitrary localDateArbitrary = new DefaultLocalDateArbitrary();
-        List<Tuple2<Student, LocalDate>> list = new ArrayList<>();
-
-        LocalDate from = LocalDate.parse(FROM_MIN);
-        LocalDate to = LocalDate.parse(TO_MAX);
-
-        // Genera la tupla e inserisce nella lista
-        Arbitrary<Student> arbitraryStudent = generateArbitraryStudent();
-
-        // Genera un numero di studenti arbitrari pari a LIMIT_GENERATION
-        for (int i = 0; i < LIMIT_GENERATIONS; i++) {
-            LocalDate subDateSample = localDateArbitrary.between(from, to).sample();
-
-            // Se la data generata non si ritrova nel limite di range inferiore
-            // o superiore allora incrementa un contatore che verrà usato per i test
-            if (subDateSample.isAfter(from) && subDateSample.isBefore(to)){
-                notInclusiveSubsCounter++;
-            }
-
-            Student student = arbitraryStudent.sample();
-
-            // Impedisce la creazione di studenti duplicati
-            while (!checkMatSet.add(student.getMat())) {
-                student = arbitraryStudent.sample();
-            }
-
-            Tuple2<Student, LocalDate> entry = Tuple.of(student, subDateSample);
-            list.add(entry);
-        }
-
-        // La lista generata viene restituita come Arbitrary
-        return Arbitraries.just(list);
-    }
-
-    /**
-     * Il metodo genera uno studente arbitrario, non duplicato.
-     * */
-    private Arbitrary<Student> generateArbitraryStudent() {
         Arbitrary<String> name = Arbitraries.strings().ofLength(4);
         Arbitrary<String> secondName = Arbitraries.strings().ofLength(5);
         Arbitrary<String> mat = Arbitraries.strings().numeric().ofLength(6);
 
         // Combinando gli input viene generato lo studente arbitrario
-        return Combinators
+        Arbitrary<Student> studentArbitrary =
+                Combinators
                 .combine(name, secondName, mat)
                 .as(Student::new);
+
+        LocalDate from = LocalDate.parse(FROM_MIN);
+        LocalDate to = LocalDate.parse(TO_MAX);
+
+        LocalDateArbitrary localDateArbitrary = new DefaultLocalDateArbitrary();
+        localDateArbitrary = localDateArbitrary.between(from, to);
+
+        // Restituisce, dopo la combinazione, una lista di Tuple2.
+        return Combinators
+                .combine(studentArbitrary, localDateArbitrary)
+                .as(Tuple::of)
+                .list()
+                // La prima entry di ogni tupla nella lista (lo Studente) deve essere univoca.
+                // Lo studente possiede un metodo equals che stabilisce che due
+                // studenti uguali possiedono la stessa matricola. Pertanto, nell'arbitrary in output,
+                // nessuno studente possiederà la stessa matricola.
+                .uniqueElements(Tuple.Tuple1::get1)
+                .ofSize(LIMIT_GENERATIONS);
     }
 
     /**
@@ -168,7 +149,6 @@ public class CourseManagerGroup2Test {
                 "Integrazione e test Gruppo 2 - getSubscriptionByDate",
                 LocalDate.now());
 
-
         for (Tuple2<Student, LocalDate> k : subscriptions) {
             try {
                 courseManager.addNewCourseAttender(k.get1(), k.get2());
@@ -178,7 +158,6 @@ public class CourseManagerGroup2Test {
         }
 
         return courseManager;
-
     }
 
     @Provide
@@ -259,7 +238,7 @@ public class CourseManagerGroup2Test {
     }
 
     @Test // T10
-    @DisplayName("fromDate and toDate are the same with inclusive false")
+    @DisplayName("fromDate equals toDate with inclusive false")
     void fromDateEqualsToDateNotInclusive() {
         LocalDate date = LocalDate.parse("2022-11-10");
         Assertions.assertThrows(RangeDateException.class, () -> courseManager1
@@ -531,6 +510,7 @@ public class CourseManagerGroup2Test {
     @Property // T1
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
+    @Label("PBT - FAIL")
     void fail(
             @ForAll @DateRange(min = FROM_MIN, max = FROM_MAX) LocalDate from,
             @ForAll @DateRange(min = TO_MIN, max = TO_MAX) LocalDate to) throws NullStudentException,
@@ -545,6 +525,7 @@ public class CourseManagerGroup2Test {
 
     @Property // T2
     @Report(Reporting.GENERATED)
+    @Label("PBT - INVALID")
     void invalid(
             @ForAll @DateRange(min = TO_MIN, max = TO_MAX) LocalDate from,
             @ForAll @DateRange(min = FROM_MAX, max = TO_MIN) LocalDate to) throws NullStudentException {
@@ -558,35 +539,56 @@ public class CourseManagerGroup2Test {
         Statistics.collect(from.equals(to) ? "Uguali" : "from > to");
     }
 
-    @Property // T3: inclusive true e false
+    @Property(tries = 40)
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
-    void successInclusive(@ForAll("generateRandomSubscriptions")
-                          List<Tuple2<Student, LocalDate>> subscriptions) {
+    @Label("PBT - SUCCESS")
+    void success(@ForAll("generateRandomSubscriptions")List<Tuple2<Student, LocalDate>> subscriptions) {
+        // Conta quante date sono state generate in range escludendo il limite
+        // superiore ed inferiore
+
         LocalDate from = LocalDate.parse(FROM_MIN);
         LocalDate to = LocalDate.parse(TO_MAX);
-
-        CourseManager courseManager = fillCourseManager(subscriptions);
-
-        // Testa i casi in cui inclusive sia false e true
-        Assertions.assertAll(
-                () -> Assertions
-                        .assertEquals(LIMIT_GENERATIONS, courseManager.getSubscriptionsByDate(from, to, true).size()),
-                () -> Assertions
-                        .assertEquals(notInclusiveSubsCounter, courseManager.getSubscriptionsByDate(from, to, false).size())
-        );
-
+        int notInclusiveSubsCounter = 0;
         String rangeGlobal = "";
 
+        // Questo ciclo è usato per collezionare la statistica e per
+        // controllare quante date di iscrizione sono state generate nel range
+        // non inclusivo dei due limit inferiore e superiore
         for (Tuple2<Student, LocalDate> sub : subscriptions) {
             LocalDate subDate = sub.get2();
-            rangeGlobal = (subDate.equals(from) || subDate.equals(to)) ? "Inclusive sub" : "Not inclusive sub";
+
+            // Colleziona valori per il range usato nella statistica
+            if (subDate.equals(from) || subDate.equals(to)) {
+                rangeGlobal = "Inclusive sub";
+            } else {
+                notInclusiveSubsCounter++;
+                rangeGlobal = "Not inclusive sub";
+            }
 
             // Genera due statistiche. La prima individua in che percentuali vengono generate iscrizioni
             // in range inclusive (quindi iscrizioni che corrispondono ai due limiti del range) e
             // quante vole sono generate iscrizioni in date appartenenti al range ma diverse dai due limiti.
             Statistics.label("Global range").collect(rangeGlobal);
         }
-    }
 
+        // Le lambda expression ammettono valori final come parametri
+        final int finalNotInclusiveSubsCounter = notInclusiveSubsCounter;
+
+        // Testa i casi in cui inclusive sia false e true
+        Assertions.assertAll(
+                // Con inclusive true, ogni studente iscritto nel range specificato
+                // deve essere presente nell'output.
+                () -> Assertions
+                        .assertEquals(LIMIT_GENERATIONS, fillCourseManager(subscriptions)
+                                .getSubscriptionsByDate(from, to, true).size()),
+
+                // Con inclusive false l'output è composto da tutti gli studenti, tranne quelli
+                // iscritti in una data che coincide con uno dei due limiti.
+                () -> Assertions
+                        .assertEquals(finalNotInclusiveSubsCounter, fillCourseManager(subscriptions)
+                                .getSubscriptionsByDate(from, to, false).size())
+        );
+
+    }
 }
