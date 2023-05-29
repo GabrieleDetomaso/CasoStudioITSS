@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CourseManagerGroup2Test.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CourseManagerGroup2Test Coverage Results</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">CourseManagerGroup2Test.java</span></div><h1>CourseManagerGroup2Test.java</h1><pre class="source lang-java linenums">import com.sun.source.tree.AssertTree;
+import entities.CourseManager;
+import entities.CourseSubscription;
+import entities.Student;
+import exceptions.CourseEmptyException;
+import exceptions.RangeDateException;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
+
+/**
+ * Classe di test per CourseManger del gruppo 2
+ *
+ * @author Giacomo Detomaso, Roberto Scorrano
+ * */
+<span class="fc" id="L24">public class CourseManagerGroup2Test {</span>
+<span class="fc" id="L25">    private static final Student s1 = new Student(&quot;Gianni&quot;, &quot;Verdi&quot;, &quot;111111&quot;);</span>
+<span class="fc" id="L26">    private static final Student s2 = new Student(&quot;Marco&quot;, &quot;Bari&quot;, &quot;111112&quot;);</span>
+<span class="fc" id="L27">    private static final Student s3 = new Student(&quot;Angelo&quot;, &quot;Valentino&quot;, &quot;111113&quot;);</span>
+<span class="fc" id="L28">    private static final Student s4 = new Student(&quot;Oscar&quot;, &quot;Bravo&quot;, &quot;111114&quot;);</span>
+    private static CourseManager courseManager1; // usato per il metodo getSubscriptionByDate
+    private static CourseManager courseManager2; // usato per il metodo getStudentWithHigherMark
+    @BeforeAll
+    static void setup() {
+<span class="fc" id="L33">        courseManager1 = new CourseManager(</span>
+                &quot;Integrazione e test Gruppo 2 - getSubscriptionByDate&quot;,
+<span class="fc" id="L35">                LocalDate.now());</span>
+
+<span class="fc" id="L37">        courseManager2 = new CourseManager(</span>
+                &quot;Integrazione e test Gruppo 2 - getStudentWithHigherMark&quot;,
+<span class="fc" id="L39">                LocalDate.now());</span>
+<span class="fc" id="L40">    }</span>
+
+    @BeforeEach
+    void init()  {
+        // Aggiunta studenti per courseManager1
+        try {
+<span class="fc" id="L46">            courseManager1.addNewCourseAttender(s1, LocalDate.parse(&quot;2022-11-04&quot;));</span>
+<span class="fc" id="L47">            courseManager1.addNewCourseAttender(s2, LocalDate.parse(&quot;2022-11-10&quot;));</span>
+<span class="fc" id="L48">            courseManager1.addNewCourseAttender(s3, LocalDate.parse(&quot;2022-11-11&quot;));</span>
+<span class="fc" id="L49">            courseManager1.addNewCourseAttender(s4, LocalDate.parse(&quot;2022-11-11&quot;));</span>
+        }
+<span class="nc" id="L51">        catch(Exception e) {</span>
+<span class="nc" id="L52">            System.out.println(&quot;Eccezione lanciata 2&quot; + e.getMessage());</span>
+<span class="fc" id="L53">        }</span>
+
+        try {
+<span class="fc" id="L56">            courseManager2.addNewCourseAttender(s1, LocalDate.parse(&quot;2022-11-04&quot;));</span>
+        }
+<span class="nc" id="L58">        catch(Exception e) {</span>
+<span class="nc" id="L59">            System.out.println(&quot;Eccezione lanciata 2&quot;);</span>
+<span class="fc" id="L60">        }</span>
+<span class="fc" id="L61">    }</span>
+
+    @AfterEach
+    void tearDown(){
+<span class="fc" id="L65">        courseManager1.deleteCourseStudents();</span>
+<span class="fc" id="L66">    }</span>
+
+    @AfterAll
+    static void clear() {
+<span class="fc" id="L70">        courseManager1 = null;</span>
+<span class="fc" id="L71">    }</span>
+
+    public static Stream&lt;Arguments&gt; getInputMarkPairs() {
+<span class="fc" id="L74">        return Stream.of(</span>
+<span class="fc" id="L75">                Arguments.of(18, 17), // T1 di countMarksInInclusiveRange</span>
+<span class="fc" id="L76">                Arguments.of(18, 31), // T2 di countMarksInInclusiveRange</span>
+<span class="fc" id="L77">                Arguments.of(17, 18), // T3 di countMarksInInclusiveRange</span>
+<span class="fc" id="L78">                Arguments.of(31, 17)// T4 di countMarksInInclusiveRange</span>
+        );
+    }
+
+    // CASI DI TEST PER IL METODO: getSubscriptionsByDate
+
+    @Test // Uniti test: T1 e T2
+    @DisplayName(&quot;fromDate and toDate null&quot;)
+    void fromDateToDateNull() {
+<span class="fc" id="L87">        Assertions.assertAll(</span>
+<span class="fc" id="L88">                () -&gt; Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L89">                        courseManager1.getSubscriptionsByDate(null, LocalDate.now(), false)),</span>
+<span class="fc" id="L90">                () -&gt;  Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L91">                        courseManager1.getSubscriptionsByDate(LocalDate.now(), null, false))</span>
+        );
+<span class="fc" id="L93">    }</span>
+
+    @Test // Uniti test: T3 e T4
+    @DisplayName(&quot;Wrong date format&quot;)
+    void wrongDateFormat() {
+<span class="fc" id="L98">        Assertions.assertAll(</span>
+<span class="fc" id="L99">                () -&gt; Assertions.assertThrows(DateTimeException.class, () -&gt;</span>
+<span class="nc" id="L100">                        courseManager1.getSubscriptionsByDate(LocalDate.parse(&quot;04-08-2023&quot;), LocalDate.now(), false)),</span>
+
+<span class="fc" id="L102">                () -&gt; Assertions.assertThrows(DateTimeException.class, () -&gt;</span>
+<span class="nc" id="L103">                        courseManager1.getSubscriptionsByDate(LocalDate.now(), LocalDate.parse(&quot;04-08-2023&quot;), false))</span>
+        );
+<span class="fc" id="L105">    }</span>
+
+    @ParameterizedTest // Uniti test: T5 e  T7
+    @DisplayName(&quot;Subscriptions found&quot;)
+    @ValueSource(booleans = {false, true})
+    void subscriptionsFound(boolean inclusive) throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L111">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-03&quot;);</span>
+<span class="fc" id="L112">        LocalDate toDate = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+
+        int equal; // parametro da usare nell'assert equals
+
+        // In base al valore di inclusive cambia il numero di studenti resituiti
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (inclusive) {</span>
+<span class="fc" id="L118">            equal = 2; // Se inclusive è vero vi sono</span>
+        } else {
+<span class="fc" id="L120">            equal = 1;</span>
+        }
+
+<span class="fc" id="L123">        Assertions.assertEquals(equal, courseManager1.getSubscriptionsByDate(fromDate, toDate, inclusive).size());</span>
+<span class="fc" id="L124">    }</span>
+
+    @ParameterizedTest // Uniti test: T6 e  T8
+    @DisplayName(&quot;Subscriptions not found&quot;)
+    @ValueSource (booleans = {false, true})
+    void subscriptionsNotFound(boolean inclusive) throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L130">        LocalDate fromDate = LocalDate.parse(&quot;2022-12-03&quot;);</span>
+<span class="fc" id="L131">        LocalDate toDate = LocalDate.parse(&quot;2022-12-10&quot;);</span>
+
+<span class="fc" id="L133">        Assertions.assertEquals(0, courseManager1.getSubscriptionsByDate(fromDate, toDate, inclusive).size());</span>
+<span class="fc" id="L134">    }</span>
+
+    @Test // T9
+    @DisplayName(&quot;fromDate greater then toDate&quot;)
+    void fromDateGreaterThanToDate() {
+<span class="fc" id="L139">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+<span class="fc" id="L140">        LocalDate toDate = LocalDate.parse(&quot;2022-11-03&quot;);</span>
+<span class="pc" id="L141">        Assertions.assertThrows(RangeDateException.class, () -&gt; courseManager1</span>
+<span class="nc" id="L142">                .getSubscriptionsByDate(fromDate, toDate, true));</span>
+<span class="fc" id="L143">    }</span>
+
+    @Test // T10
+    @DisplayName(&quot;fromDate and toDate are the same with inclusive false&quot;)
+    void fromDateEqualsToDateNotInclusive() {
+<span class="fc" id="L148">        LocalDate date = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+<span class="pc" id="L149">        Assertions.assertThrows(RangeDateException.class, () -&gt; courseManager1</span>
+<span class="nc" id="L150">                .getSubscriptionsByDate(date, date, false));</span>
+<span class="fc" id="L151">    }</span>
+
+    @Test // T11
+    @DisplayName(&quot;fromDate toDate are the same with inclusive true&quot;)
+    void fromDateEqualsToDateInclusive() throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L156">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+<span class="fc" id="L157">        LocalDate toDate = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+
+<span class="fc" id="L159">        Assertions.assertEquals(1, courseManager1.getSubscriptionsByDate(fromDate, toDate, true).size());</span>
+<span class="fc" id="L160">    }</span>
+
+    @ParameterizedTest // Uniti test: T12 e  T14
+    @DisplayName(&quot;Students on fromDate: inclusive true and false&quot;)
+    @ValueSource (booleans = {false, true})
+    void studentsOnFromDate(boolean inclusive) throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L166">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-04&quot;);</span>
+<span class="fc" id="L167">        LocalDate toDate = LocalDate.parse(&quot;2022-11-05&quot;);</span>
+
+<span class="fc" id="L169">        Set&lt;CourseSubscription&gt; subs = courseManager1.getSubscriptionsByDate(fromDate, toDate, inclusive);</span>
+<span class="fc" id="L170">        Set&lt;Student&gt; students = new HashSet&lt;&gt;();</span>
+
+        // Recupera tutti gli studenti presenti nelle iscrizioni
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (CourseSubscription sub: subs) {</span>
+<span class="fc" id="L174">            students.add(sub.getStudent());</span>
+<span class="fc" id="L175">        }</span>
+
+        // Controlla che lo studente s1 che risiede sul limite inferiore di questo range
+        // se inclusive è true sia presente, altrimenti non presente
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (inclusive) {</span>
+<span class="fc" id="L180">            Assertions.assertTrue(students.contains(s1));</span>
+        } else {
+<span class="fc" id="L182">            Assertions.assertFalse(students.contains(s1));</span>
+        }
+<span class="fc" id="L184">    }</span>
+
+    @ParameterizedTest // Uniti test: T13 e  T15
+    @DisplayName(&quot;Students on toDate: inclusive true and false&quot;)
+    @ValueSource (booleans = {false, true})
+    void studentsOnToDate(boolean inclusive) throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L190">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-01&quot;);</span>
+<span class="fc" id="L191">        LocalDate toDate = LocalDate.parse(&quot;2022-11-04&quot;);</span>
+
+<span class="fc" id="L193">        Set&lt;CourseSubscription&gt; subs = courseManager1.getSubscriptionsByDate(fromDate, toDate, inclusive);</span>
+<span class="fc" id="L194">        Set&lt;Student&gt; students = new HashSet&lt;&gt;();</span>
+
+        // Recupera tutti gli studenti presenti nelle iscrizioni
+<span class="fc bfc" id="L197" title="All 2 branches covered.">        for (CourseSubscription sub: subs) {</span>
+<span class="fc" id="L198">            students.add(sub.getStudent());</span>
+<span class="fc" id="L199">        }</span>
+
+        // Controlla che lo studente s1 che risiede sul limite inferiore di questo range
+        // se inclusive è true sia presente, altrimenti non presente
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if (inclusive) {</span>
+<span class="fc" id="L204">            Assertions.assertTrue(students.contains(s1));</span>
+        } else {
+<span class="fc" id="L206">            Assertions.assertFalse(students.contains(s1));</span>
+        }
+<span class="fc" id="L208">    }</span>
+
+    @Test // T16
+    @DisplayName(&quot;No students in course&quot;)
+    void noStudentsInCourse (){
+<span class="fc" id="L213">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-01&quot;);</span>
+<span class="fc" id="L214">        LocalDate toDate = LocalDate.parse(&quot;2022-11-10&quot;);</span>
+
+<span class="fc" id="L216">        courseManager1.deleteCourseStudents(); // azzera il corso</span>
+
+<span class="fc" id="L218">        Assertions.assertThrows(CourseEmptyException.class,</span>
+<span class="nc" id="L219">                () -&gt; courseManager1.getSubscriptionsByDate(fromDate, toDate, true));</span>
+<span class="fc" id="L220">    }</span>
+
+    @Test // T17
+    @DisplayName(&quot;Students on toDate inclusive multiple&quot;)
+    void studentsOnToDateInclusiveMultiple() throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L225">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-01&quot;);</span>
+<span class="fc" id="L226">        LocalDate toDate = LocalDate.parse(&quot;2022-11-11&quot;);</span>
+
+<span class="fc" id="L228">        Set&lt;CourseSubscription&gt; subs = courseManager1.getSubscriptionsByDate(fromDate, toDate, true);</span>
+<span class="fc" id="L229">        Set&lt;Student&gt; students = new HashSet&lt;&gt;();</span>
+
+        // Recupera tutti gli studenti presenti nelle iscrizioni
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        for (CourseSubscription sub: subs) {</span>
+<span class="fc" id="L233">            students.add(sub.getStudent());</span>
+<span class="fc" id="L234">        }</span>
+
+        // Controlla che lo studente s3 ed s4 (che risiedono sul range superiore) siano present
+<span class="fc" id="L237">        Assertions.assertAll(</span>
+<span class="fc" id="L238">                () -&gt; Assertions.assertTrue(students.contains(s3)),</span>
+<span class="fc" id="L239">                () -&gt; Assertions.assertTrue(students.contains(s4)),</span>
+                // Controllo comunque la dimensione dell'output (controllo ridondante -&gt; controllato in test
+                // precedenti. Lo si lascia per chiarezza e sicurezza). Il controllo è stato aggiunto perchè
+                // nel range testato vi sono tutti e 4 gli studenti del corso
+<span class="fc" id="L243">                () -&gt; Assertions.assertEquals(4, students.size()));</span>
+<span class="fc" id="L244">    }</span>
+
+    @Test // T18
+    @DisplayName(&quot;Students on fromDate inclusive multiple&quot;)
+    void studentsOnFromDateInclusiveMultiple() throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L249">        LocalDate fromDate = LocalDate.parse(&quot;2022-11-11&quot;);</span>
+<span class="fc" id="L250">        LocalDate toDate = LocalDate.parse(&quot;2022-11-20&quot;);</span>
+
+<span class="fc" id="L252">        Set&lt;CourseSubscription&gt; subs = courseManager1.getSubscriptionsByDate(fromDate, toDate, true);</span>
+<span class="fc" id="L253">        Set&lt;Student&gt; students = new HashSet&lt;&gt;();</span>
+
+        // Recupera tutti gli studenti presenti nelle iscrizioni
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        for (CourseSubscription sub: subs) {</span>
+<span class="fc" id="L257">            students.add(sub.getStudent());</span>
+<span class="fc" id="L258">        }</span>
+
+        // Controlla che lo studente s3 ed s4 (che risiedono sul range superiore) siano present
+<span class="fc" id="L261">        Assertions.assertAll(</span>
+<span class="fc" id="L262">                () -&gt; Assertions.assertTrue(students.contains(s3)),</span>
+<span class="fc" id="L263">                () -&gt; Assertions.assertTrue(students.contains(s4)));</span>
+<span class="fc" id="L264">    }</span>
+
+    // CASI DI TEST PER IL METODO: getStudentWithHigherMark
+    @Test // T1
+    @DisplayName(&quot;One student with an assigned mark&quot;)
+    void oneStudentWithAssignedMark() throws CourseEmptyException {
+<span class="fc" id="L270">        courseManager1.assignMarkToStudent(30, &quot;111111&quot;);</span>
+
+<span class="fc" id="L272">        Set&lt;Student&gt; studentSet = courseManager1.getStudentsWithHigherMark();</span>
+
+<span class="fc" id="L274">        Assertions.assertAll(</span>
+<span class="fc" id="L275">                () -&gt; Assertions.assertEquals(1, studentSet.size()),</span>
+<span class="fc" id="L276">                () -&gt; Assertions.assertTrue(studentSet.contains(s1))</span>
+        );
+<span class="fc" id="L278">    }</span>
+
+    @Test // T2
+    @DisplayName(&quot;More students with an assigned mark, but with one highest one&quot;)
+    void moreStudentWithAssignedMarkWithOneHighestMark() throws CourseEmptyException {
+<span class="fc" id="L283">        courseManager1.assignMarkToStudent(30, &quot;111111&quot;);</span>
+<span class="fc" id="L284">        courseManager1.assignMarkToStudent(29, &quot;111112&quot;);</span>
+
+<span class="fc" id="L286">        Set&lt;Student&gt; studentSet = courseManager1.getStudentsWithHigherMark();</span>
+<span class="fc" id="L287">        Assertions.assertAll(</span>
+<span class="fc" id="L288">                () -&gt; Assertions.assertEquals(1, studentSet.size()),</span>
+<span class="fc" id="L289">                () -&gt; Assertions.assertTrue(studentSet.contains(s1))</span>
+        );
+<span class="fc" id="L291">    }</span>
+
+    @Test // T3
+    @DisplayName(&quot;More students with an assigned mark, but with more highest ones&quot;)
+    void moreStudentWithAssignedMarkWithMoreHighestMarks() throws CourseEmptyException {
+<span class="fc" id="L296">        courseManager1.assignMarkToStudent(30, &quot;111111&quot;);</span>
+<span class="fc" id="L297">        courseManager1.assignMarkToStudent(29, &quot;111112&quot;);</span>
+<span class="fc" id="L298">        courseManager1.assignMarkToStudent(30, &quot;111113&quot;);</span>
+
+<span class="fc" id="L300">        Set&lt;Student&gt; studentSet = courseManager1.getStudentsWithHigherMark();</span>
+<span class="fc" id="L301">        Assertions.assertAll(</span>
+<span class="fc" id="L302">                () -&gt; Assertions.assertEquals(2, studentSet.size()),</span>
+<span class="fc" id="L303">                () -&gt; Assertions.assertTrue(studentSet.contains(s1)),</span>
+<span class="fc" id="L304">                () -&gt; Assertions.assertTrue(studentSet.contains(s3))</span>
+        );
+<span class="fc" id="L306">    }</span>
+
+    @Test //T4 e T5
+    @DisplayName(&quot;No Students with marks&quot;)
+    void noStudentsWithMarks() {
+<span class="fc" id="L311">        Set&lt;Student&gt; studentSet1 = courseManager1.getStudentsWithHigherMark();</span>
+<span class="fc" id="L312">        Set&lt;Student&gt; studentSet2 = courseManager2.getStudentsWithHigherMark();</span>
+<span class="fc" id="L313">        Assertions.assertAll(</span>
+<span class="fc" id="L314">                () -&gt; Assertions.assertEquals(0, studentSet1.size()),</span>
+<span class="fc" id="L315">                () -&gt; Assertions.assertEquals(0, studentSet2.size())</span>
+        );
+<span class="fc" id="L317">    }</span>
+
+    @Test //T6: sviluppato in seguito ai white box test
+    @DisplayName(&quot;No students in course 2&quot;)
+    void noStudentInCourse2() {
+<span class="fc" id="L322">        courseManager1.deleteCourseStudents();</span>
+
+<span class="fc" id="L324">        Assertions.assertEquals(0, courseManager1.getStudentsWithHigherMark().size());</span>
+<span class="fc" id="L325">    }</span>
+
+    // CASI DI TEST PER IL METODO: countMarksInInclusiveRange
+
+    @ParameterizedTest //Uniti test: T1, T2, T3 e T4
+    @DisplayName(&quot;Wrong mark input&quot;)
+    @MethodSource(&quot;getInputMarkPairs&quot;)
+    void wrongMarkInput(int from, int to) {
+<span class="pc" id="L333">        Assertions.assertThrows(IllegalArgumentException.class, () -&gt; courseManager1.countMarksInInclusiveRange(from, to));</span>
+<span class="fc" id="L334">    }</span>
+
+    @Test // Uniti T5 e T6
+    @DisplayName(&quot;Students in range and not&quot;)
+    void studentsInRangeAndNot () {
+<span class="fc" id="L339">        courseManager1.assignMarkToStudent(29, &quot;111111&quot;);</span>
+<span class="fc" id="L340">        courseManager1.assignMarkToStudent(28, &quot;111112&quot;);</span>
+<span class="fc" id="L341">        courseManager1.assignMarkToStudent(29, &quot;111113&quot;);</span>
+
+        // Testiamo che nel primo caso il range contenga gli studenti, nel secondo caso no
+<span class="fc" id="L344">        Assertions.assertAll(</span>
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">                () -&gt; Assertions.assertTrue(courseManager1.countMarksInInclusiveRange(27, 30) &gt; 0),</span>
+<span class="fc" id="L346">                () -&gt; Assertions.assertEquals(0, courseManager1.countMarksInInclusiveRange(25, 27))</span>
+        );
+<span class="fc" id="L348">    }</span>
+
+    @Test // T7
+    @DisplayName(&quot;One student on from&quot;)
+    void oneStudentOnFrom() throws CourseEmptyException {
+<span class="fc" id="L353">        courseManager1.assignMarkToStudent(27, &quot;111111&quot;);</span>
+<span class="fc" id="L354">        Assertions.assertEquals(1, courseManager1.countMarksInInclusiveRange(27, 30));</span>
+<span class="fc" id="L355">    }</span>
+
+    @Test // T8
+    @DisplayName(&quot;One student on to&quot;)
+    void oneStudentOnTo() throws CourseEmptyException {
+<span class="fc" id="L360">        courseManager1.assignMarkToStudent(30, &quot;111111&quot;);</span>
+<span class="fc" id="L361">        Assertions.assertEquals(1, courseManager1.countMarksInInclusiveRange(27, 30));</span>
+<span class="fc" id="L362">    }</span>
+
+    @Test // T9
+    @DisplayName(&quot;From equal to&quot;)
+    void fromEqualTo() throws CourseEmptyException {
+<span class="fc" id="L367">        courseManager1.assignMarkToStudent(27, &quot;111111&quot;);</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">        Assertions.assertTrue(courseManager1.countMarksInInclusiveRange(27, 27) &gt;= 1);</span>
+<span class="fc" id="L369">    }</span>
+
+    @Test // T10
+    @DisplayName(&quot;From greater than to&quot;)
+    void fromGreaterThanTo() {
+<span class="fc" id="L374">        courseManager1.assignMarkToStudent(27, &quot;111111&quot;);</span>
+<span class="pc" id="L375">        Assertions.assertThrows(IllegalArgumentException.class, () -&gt; courseManager1.countMarksInInclusiveRange(27, 22));</span>
+<span class="fc" id="L376">    }</span>
+
+    @Test // T11
+    @DisplayName(&quot;No student in course&quot;)
+    void noStudentInCourse3() {
+<span class="fc" id="L381">        courseManager1.deleteCourseStudents();</span>
+<span class="pc" id="L382">        Assertions.assertThrows(CourseEmptyException.class, () -&gt; courseManager1.countMarksInInclusiveRange(19, 29));</span>
+<span class="fc" id="L383">    }</span>
+
+    @Test // T12
+    @DisplayName(&quot;No marks in course&quot;)
+    void noMarksInCourse() throws CourseEmptyException {
+<span class="fc" id="L388">        Assertions.assertEquals(0, courseManager1.countMarksInInclusiveRange(20, 25));</span>
+<span class="fc" id="L389">    }</span>
+
+
+    // TASK 2 HOMEWORK 2
+    // CASI DI TEST PER IL METODO studentsAboveAverage()
+
+    @Test
+    @DisplayName(&quot;Course is empty&quot;)
+    void courseEmpty() {
+<span class="fc" id="L398">        courseManager1.deleteCourseStudents();</span>
+<span class="fc" id="L399">        Assertions.assertEquals(0, courseManager1.studentsAboveAverage(true));</span>
+<span class="fc" id="L400">    }</span>
+
+    @Test
+    @DisplayName(&quot;Course is full with mark assigned&quot;)
+    void courseFullWithMarks() {
+<span class="fc" id="L405">        courseManager1.assignMarkToStudent(26, &quot;111112&quot;);</span>
+<span class="fc" id="L406">        courseManager1.assignMarkToStudent(27, &quot;111113&quot;);</span>
+<span class="fc" id="L407">        courseManager1.assignMarkToStudent(28, &quot;111114&quot;);</span>
+
+<span class="fc" id="L409">        Assertions.assertAll(</span>
+<span class="fc" id="L410">                () -&gt; Assertions.assertEquals(2, courseManager1.studentsAboveAverage(true)),</span>
+<span class="fc" id="L411">                () -&gt; Assertions.assertEquals(1, courseManager1.studentsAboveAverage(false))</span>
+        );
+<span class="fc" id="L413">    }</span>
+
+    @Test
+    @DisplayName(&quot;Course is full but without assigned mark&quot;)
+    void courseFullWithoutMarks() {
+<span class="fc" id="L418">            Assertions.assertEquals(0, courseManager1.studentsAboveAverage(false));</span>
+<span class="fc" id="L419">    }</span>
+
+    @Test
+    @DisplayName(&quot;Course is full with mark assigned&quot;)
+    void courseFullWithEqualsMarks() {
+<span class="fc" id="L424">        courseManager1.assignMarkToStudent(26, &quot;111111&quot;);</span>
+<span class="fc" id="L425">        courseManager1.assignMarkToStudent(25, &quot;111112&quot;);</span>
+
+<span class="fc" id="L427">        Assertions.assertAll(</span>
+<span class="fc" id="L428">                () -&gt; Assertions.assertEquals(1, courseManager1.studentsAboveAverage(true)),</span>
+<span class="fc" id="L429">                () -&gt; Assertions.assertEquals(1, courseManager1.studentsAboveAverage(false))</span>
+        );
+<span class="fc" id="L431">    }</span>
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
