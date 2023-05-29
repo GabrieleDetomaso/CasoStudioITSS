@@ -40,7 +40,7 @@ public class CourseManagerGroup2Test {
     private static final String FROM_MAX = "2023-02-10";
     private static final String TO_MIN = "2023-02-15";
     private static final String TO_MAX = "2023-02-25";
-    private static final int LIMIT_GENERATIONS = 500; // Definisce il numero di iscrizioni da generare per i PB
+    private static final int LIMIT_GENERATIONS = 1000; // Definisce il numero di iscrizioni da generare per i PB
 
     // METODI PER JUNIT LIFECYCLE
 
@@ -542,14 +542,15 @@ public class CourseManagerGroup2Test {
     @Property(tries = 40)
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
-    @Label("PBT - SUCCESS")
+    @Label("PBT - SUCCESS [INCLUSIVE TRUE AND FALSE]")
     void success(@ForAll("generateRandomSubscriptions")List<Tuple2<Student, LocalDate>> subscriptions) {
-        // Conta quante date sono state generate in range escludendo il limite
-        // superiore ed inferiore
-
         LocalDate from = LocalDate.parse(FROM_MIN);
         LocalDate to = LocalDate.parse(TO_MAX);
+
+        // Conta quante date sono state generate in range escludendo il limite
+        // superiore ed inferiore
         int notInclusiveSubsCounter = 0;
+
         String rangeGlobal = "";
 
         // Questo ciclo è usato per collezionare la statistica e per
@@ -574,21 +575,21 @@ public class CourseManagerGroup2Test {
 
         // Le lambda expression ammettono valori final come parametri
         final int finalNotInclusiveSubsCounter = notInclusiveSubsCounter;
+        CourseManager courseManager = fillCourseManager(subscriptions);
 
         // Testa i casi in cui inclusive sia false e true
         Assertions.assertAll(
                 // Con inclusive true, ogni studente iscritto nel range specificato
                 // deve essere presente nell'output.
                 () -> Assertions
-                        .assertEquals(LIMIT_GENERATIONS, fillCourseManager(subscriptions)
-                                .getSubscriptionsByDate(from, to, true).size()),
+                        .assertEquals(LIMIT_GENERATIONS,
+                                courseManager.getSubscriptionsByDate(from, to, true).size()),
 
                 // Con inclusive false l'output è composto da tutti gli studenti, tranne quelli
                 // iscritti in una data che coincide con uno dei due limiti.
                 () -> Assertions
-                        .assertEquals(finalNotInclusiveSubsCounter, fillCourseManager(subscriptions)
-                                .getSubscriptionsByDate(from, to, false).size())
+                        .assertEquals(finalNotInclusiveSubsCounter,
+                                courseManager.getSubscriptionsByDate(from, to, false).size())
         );
-
     }
 }
