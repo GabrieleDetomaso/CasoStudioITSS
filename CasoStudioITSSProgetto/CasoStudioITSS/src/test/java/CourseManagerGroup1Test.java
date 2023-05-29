@@ -3,12 +3,19 @@ import entities.CourseSubscription;
 import entities.Student;
 import exceptions.CourseEmptyException;
 import exceptions.NullStudentException;
-import exceptions.RangeDateException;
+import net.jqwik.api.*;
+
+import net.jqwik.api.arbitraries.ListArbitrary;
+import net.jqwik.api.constraints.*;
+import net.jqwik.api.statistics.Histogram;
+import net.jqwik.api.statistics.Statistics;
+import net.jqwik.api.statistics.StatisticsReport;
+import net.jqwik.time.api.constraints.DateRange;
+import net.jqwik.time.internal.properties.arbitraries.DefaultLocalDateArbitrary;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Stream;
@@ -30,6 +37,10 @@ public class CourseManagerGroup1Test {
     //GRUPPO 1
     private static CourseManager courseManager1;
     private static CourseManager courseManager3;
+    private static CourseManager courseManager4;
+
+    public String MINDATE = "2023-05-01";
+    public String MAXDATE = "2023-05-31";
 
     // Metodi del ciclo di vita JUnit
 
@@ -257,6 +268,89 @@ public class CourseManagerGroup1Test {
                 Arguments.of(18, 19, 0),
                 Arguments.of(21, 25, 0)
         );
+    }
+
+
+
+
+
+
+    // metodo testato: getStudentsWithHigherMark;
+
+    @Provide
+    public Arbitrary<List<Student>> studentsProvider (){
+        Arbitrary <String> names = Arbitraries.strings().alpha().ofLength(10);
+        Arbitrary <String> surnames = Arbitraries.strings().alpha().ofLength(15);
+        Arbitrary <String> mats = Arbitraries.strings().numeric().excludeChars('0').ofLength(6);
+
+        Arbitrary<Student> students = Combinators.combine(names, surnames, mats).as(Student:: new);
+
+        return students.list().uniqueElements(s -> s.getMat());
+    }
+
+
+    @Property(tries = 5)
+    @Report(Reporting.GENERATED)
+    @StatisticsReport(format = Histogram.class)
+    void studentsWithMarkAndWithout(@ForAll("studentsProvider") @Size(min = 20, max = 35) List<Student> students,
+                          @ForAll @Size(value = 35) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates,
+                          @ForAll @Size(value = 35) List<@IntRange(min = 18,max = 31) Integer> marks,
+                          @ForAll @Size(value = 5) @UniqueElements List<@IntRange(max = 34) Integer> pos
+                            ) throws NullStudentException{
+
+        courseManager4 = new CourseManager("Corso1", LocalDate.parse("2023-10-31"));
+        Student s = null;
+        int mark = 0;
+        int markHigher = 0;
+        // creazione di un insieme di studenti con voto più alto da iscrivere nel corso
+        Set<Student> highMarkStudents = new LinkedHashSet<>();
+
+        // calcolo del voto più alto generato
+        for (Integer m: marks)
+            if (m > markHigher)
+                markHigher = m;
+
+        // Riempimento del corso
+        for (int i = 0; i < students.size(); i++)
+        {
+            s = students.get(i);
+            mark = marks.get(i);
+            //Iscrizione studente
+            courseManager4.addNewCourseAttender(s, localDates.get(i));
+
+            //Assegnazione voto se l'indice non è contenuto nell'insieme delle posizioni senza voto
+            if (!pos.contains(i))
+            {
+                // Salvataggio studente con voto più alto nell'insieme
+                if (mark == markHigher)
+                    highMarkStudents.add(s);
+
+                courseManager4.assignMarkToStudent(marks.get(i), s.getMat());
+                Statistics.label("Mark range assigned").collect(mark);
+            }
+        }
+
+        for (int m: marks)
+            Statistics.label("Mark range generated").collect(m);
+
+        Assertions.assertEquals(highMarkStudents, courseManager4.getStudentsWithHigherMark());
+    }
+
+
+    @Property (tries = 5) //Test:
+    @Report(Reporting.GENERATED)
+    void allStudentsWithoutMark (@ForAll("studentsProvider") @Size(min = 10, max = 35) List<Student> students,
+                                   @ForAll @Size(value = 31) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates
+                                    ) throws NullStudentException{
+
+        courseManager4 = new CourseManager("Corso1", LocalDate.parse("2023-10-31"));
+
+        //Riempmento del corso con i valori da generare
+        for (int i = 0; i < students.size(); i++){
+            courseManager4.addNewCourseAttender(students.get(i),localDates.get(i));
+        }
+
+        Assertions.assertTrue(courseManager4.getStudentsWithHigherMark().isEmpty());
     }
 
 
