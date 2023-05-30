@@ -278,18 +278,18 @@ public class CourseManagerGroup1Test {
     // metodo testato: getStudentsWithHigherMark;
 
     @Provide
-    public Arbitrary<List<Student>> studentsProvider (){
+    public ListArbitrary<Student> studentsProvider (){
         Arbitrary <String> names = Arbitraries.strings().alpha().ofLength(10);
         Arbitrary <String> surnames = Arbitraries.strings().alpha().ofLength(15);
-        Arbitrary <String> mats = Arbitraries.strings().numeric().excludeChars('0').ofLength(6);
+        Arbitrary <String> mats = Arbitraries.strings().numeric().ofLength(6);
 
         Arbitrary<Student> students = Combinators.combine(names, surnames, mats).as(Student:: new);
 
-        return students.list().uniqueElements(s -> s.getMat());
+        return students.list().uniqueElements(Student::getMat);
     }
 
 
-    @Property(tries = 5)
+    @Property(tries = 50)
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
     void studentsWithMarkAndWithout(@ForAll("studentsProvider") @Size(min = 20, max = 35) List<Student> students,
@@ -301,35 +301,38 @@ public class CourseManagerGroup1Test {
         courseManager4 = new CourseManager("Corso1", LocalDate.parse("2023-10-31"));
         Student s = null;
         int mark = 0;
-        int markHigher = 0;
-        // creazione di un insieme di studenti con voto più alto da iscrivere nel corso
-        Set<Student> highMarkStudents = new LinkedHashSet<>();
+        int higherMark = 0;
+        Set<Student> highMarkStudents = new LinkedHashSet<>(); // Insieme che conterrà gli studenti con voto più alto
 
         // calcolo del voto più alto generato
-        for (Integer m: marks)
-            if (m > markHigher)
-                markHigher = m;
+        for (int i = 0; i < students.size(); i++)
+            if (!pos.contains(i))
+                if (marks.get(i) > higherMark)
+                    higherMark = marks.get(i);
 
-        // Riempimento del corso
+        // Iscrizione degli studenti nel corso
         for (int i = 0; i < students.size(); i++)
         {
             s = students.get(i);
             mark = marks.get(i);
-            //Iscrizione studente
-            courseManager4.addNewCourseAttender(s, localDates.get(i));
 
-            //Assegnazione voto se l'indice non è contenuto nell'insieme delle posizioni senza voto
+            courseManager4.addNewCourseAttender(s, localDates.get(i)); //Iscrizione studente
+
+            //Assegnazione del voto se l'indice non è contenuto nell'insieme delle posizioni da lasciare senza voto
             if (!pos.contains(i))
             {
-                // Salvataggio studente con voto più alto nell'insieme
-                if (mark == markHigher)
-                    highMarkStudents.add(s);
 
-                courseManager4.assignMarkToStudent(marks.get(i), s.getMat());
-                Statistics.label("Mark range assigned").collect(mark);
+                if (mark == higherMark)
+                    highMarkStudents.add(s); // Studente con voto più alto inserito nell'insieme
+
+                courseManager4.assignMarkToStudent(marks.get(i), s.getMat()); // voto assegnato
+                //Statistics.label("Mark range assigned").collect(mark);
             }
         }
 
+        Statistics.label("Higher mark range assigned").collect(mark); // Statistica del voto più alto assegnato ad ogni prova
+
+        // statistica del range di voti generato
         for (int m: marks)
             Statistics.label("Mark range generated").collect(m);
 
@@ -337,10 +340,10 @@ public class CourseManagerGroup1Test {
     }
 
 
-    @Property (tries = 5) //Test:
+    @Property (tries = 50) //Test:
     @Report(Reporting.GENERATED)
-    void allStudentsWithoutMark (@ForAll("studentsProvider") @Size(min = 10, max = 35) List<Student> students,
-                                   @ForAll @Size(value = 31) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates
+    void allStudentsWithoutMark (@ForAll("studentsProvider") @Size(min = 0, max = 35) List<Student> students,
+                                   @ForAll @Size(value = 35) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates
                                     ) throws NullStudentException{
 
         courseManager4 = new CourseManager("Corso1", LocalDate.parse("2023-10-31"));
