@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CourseManagerGroup1Test.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CourseManagerGroup2Test Coverage Results</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">CourseManagerGroup1Test.java</span></div><h1>CourseManagerGroup1Test.java</h1><pre class="source lang-java linenums">import entities.CourseManager;
+import entities.CourseSubscription;
+import entities.Student;
+import exceptions.CourseEmptyException;
+import exceptions.NullStudentException;
+import exceptions.RangeDateException;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
+
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Stream;
+
+/**
+ * Classe di test per CourseManager
+ *
+ * @author Gabriele Detomaso, Alessandra Pipoli
+ * */
+<span class="nc" id="L21">public class CourseManagerGroup1Test {</span>
+
+    // Definizione di studenti di test
+<span class="nc" id="L24">    private static Student s1 = new Student(&quot;Gianni&quot;, &quot;Verdi&quot;, &quot;111111&quot;);</span>
+<span class="nc" id="L25">    private static Student s2 = new Student(&quot;Marco&quot;, &quot;Bari&quot;, &quot;111112&quot;);</span>
+<span class="nc" id="L26">    private static Student s3 = new Student(&quot;Angelo&quot;, &quot;Valentino&quot;, &quot;111113&quot;);</span>
+<span class="nc" id="L27">    private static Student s4 = new Student(&quot;Oscar&quot;, &quot;Bravo&quot;, &quot;111114&quot;);</span>
+<span class="nc" id="L28">    private static Student s5 = new Student(&quot;Leo&quot;, &quot;DiCaprio&quot;, &quot;111115&quot;);</span>
+
+    //GRUPPO 1
+    private static CourseManager courseManager1;
+    private static CourseManager courseManager3;
+
+    // Metodi del ciclo di vita JUnit
+
+    @BeforeAll
+    static void setup() {
+<span class="nc" id="L38">        courseManager1 = new CourseManager(&quot;Integrazione e test 1&quot;, LocalDate.now().plusDays(10));</span>
+<span class="nc" id="L39">        courseManager3 = new CourseManager(&quot;Integrazione e test 3&quot;, LocalDate.now().minusDays(1));</span>
+<span class="nc" id="L40">    }</span>
+
+    @BeforeEach
+    void init() {
+        // Aggiunta studenti per courseManager1
+        try {
+<span class="nc" id="L46">            courseManager1.addNewCourseAttender(s1, LocalDate.now());</span>
+<span class="nc" id="L47">            courseManager1.addNewCourseAttender(s2, LocalDate.now());</span>
+<span class="nc" id="L48">            courseManager1.addNewCourseAttender(s3, LocalDate.now());</span>
+<span class="nc" id="L49">        } catch (Exception e) {</span>
+<span class="nc" id="L50">            System.out.println(&quot;Eccezione lanciata 1&quot;);</span>
+<span class="nc" id="L51">        }</span>
+<span class="nc" id="L52">    }</span>
+
+    @AfterEach
+    void tearDown() {
+<span class="nc" id="L56">        courseManager1.deleteCourseStudents();</span>
+<span class="nc" id="L57">        courseManager3.deleteCourseStudents();</span>
+
+<span class="nc" id="L59">    }</span>
+
+    @AfterAll
+    static void clear() {
+<span class="nc" id="L63">        courseManager1 = null;</span>
+<span class="nc" id="L64">        courseManager3 = null;</span>
+<span class="nc" id="L65">    }</span>
+
+
+    // GRUPPO 1
+    // metodo testato: assignMarkToStudent;
+
+    @ParameterizedTest //Uniti test: T2, T4 e T5
+    @MethodSource(&quot;marksProviderOfmarkWrong&quot;)
+    @DisplayName(&quot;Inserimento di vari voti non accettabili&quot;)
+    void markWrong(int mark) {
+
+<span class="nc" id="L76">        Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L77">                courseManager1.assignMarkToStudent(mark, s1.getMat())</span>
+        );
+<span class="nc" id="L79">    }</span>
+
+    private static Stream&lt;Integer&gt; marksProviderOfmarkWrong() {
+<span class="nc" id="L82">        return Stream.of(17, 32, -1);</span>
+    }
+
+
+    @ParameterizedTest //Uniti test: T1 e T3
+    @MethodSource(&quot;marksProviderOfmarkRight&quot;)
+    @DisplayName(&quot;Inserimento di vari voti accettabili ad uno studente iscritto&quot;)
+    void markRight(int mark) {
+<span class="nc" id="L90">        Assertions.assertDoesNotThrow(() -&gt;</span>
+<span class="nc" id="L91">                courseManager1.assignMarkToStudent(mark, s1.getMat())</span>
+        );
+<span class="nc" id="L93">    }</span>
+
+    private static Stream&lt;Integer&gt; marksProviderOfmarkRight() {
+<span class="nc" id="L96">        return Stream.of(18, 31);</span>
+    }
+
+    @ParameterizedTest //Uniti test: T6, T7, T8, T9, T10, T11 e T12
+    @NullAndEmptySource
+    @MethodSource(&quot;matsProvider&quot;)
+    @DisplayName(&quot;Assegnazione voto a studenti con matricole di formato sbagliato o non iscritti/esistenti&quot;)
+    void matWrong(String mat) {
+
+<span class="nc" id="L105">        Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L106">                courseManager1.assignMarkToStudent(28, mat));</span>
+<span class="nc" id="L107">    }</span>
+
+
+
+
+
+    // metodo testato: addNewCourseAttender;
+
+    @Test // T1
+    @DisplayName(&quot;Studente nullo&quot;)
+    void studentNull() {
+<span class="nc" id="L118">        Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L119">                courseManager1.addNewCourseAttender(null, LocalDate.now())</span>
+        );
+<span class="nc" id="L121">    }</span>
+
+
+    @ParameterizedTest // Uniti tet: T2 e T3
+    @MethodSource(&quot;studentsProviderOfRegistrationStudent&quot;)
+    @DisplayName(&quot;Studente già iscritto e studente non iscritto&quot;)
+    void registrationStudent(Boolean expectedResult, Student s) throws NullStudentException {
+
+<span class="nc" id="L129">        Assertions.assertEquals(expectedResult, courseManager1.addNewCourseAttender(s, LocalDate.now()));</span>
+<span class="nc" id="L130">    }</span>
+
+    private static Stream&lt;Arguments&gt; studentsProviderOfRegistrationStudent() {
+
+<span class="nc" id="L134">        return Stream.of(</span>
+<span class="nc" id="L135">                Arguments.of(false, s1),</span>
+<span class="nc" id="L136">                Arguments.of(true, s4)</span>
+        );
+    }
+
+
+    @Test //T4
+    @DisplayName(&quot;Data nulla&quot;)
+    void dateNull() {
+
+<span class="nc" id="L145">        Assertions.assertThrows(Exception.class, () -&gt; courseManager1.addNewCourseAttender(s4, null));</span>
+<span class="nc" id="L146">    }</span>
+
+
+    @ParameterizedTest //Uniti test: T5 e T6
+    @MethodSource(&quot;datesProviderOfDateRight&quot;)
+    @DisplayName(&quot;Data antecedente e uguale alla data di chiusura iscrizione&quot;)
+    void dateRight(LocalDate testDate) throws NullStudentException {
+
+<span class="nc" id="L154">        Assertions.assertTrue(courseManager1.addNewCourseAttender(new Student(&quot;a&quot;, &quot;a&quot;, &quot;111116&quot;)</span>
+                , testDate));
+<span class="nc" id="L156">    }</span>
+
+    private static Stream&lt;LocalDate&gt; datesProviderOfDateRight() {
+<span class="nc" id="L159">        return Stream.of(</span>
+<span class="nc" id="L160">                LocalDate.now().plusDays(9),</span>
+<span class="nc" id="L161">                LocalDate.now().plusDays(10)</span>
+                );
+    }
+
+
+    @Test //T7
+    @DisplayName(&quot;Data scaduta&quot;)
+    void dateExpired() {
+
+<span class="nc" id="L170">        Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L171">                courseManager3.addNewCourseAttender(s4, LocalDate.now())</span>
+        );
+<span class="nc" id="L173">    }</span>
+
+
+
+
+
+    // metodo testato: getSpecificSubscription;
+
+    @Test // T1
+    @DisplayName(&quot;matricola nulla&quot;)
+    void matNull() {
+<span class="nc" id="L184">        Assertions.assertThrows(Exception.class, () -&gt;</span>
+<span class="nc" id="L185">                courseManager1.getSpecificSubscription(null)</span>
+        );
+<span class="nc" id="L187">    }</span>
+
+
+    @ParameterizedTest //Uniti test:  T2, T3, T4, T6, T7 e T8
+    @EmptySource
+    @MethodSource(&quot;matsProvider&quot;)
+    @DisplayName(&quot;Inserimento di matricole di formato sbagliato o non iscritti/esistenti&quot;)
+    void subscriberSearchWrong( String mat) {
+
+<span class="nc" id="L196">        Assertions.assertNull( courseManager1.getSpecificSubscription(mat) );</span>
+<span class="nc" id="L197">    }</span>
+
+    @Test // T5
+    @DisplayName(&quot;Inserimento matricola di uno studente iscritto&quot;)
+    void matCorrect(){
+
+<span class="nc" id="L203">        Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s1.getMat()) );</span>
+        // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s3.getMat()) );
+        // Assertions.assertInstanceOf( CourseSubscription.class, courseManager1.getSpecificSubscription(s2.getMat()) );
+<span class="nc" id="L206">    }</span>
+
+    /*
+    *Il metodo viene richiamato in più test
+     */
+    private static Stream&lt;String&gt; matsProvider() {
+<span class="nc" id="L212">        return Stream.of(&quot;11111&quot;,</span>
+                &quot;A2G27T&quot;,
+                &quot;1234567&quot;,
+<span class="nc" id="L215">                s4.getMat(),</span>
+                &quot;999999&quot;
+        );
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

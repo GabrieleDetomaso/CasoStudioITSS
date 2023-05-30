@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="it"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CourseManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">CourseManagerGroup2Test Coverage Results</a> &gt; <a href="index.source.html" class="el_package">entities</a> &gt; <span class="el_source">CourseManager.java</span></div><h1>CourseManager.java</h1><pre class="source lang-java linenums">package entities;
+
+import exceptions.CourseEmptyException;
+import exceptions.NullStudentException;
+import exceptions.RangeDateException;
+import org.w3c.dom.ranges.Range;
+
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoField;
+import java.util.*;
+
+public class CourseManager {
+    private String courseName;
+    private Set&lt;CourseSubscription&gt; subscriptions;
+    private LocalDate endSubDate;
+
+    /**
+     * @param courseName the course name
+     * @param limitDate the date where subscriptions to the course ends
+     * */
+<span class="fc" id="L22">    public CourseManager(String courseName, LocalDate limitDate) {</span>
+<span class="fc" id="L23">        this.courseName = courseName;</span>
+<span class="fc" id="L24">        this.endSubDate = limitDate;</span>
+
+<span class="fc" id="L26">        subscriptions = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Add a new student to the course
+     *
+     * @param student the student to be added
+     * @param subDate the date of subscription
+     *
+     * @return true if the attender is added to the course, false otherwise
+     * */
+    public boolean addNewCourseAttender(Student student, LocalDate subDate) throws NullStudentException {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (subDate.isAfter(endSubDate))</span>
+<span class="nc" id="L39">            throw new DateTimeException(&quot;The subscriptions are ended&quot;);</span>
+
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (student == null)</span>
+<span class="nc" id="L42">            throw new NullStudentException(&quot;Lo studente è nullo&quot;);</span>
+
+<span class="fc" id="L44">        return subscriptions.add(new CourseSubscription(student, subDate));</span>
+    }
+
+    /**
+     * This method is used to assign a mark to a specific student
+     *
+     * @param mark the mark to assign
+     * @param mat the matriculation number of the student
+     * */
+    public void assignMarkToStudent(int mark, String mat) {
+<span class="fc" id="L54">        CourseSubscription courseSubscription = getSpecificSubscription(mat);</span>
+<span class="fc" id="L55">        courseSubscription.setMark(mark);</span>
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * This method is used to calculate the number of student whose mark is above the average of the course.
+     *
+     * @param inclusive determines if the students with the mark equals to the average are counted
+     * @return the number of students  whose mark is above the average of the course
+     */
+    public int studentsAboveAverage(boolean inclusive) {
+<span class="fc" id="L65">        double avg = 0;</span>
+<span class="fc" id="L66">        double sum = 0;</span>
+<span class="fc" id="L67">        int hasMark = 0;</span>
+<span class="fc" id="L68">        int nStudent = 0;</span>
+
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (CourseSubscription courseSubscription : subscriptions) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (courseSubscription.getMark() != -1) {</span>
+<span class="fc" id="L72">                hasMark++;</span>
+<span class="fc" id="L73">                sum += courseSubscription.getMark();</span>
+            }
+<span class="fc" id="L75">        }</span>
+
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (hasMark != 0)</span>
+<span class="fc" id="L78">            avg = sum / hasMark;</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (CourseSubscription courseSubscription : subscriptions) {</span>
+<span class="fc" id="L81">            int mark = courseSubscription.getMark();</span>
+
+<span class="pc bpc" id="L83" title="1 of 8 branches missed.">            if ((mark &gt;= avg &amp;&amp; inclusive) || (mark &gt; avg &amp;&amp; !inclusive)) {</span>
+<span class="fc" id="L84">                nStudent++;</span>
+            }
+
+<span class="fc" id="L87">        }</span>
+
+<span class="fc" id="L89">        return nStudent;</span>
+    }
+
+    /**
+     * This method is used to retrieve a specific student from the course,
+     * given his matriculation number.
+     *
+     * @param mat the matriculation number
+     *
+     * @return the student
+     * */
+    public Student getSpecificStudent(String mat) {
+<span class="nc" id="L101">        return getSpecificSubscription(mat).getStudent();</span>
+    }
+
+    /**
+     * Returns a course subscription by a specific matriculation number.
+     * If the matriculation number does not exist null is returned.
+     *
+     * @param mat the matriculation number of the course to search
+     * */
+    public CourseSubscription getSpecificSubscription(String mat) {
+<span class="fc" id="L111">        TreeSet&lt;CourseSubscription&gt; orderedSetByMat = new TreeSet&lt;&gt;(subscriptions);</span>
+<span class="fc" id="L112">        List&lt;CourseSubscription&gt; allMat = new ArrayList&lt;&gt;(orderedSetByMat);</span>
+
+        // Perform a binary search
+<span class="fc" id="L115">        int low = 0;</span>
+<span class="fc" id="L116">        int high = allMat.size() - 1;</span>
+<span class="fc" id="L117">        int middle = (high + low) / 2;</span>
+
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        while (low &lt;= high) {</span>
+<span class="fc" id="L120">            String currentMat = allMat.get(middle).getStudent().getMat();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            if (currentMat.equals(mat)) {</span>
+<span class="fc" id="L122">                return allMat.get(middle);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            } else if (currentMat.compareTo(mat) &lt; 0) {</span>
+<span class="fc" id="L124">                low = middle + 1;</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">            } else if (currentMat.compareTo(mat) &gt; 0) {</span>
+<span class="fc" id="L126">                high = middle - 1;</span>
+            }
+
+<span class="fc" id="L129">            middle = (low + high) / 2;</span>
+<span class="fc" id="L130">        }</span>
+
+<span class="nc" id="L132">        return null;</span>
+    }
+
+    /**
+     * Returns the students with the higher mark
+     *
+     * @return the student with the higher mark
+     * */
+    public Set&lt;Student&gt; getStudentsWithHigherMark() {
+<span class="fc" id="L141">        LinkedHashSet&lt;Student&gt; higherMarkStudents = new LinkedHashSet&lt;&gt;();</span>
+
+<span class="fc" id="L143">        TreeSet&lt;CourseSubscription&gt; orderedSet = new TreeSet&lt;&gt;(Comparator</span>
+<span class="fc" id="L144">                .comparingInt(CourseSubscription::getMark)</span>
+<span class="fc" id="L145">                .thenComparing(o -&gt; o.getStudent().getMat()));</span>
+<span class="fc" id="L146">        orderedSet.addAll(subscriptions);</span>
+
+<span class="fc" id="L148">        orderedSet = (TreeSet&lt;CourseSubscription&gt;) orderedSet.descendingSet();</span>
+
+<span class="fc" id="L150">        int higherMark = -1; // inserimento di un valore a caso &lt; 0</span>
+
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (orderedSet.size() &gt; 0) {</span>
+<span class="fc" id="L153">            higherMark = orderedSet.first().getMark();</span>
+
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            if (higherMark == -1) {</span>
+<span class="fc" id="L156">                return higherMarkStudents;</span>
+            }
+        }
+
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        for (CourseSubscription courseSubscription : orderedSet) {</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">            if (courseSubscription.getMark() == higherMark) {</span>
+<span class="fc" id="L162">                higherMarkStudents.add(courseSubscription.getStudent());</span>
+            } else {
+                break;
+            }
+<span class="fc" id="L166">        }</span>
+
+<span class="fc" id="L168">        return higherMarkStudents;</span>
+    }
+
+    /**
+     * Count the number of marks inside the input range. The upper
+     * and lower bound are included. Input parameter must be &gt;= 18 and &lt;= 30.
+     *
+     * @param from lower bound mark
+     * @param to upper bound mark
+     *
+     * @return the number of marks inside the input range
+     */
+    public int countMarksInInclusiveRange(int from, int to) throws CourseEmptyException {
+<span class="fc bfc" id="L181" title="All 4 branches covered.">        if (from &lt; 18 || from &gt; 30)</span>
+<span class="fc" id="L182">            throw new IllegalArgumentException(&quot;From parameter should be in range [18, 30]&quot;);</span>
+
+<span class="fc bfc" id="L184" title="All 4 branches covered.">        if (to &lt; 18 || to &gt; 30)</span>
+<span class="fc" id="L185">            throw new IllegalArgumentException(&quot;To parameter should be in range [18, 30]&quot;);</span>
+
+<span class="fc bfc" id="L187" title="All 2 branches covered.">        if (from &gt; to)</span>
+<span class="fc" id="L188">            throw new IllegalArgumentException(&quot;from is greater than to&quot;);</span>
+
+<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (subscriptions.size() == 0)</span>
+<span class="fc" id="L191">            throw new CourseEmptyException();</span>
+
+<span class="fc" id="L193">        int count = 0;</span>
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        for (CourseSubscription courseSubscription : subscriptions) {</span>
+<span class="fc bfc" id="L196" title="All 4 branches covered.">            if (courseSubscription.getMark() &gt;= from &amp;&amp; courseSubscription.getMark() &lt;= to) {</span>
+<span class="fc" id="L197">                ++count;</span>
+            }
+<span class="fc" id="L199">        }</span>
+
+<span class="fc" id="L201">        return count;</span>
+    }
+
+    /**
+     * Retrieve a set of CourseSubscription whose subscription date is
+     * inside a specified date range. If specified, the subscription dates that
+     * match the lower or upper bound of the range are not excluded from the
+     * output set.
+     *
+     * @param fromDate the lower bound of the range
+     * @param toDate the upper bound of the range
+     * @param inclusive true if the upper and lower bound of the range are included, false otherwise
+     *
+     * @return a set of CourseSubscription inside a specified date range
+     * */
+    public Set&lt;CourseSubscription&gt; getSubscriptionsByDate(LocalDate fromDate, LocalDate toDate, boolean inclusive)
+            throws RangeDateException, CourseEmptyException {
+<span class="fc" id="L218">        Set&lt;CourseSubscription&gt; subsInRange = new LinkedHashSet&lt;&gt;();</span>
+<span class="fc" id="L219">        long fromDateLong = fromDate.getLong(ChronoField.EPOCH_DAY);</span>
+<span class="fc" id="L220">        long toDateLong = toDate.getLong(ChronoField.EPOCH_DAY);</span>
+
+        // Check the dates
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        if (fromDate.isAfter(toDate)) {</span>
+<span class="fc" id="L224">            throw new RangeDateException(&quot;fromDate is greater then to date&quot;);</span>
+        }
+
+<span class="fc bfc" id="L227" title="All 4 branches covered.">        if (!inclusive &amp;&amp; (fromDate.equals(toDate))) {</span>
+<span class="fc" id="L228">            throw new RangeDateException(&quot;fromDate is equal to toDate but inclusive is false. They cannot be equals&quot;);</span>
+        }
+
+        // Check the course number
+<span class="fc bfc" id="L232" title="All 2 branches covered.">        if (subscriptions.isEmpty()) {</span>
+<span class="fc" id="L233">            throw new CourseEmptyException(&quot;The course is empty&quot;);</span>
+        }
+
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        for (CourseSubscription courseSubscription : subscriptions) {</span>
+<span class="fc" id="L237">            LocalDate subDate = courseSubscription.getSubDate();</span>
+<span class="fc" id="L238">            long subDateLong = subDate.getLong(ChronoField.EPOCH_DAY);</span>
+
+            // True if the subDate belongs to the range (bounds excluded)
+<span class="fc bfc" id="L241" title="All 4 branches covered.">            boolean condition = subDateLong &gt; fromDateLong &amp;&amp; subDateLong &lt; toDateLong;</span>
+
+            // True if inclusive param is true and the subDate is equals to
+            // the lower or the upper bound of the interval
+<span class="fc bfc" id="L245" title="All 6 branches covered.">            boolean inclusiveCondition = inclusive &amp;&amp; (subDateLong == fromDateLong || subDateLong == toDateLong);</span>
+
+            // If the inclusive parameter is set to true but the subDate is in the range (not equals
+            // to one of the two bounds) inclusiveCondition will be evaluated as false,
+            // but condition is evaluated to true. The behavior is identical to have inclusive set to false.
+<span class="fc bfc" id="L250" title="All 4 branches covered.">            if (condition || inclusiveCondition) {</span>
+<span class="fc" id="L251">                subsInRange.add(courseSubscription);</span>
+            }
+<span class="fc" id="L253">        }</span>
+
+<span class="fc" id="L255">        return subsInRange;</span>
+    }
+
+    public void deleteCourseStudents() {
+<span class="fc" id="L259">        subscriptions.clear();</span>
+<span class="fc" id="L260">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
