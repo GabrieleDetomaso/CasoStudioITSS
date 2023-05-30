@@ -66,7 +66,6 @@ public class CourseManagerGroup1Test {
     void tearDown() {
         courseManager1.deleteCourseStudents();
         courseManager3.deleteCourseStudents();
-
     }
 
     @AfterAll
@@ -274,7 +273,6 @@ public class CourseManagerGroup1Test {
 
 
 
-
     // metodo testato: getStudentsWithHigherMark;
 
     @Provide
@@ -292,6 +290,7 @@ public class CourseManagerGroup1Test {
     @Property(tries = 50)
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
+    @Label("Restituzione insieme pieno")
     void studentsWithMarkAndWithout(@ForAll("studentsProvider") @Size(min = 20, max = 35) List<Student> students,
                           @ForAll @Size(value = 35) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates,
                           @ForAll @Size(value = 35) List<@IntRange(min = 18,max = 31) Integer> marks,
@@ -340,10 +339,11 @@ public class CourseManagerGroup1Test {
     }
 
 
-    @Property (tries = 50) //Test:
+    @Property (tries = 50)
     @Report(Reporting.GENERATED)
+    @Label("Restituzione insieme vuoto")
     void allStudentsWithoutMark (@ForAll("studentsProvider") @Size(min = 0, max = 35) List<Student> students,
-                                   @ForAll @Size(value = 35) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates
+                                 @ForAll @Size(value = 35) List<@DateRange(min = "2023-05-01", max = "2023-05-31") LocalDate> localDates
                                     ) throws NullStudentException{
 
         courseManager4 = new CourseManager("Corso1", LocalDate.parse("2023-10-31"));
