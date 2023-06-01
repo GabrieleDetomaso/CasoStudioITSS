@@ -42,7 +42,7 @@ public class CourseManagerGroup1Test {
     public String MINDATE = "2023-05-01";
     public String MAXDATE = "2023-05-31";
 
-    // Metodi del ciclo di vita JUnit
+    // Metodi del ciclo di esecuzione su JUnit
 
     @BeforeAll
     static void setup() {

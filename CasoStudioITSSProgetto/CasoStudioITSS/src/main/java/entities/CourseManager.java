@@ -115,28 +115,20 @@ public class CourseManager {
         int high = allMat.size() - 1;
         int middle = (high + low) / 2;
 
-        boolean flag = false;
-
-        CourseSubscription courseSubscription = null;
-
         while (low <= high) {
             String currentMat = allMat.get(middle).getStudent().getMat();
             if (currentMat.equals(mat)) {
-                courseSubscription = allMat.get(middle);
-                flag = true;
-            }   if (currentMat.compareTo(mat) < 0) {
+                return allMat.get(middle);
+            } else if (currentMat.compareTo(mat) < 0) {
                 low = middle + 1;
-            }   if (currentMat.compareTo(mat) > 0) {
+            } else if (currentMat.compareTo(mat) > 0) {
                 high = middle - 1;
             }
-
-            if (flag)
-                break;
 
             middle = (low + high) / 2;
         }
 
-        return courseSubscription;
+        return null;
     }
 
     /**
