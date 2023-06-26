@@ -285,7 +285,7 @@ public class CourseManagerGroup1Test {
     }
 
 
-    @Property(tries = 50)
+    @Property
     @Report(Reporting.GENERATED)
     @StatisticsReport(format = Histogram.class)
     @Label("Restituzione insieme pieno")
@@ -327,7 +327,7 @@ public class CourseManagerGroup1Test {
             }
         }
 
-        Statistics.label("Higher mark range assigned").collect(mark); // Statistica del voto più alto assegnato ad ogni prova
+        Statistics.label("Higher mark range assigned").collect(higherMark); // Statistica del voto più alto assegnato ad ogni prova
 
         // statistica del range di voti generato
         for (int m: marks)
@@ -337,7 +337,7 @@ public class CourseManagerGroup1Test {
     }
 
 
-    @Property (tries = 50)
+    @Property
     @Report(Reporting.GENERATED)
     @Label("Restituzione insieme vuoto")
     void allStudentsWithoutMark (@ForAll("studentsProvider") @Size(min = 0, max = 35) List<Student> students,
